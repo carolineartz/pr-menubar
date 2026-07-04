@@ -12,13 +12,14 @@ export function openSettingsWindow(): void {
   }
   win = new BrowserWindow({
     width: 480,
-    height: 560,
+    height: 640,
     title: 'PR Menubar Settings',
     resizable: false,
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
     show: false,
+    vibrancy: 'window',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false

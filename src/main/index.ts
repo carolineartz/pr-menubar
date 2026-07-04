@@ -5,6 +5,7 @@ import { makeMockPRs, MOCK_SETTINGS, MOCK_VIEWER } from '../shared/mockData'
 import { Coordinator } from './coordinator'
 import { AuthFailedError, GithubService } from './github/service'
 import { registerIpcHandlers } from './ipcHandlers'
+import { processNotifications } from './notifier'
 import { createPopover } from './popover'
 import { Poller, type PollResult } from './poller'
 import { openSettingsWindow } from './settingsWindow'
@@ -68,6 +69,7 @@ app.whenReady().then(() => {
           prs.map((p) => `${p.key}:${p.nextAction}`).join(' ')
       )
       coordinator.setData(prs, viewer)
+      processNotifications(store, prs)
     },
     (err) => {
       const cause = err instanceof Error && err.cause ? ` (cause: ${String(err.cause)})` : ''
