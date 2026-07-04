@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><style>body{margin:0}</style></helmet>
+<div style="{{ themeVars }}">
+<div style="min-height:100vh;background:var(--wall,#1a1a2e);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;padding-bottom:60px">
+
+  <!-- menubar -->
+  <div style="display:flex;align-items:center;gap:18px;height:28px;padding:0 14px;background:var(--menub);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);color:var(--menutxt);font-size:12.5px">
+    <span style="font-weight:600">Code</span><span style="opacity:.7">File</span><span style="opacity:.7">Edit</span><span style="opacity:.7">View</span>
+    <div style="flex:1"></div>
+    <span style="display:flex;align-items:center;gap:5px;background:var(--seg);border-radius:5px;padding:2px 7px">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="4.5" cy="3.7" r="1.9"></circle><circle cx="4.5" cy="12.3" r="1.9"></circle><path d="M4.5 5.6v4.8"></path><circle cx="11.5" cy="12.3" r="1.9"></circle><path d="M11.5 10.4V7.2a2 2 0 0 0-2-2H8.2"></path></svg>
+      <span style="font:600 11px ui-monospace,Menlo,monospace">{{ badge }}</span>
+    </span>
+    <span style="opacity:.85">Thu Jul 3</span><span style="opacity:.85">9:41 AM</span>
+  </div>
+
+  <!-- popover -->
+  <div style="position:relative;width:560px;max-width:calc(100vw - 32px);margin:14px auto 0">
+    <div style="position:absolute;top:-6px;left:50%;margin-left:-7px;width:14px;height:14px;background:var(--panel);transform:rotate(45deg);border-radius:3px;border-top:1px solid var(--pborder);border-left:1px solid var(--pborder)"></div>
+    <div style="position:relative;background:var(--panel);backdrop-filter:blur(var(--blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--blur)) saturate(180%);border:1px solid var(--pborder);border-radius:14px;box-shadow:var(--psh);color:var(--txt);overflow:hidden">
+
+      <!-- tabs -->
+      <div style="padding:12px 12px 0">
+        <div style="display:flex;gap:2px;background:var(--seg);border-radius:7px;padding:2px">
+          <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="4">
+            <div onClick="{{ tb.go }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 0;border-radius:5px;font-size:12px;cursor:pointer;{{ tb.st }}">{{ tb.label }}<span style="font:600 10px ui-monospace,Menlo,monospace;opacity:.6">{{ tb.count }}</span></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- list -->
+      <div style="display:flex;flex-direction:column;padding:8px 6px;min-height:200px">
+        <sc-for list="{{ items }}" as="it" hint-placeholder-count="4">
+          <sc-if value="{{ it.isHeader }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:7px;padding:8px 10px 6px">
+              <span style="width:7px;height:7px;border-radius:50%;background:{{ it.hcolor }}"></span>
+              <span style="font:600 10.5px system-ui,sans-serif;letter-spacing:.06em;color:var(--txt2)">{{ it.hlabel }}</span>
+              <span style="font:600 10px ui-monospace,Menlo,monospace;padding:1px 5px;border-radius:4px;background:var(--seg);color:var(--txt2)">{{ it.hcount }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ it.isRow }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ it.toggle }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;background:{{ it.rowBg }};opacity:{{ it.rowOpacity }}" style-hover="background:var(--hov)">
+              <span style="flex:none;width:8px;height:8px;border-radius:50%;box-sizing:border-box;{{ it.dotStyle }}"></span>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                <div style="display:flex;align-items:center;gap:5px;min-width:0">
+                  <sc-if value="{{ it.draft }}" hint-placeholder-val="{{ false }}">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--faint)" stroke-width="1.7" style="flex:none"><circle cx="4.5" cy="3.7" r="1.9"></circle><circle cx="4.5" cy="12.3" r="1.9"></circle><path d="M4.5 5.6v4.8" stroke-dasharray="2 2.2"></path><circle cx="11.5" cy="12.3" r="1.9"></circle><circle cx="11.5" cy="7.5" r=".9" fill="var(--faint)" stroke="none"></circle><circle cx="11.5" cy="4" r=".9" fill="var(--faint)" stroke="none"></circle></svg>
+                  </sc-if>
+                  <span style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;{{ it.titleStyle }}">{{ it.title }}</span>
+                </div>
+                <div style="font-size:11.5px;color:var(--txt3)">{{ it.meta }}</div>
+              </div>
+              <sc-if value="{{ it.isSnoozed }}" hint-placeholder-val="{{ false }}">
+                <span onClick="{{ it.unsnooze }}" style="flex:none;font-size:11px;font-weight:500;color:var(--txt2);border:1px solid var(--btnb);padding:2px 7px;border-radius:6px" style-hover="color:var(--txt)">Unsnooze</span>
+              </sc-if>
+              <sc-if value="{{ it.chipLabel }}" hint-placeholder-val="{{ false }}">
+                <span style="flex:none;font:600 10.5px/1 ui-monospace,Menlo,monospace;padding:4px 7px;border-radius:5px;{{ it.chipStyle }}">{{ it.chipLabel }}</span>
+              </sc-if>
+              <sc-if value="{{ it.pillT }}" hint-placeholder-val="{{ false }}">
+                <span style="flex:none;font-size:11px;font-weight:500;padding:3px 7px;border-radius:99px;{{ it.pillStyle }}">{{ it.pillT }}</span>
+              </sc-if>
+              <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:{{ it.avBg }};color:#fff;font:600 8.5px system-ui,sans-serif">{{ it.av }}</span>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--faint)" stroke-width="1.8" stroke-linecap="round" style="flex:none;transform:rotate({{ it.chev }}deg)"><path d="M4 6l4 4 4-4"></path></svg>
+            </div>
+            <sc-if value="{{ it.expanded }}" hint-placeholder-val="{{ false }}">
+              <div style="margin:4px 10px 8px 28px;display:flex;flex-direction:column;background:var(--inset);border:1px solid var(--insetb);border-radius:8px">
+                <sc-for list="{{ it.checks }}" as="ck" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:{{ ck.bg }}">
+                    <sc-if value="{{ ck.ok }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="var(--greendot)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+                    <sc-if value="{{ ck.fail }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M4 4l8 8M12 4l-8 8" stroke="var(--reddot)" stroke-width="2" stroke-linecap="round"></path></svg></sc-if>
+                    <sc-if value="{{ ck.run }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><circle cx="8" cy="8" r="5.5" stroke="var(--insetb)" stroke-width="2"></circle><path d="M8 2.5a5.5 5.5 0 0 1 5.5 5.5" stroke="var(--amberdot)" stroke-width="2" stroke-linecap="round"></path></svg></sc-if>
+                    <sc-if value="{{ ck.queued }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><circle cx="8" cy="8" r="5.5" stroke="var(--faint)" stroke-width="2" stroke-dasharray="3 3"></circle></svg></sc-if>
+                    <sc-if value="{{ ck.ign }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M4 8h8" stroke="var(--faint)" stroke-width="2" stroke-linecap="round"></path></sc-if>
+                    <span style="flex:1;font-size:12px;{{ ck.nameStyle }}">{{ ck.name }}</span>
+                    <span style="font:11px ui-monospace,Menlo,monospace;color:var(--ckd)">{{ ck.dur }}</span>
+                    <sc-if value="{{ ck.fail }}" hint-placeholder-val="{{ false }}">
+                      <span onClick="{{ it.viewLog }}" style="font-size:11px;font-weight:500;color:var(--redt);text-decoration:underline;text-underline-offset:2px;cursor:pointer">View log</span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <div style="display:flex;align-items:center;gap:6px;padding:8px 10px;border-top:1px solid var(--insetb);flex-wrap:wrap">
+                  <span style="font-size:11px;color:var(--txt3)">{{ it.summary }}</span>
+                  <div style="flex:1"></div>
+                  <sc-if value="{{ it.hasFail }}" hint-placeholder-val="{{ false }}">
+                    <span onClick="{{ it.rerun }}" style="font-size:11px;font-weight:500;color:var(--txt);background:var(--redbg);border:1px solid var(--redbg);padding:3px 8px;border-radius:6px;cursor:pointer">Re-run failed</span>
+                  </sc-if>
+                  <span onClick="{{ it.open }}" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--btnt);border:1px solid var(--btnb);padding:3px 8px;border-radius:6px;cursor:pointer" style-hover="color:var(--txt)"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3H3v10h10V9.5"></path><path d="M9.5 3H13v3.5"></path><path d="M13 3L7.5 8.5"></path></svg>Open</span>
+                  <span onClick="{{ it.copy }}" style="display:flex;align-items:center;gap:5px;font:500 11px ui-monospace,Menlo,monospace;color:var(--btnt);border:1px solid var(--btnb);padding:3px 8px;border-radius:6px;cursor:pointer" style-hover="color:var(--txt)"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"></rect><path d="M10.5 3.5h-6a1 1 0 0 0-1 1v6"></path></svg>{{ it.branch }}</span>
+                  <span onClick="{{ it.star }}" style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;color:{{ it.starColor }};border:1px solid var(--btnb);border-radius:6px;cursor:pointer"><svg width="10" height="10" viewBox="0 0 16 16" fill="{{ it.starFill }}" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="8 1.8 9.9 5.7 14.2 6.3 11.1 9.3 11.8 13.6 8 11.5 4.2 13.6 4.9 9.3 1.8 6.3 6.1 5.7"></polygon></svg></span>
+                  <span style="position:relative;display:flex">
+                    <span onClick="{{ it.snoozeToggle }}" style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;color:var(--btnt);border:1px solid var(--btnb);border-radius:6px;cursor:pointer" style-hover="color:var(--txt)"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8V8l2.3 1.4"></path></svg></span>
+                    <sc-if value="{{ it.snoozeOpen }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;bottom:calc(100% + 6px);right:0;z-index:20;display:flex;flex-direction:column;min-width:150px;background:var(--menupanel);border:1px solid var(--pborder);border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:4px;color:var(--txt)">
+                        <span onClick="{{ it.snooze1h }}" style="font-size:12px;padding:6px 9px;border-radius:5px;cursor:pointer" style-hover="background:var(--hov)">Snooze 1 hour</span>
+                        <span onClick="{{ it.snoozeTom }}" style="font-size:12px;padding:6px 9px;border-radius:5px;cursor:pointer" style-hover="background:var(--hov)">Until tomorrow</span>
+                        <span onClick="{{ it.snoozeAct }}" style="font-size:12px;padding:6px 9px;border-radius:5px;cursor:pointer" style-hover="background:var(--hov)">Until activity</span>
+                      </div>
+                    </sc-if>
+                  </span>
+                </div>
+              </div>
+            </sc-if>
+          </sc-if>
+        </sc-for>
+        <sc-if value="{{ emptyMsg }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;justify-content:center;padding:40px 20px;font-size:12.5px;color:var(--txt3)">{{ emptyMsg }}</div>
+        </sc-if>
+      </div>
+
+      <!-- team people toggles -->
+      <sc-if value="{{ teamBar }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid var(--hair);flex-wrap:wrap">
+          <span style="font:600 10px system-ui,sans-serif;letter-spacing:.06em;color:var(--faint)">SHOWING</span>
+          <sc-for list="{{ teamPills }}" as="pp" hint-placeholder-count="4">
+            <span onClick="{{ pp.toggle }}" style="display:flex;align-items:center;gap:5px;padding:3px 9px 3px 4px;border-radius:99px;cursor:pointer;border:1px solid var(--btnb);{{ pp.st }}">
+              <span style="width:16px;height:16px;border-radius:50%;background:{{ pp.bg }};color:#fff;font:600 7.5px system-ui,sans-serif;display:flex;align-items:center;justify-content:center">{{ pp.init }}</span>
+              <span style="font-size:11px;font-weight:500">{{ pp.name }}</span>
+            </span>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- footer -->
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--hair)">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--greendot)"></span>
+        <span style="font-size:11px;color:var(--txt3)">{{ syncText }}</span>
+        <sc-if value="{{ snoozeLabel }}" hint-placeholder-val="{{ false }}">
+          <span onClick="{{ toggleSnoozed }}" style="font-size:11px;font-weight:500;color:var(--txt2);cursor:pointer;text-decoration:underline;text-underline-offset:2px" style-hover="color:var(--txt)">{{ snoozeLabel }}</span>
+        </sc-if>
+        <div style="flex:1"></div>
+        <span onClick="{{ refresh }}" style="font:11px ui-monospace,Menlo,monospace;color:var(--faint);cursor:pointer" style-hover="color:var(--txt)">⌘R</span>
+        <span style="font-size:11px;color:var(--faint)">·</span>
+        <span onClick="{{ openGithub }}" style="font-size:11px;font-weight:500;color:var(--txt2);cursor:pointer" style-hover="color:var(--txt)">Open GitHub ↗</span>
+      </div>
+
+      <sc-if value="{{ toastMsg }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;left:50%;transform:translateX(-50%);bottom:44px;z-index:30;background:rgba(20,20,24,.92);color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.3)">{{ toastMsg }}</div>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- theme toggle (demo chrome — real app follows system) -->
+  <div style="position:fixed;left:16px;bottom:16px;z-index:50;display:flex;align-items:center;gap:2px;background:rgba(20,20,24,.55);backdrop-filter:blur(20px);border-radius:99px;padding:3px">
+    <span onClick="{{ setLight }}" style="font-size:11.5px;font-weight:500;padding:4px 12px;border-radius:99px;cursor:pointer;{{ lightBtn }}">Light</span>
+    <span onClick="{{ setDark }}" style="font-size:11.5px;font-weight:500;padding:4px 12px;border-radius:99px;cursor:pointer;{{ darkBtn }}">Dark</span>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;dark&quot;, &quot;light&quot;], &quot;default&quot;: &quot;dark&quot;, &quot;tsType&quot;: &quot;'dark' | 'light'&quot;}, &quot;reduceTransparency&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;}}">
+const CHIPS = {
+  FIXCI: ['FIX CI', 'background:var(--redbg);color:var(--redt)'],
+  MERGE: ['MERGE', 'background:var(--greenbg);color:var(--greent)'],
+  ADDRESS: ['ADDRESS', 'background:var(--amberbg);color:var(--ambert)'],
+  REVIEW: ['REVIEW', 'background:var(--bluebg);color:var(--bluet)'],
+  RESUME: ['RESUME', 'background:var(--purbg);color:var(--purt)'],
+  WAITING: ['WAITING', 'background:var(--neutbg);color:var(--neut)']
+};
+const PILLS = {
+  green: 'background:var(--greenbg);color:var(--greent)',
+  red: 'background:var(--redbg);color:var(--redt)',
+  neut: 'background:var(--neutbg);color:var(--neut)'
+};
+const DOTS = {
+  red: 'background:var(--reddot);box-shadow:0 0 0 3px var(--redbg)',
+  green: 'background:var(--greendot)',
+  amber: 'background:var(--amberdot)',
+  running: 'background:var(--amberdot)',
+  queued: 'border:2px solid var(--amberdot)'
+};
+const AV = { YOU: '#3c7dd6', MK: '#7c5cd6', DV: '#c97a35', AL: '#38995c', RS: '#cf5878' };
+const ACTIONABLE = ['FIXCI', 'MERGE', 'ADDRESS', 'REVIEW', 'RESUME'];
+const PRIO = { FIXCI: 0, MERGE: 1, ADDRESS: 2, REVIEW: 3, RESUME: 4, WAITING: 5 };
+const PEOPLE = [{ k: 'MK', name: 'mkatz' }, { k: 'DV', name: 'dvest' }, { k: 'AL', name: 'alind' }, { k: 'RS', name: 'rsoto' }];
+const HEADERS = [
+  { g: 'start', label: 'START REVIEW', color: '#0a84ff' },
+  { g: 'continue', label: 'CONTINUE REVIEW', color: '#bf5af2' },
+  { g: 'waiting', label: 'WAITING FOR AUTHOR', color: 'var(--faint)' }
+];
+
+const DATA = [
+  { id: '482', tabs: ['my'], title: 'Fix flaky retry logic in webhook dispatcher', meta: 'acme/api #482 · updated 8m ago', branch: 'fix/webhook-retry', url: 'acme/api/pull/482', av: 'YOU', chip: 'FIXCI', pill: ['Approved', 'green'], dot: 'red', checks: [['build', 'ok', '1m 02s'], ['lint', 'ok', '24s'], ['e2e-tests', 'fail', '2m 14s'], ['deploy-preview', 'run', '40s'], ['codecov/project', 'ignored', '']] },
+  { id: '479', tabs: ['my'], title: 'Add rate-limit headers to public API', meta: 'acme/api #479 · updated 26m ago', branch: 'jt/rate-limit-headers', url: 'acme/api/pull/479', av: 'YOU', chip: 'MERGE', pill: ['2 approvals', 'green'], dot: 'green', checks: [['build', 'ok', '58s'], ['lint', 'ok', '21s'], ['unit', 'ok', '1m 40s'], ['e2e-tests', 'ok', '2m 03s'], ['codecov/project', 'ok', '12s']] },
+  { id: '468', tabs: ['my'], title: 'Refactor session cache eviction policy', meta: 'acme/api #468 · updated 3h ago', branch: 'jt/cache-eviction', url: 'acme/api/pull/468', av: 'YOU', chip: 'ADDRESS', pill: ['Changes req.', 'red'], dot: 'green', checks: [['build', 'ok', '1m 05s'], ['lint', 'ok', '22s'], ['e2e-tests', 'ok', '2m 30s']] },
+  { id: '455', tabs: ['my'], title: 'Bump minimum Node to 22 in CI images', meta: 'acme/api #455 · updated 2d ago · conflicts with main', branch: 'jt/node-22', url: 'acme/api/pull/455', av: 'YOU', chip: 'ADDRESS', pill: ['Conflicts', 'red'], dot: 'green', checks: [['build', 'ok', '1m 11s'], ['lint', 'ok', '20s'], ['e2e-tests', 'ok', '2m 21s']] },
+  { id: '91', tabs: ['my'], draft: true, title: 'Migrate billing webhooks to v2 signatures', meta: 'Draft · acme/billing #91 · updated 1h ago', branch: 'jt/webhooks-v2', url: 'acme/billing/pull/91', av: 'YOU', chip: 'WAITING', pill: ['0 of 2 reviews', 'neut'], dot: 'queued', checks: [['build', 'queued', ''], ['lint', 'queued', '']] },
+  { id: '217', tabs: ['rev', 'team'], group: 'start', title: 'Support SSO domain allow-list', meta: 'acme/auth #217 · review requested 2h ago', branch: 'mk/sso-allowlist', url: 'acme/auth/pull/217', av: 'MK', chip: 'REVIEW', pill: null, dot: 'green', checks: [['build', 'ok', '1m 12s'], ['lint', 'ok', '19s'], ['e2e-tests', 'ok', '1m 58s']] },
+  { id: '486', tabs: ['rev', 'team'], group: 'start', title: 'Fix N+1 query in org members endpoint', meta: 'acme/api #486 · review requested 4h ago', branch: 'dv/org-members-n1', url: 'acme/api/pull/486', av: 'DV', chip: 'REVIEW', pill: null, dot: 'running', checks: [['build', 'ok', '1m 00s'], ['e2e-tests', 'run', '1m 10s']] },
+  { id: '341', tabs: ['rev', 'team'], group: 'continue', title: 'Rework onboarding checklist state machine', meta: 'acme/web #341 · you left 3 comments · 12 files left', branch: 'al/onboarding-sm', url: 'acme/web/pull/341', av: 'AL', chip: 'RESUME', pill: null, dot: 'green', checks: [['build', 'ok', '1m 21s'], ['lint', 'ok', '25s'], ['e2e-tests', 'ok', '2m 44s']] },
+  { id: '322', tabs: ['rev', 'team'], group: 'waiting', title: 'Extract transactional email templates', meta: 'acme/web #322 · you requested changes 1d ago', branch: 'rs/email-templates', url: 'acme/web/pull/322', av: 'RS', chip: 'WAITING', pill: ['Changes req.', 'red'], dot: 'red', checks: [['build', 'ok', '1m 02s'], ['e2e-tests', 'fail', '1m 40s']] },
+  { id: '491', tabs: ['team'], title: 'Add audit log export endpoint', meta: 'acme/api #491 · updated 30m ago', branch: 'mk/audit-export', url: 'acme/api/pull/491', av: 'MK', chip: 'WAITING', pill: ['1 of 2 reviews', 'neut'], dot: 'running', checks: [['build', 'ok', '1m 08s'], ['unit', 'run', '52s']] }
+];
+
+const THEMES = {
+  dark: {
+    '--wall': 'linear-gradient(160deg,#0f2447 0%,#3b2f7a 42%,#8b3a62 76%,#c2703f 100%)',
+    '--menub': 'rgba(24,24,28,.45)', '--menutxt': 'rgba(255,255,255,.88)',
+    '--panel': 'rgba(30,30,36,.68)', '--pborder': 'rgba(255,255,255,.14)', '--psh': '0 24px 70px rgba(0,0,0,.5)',
+    '--txt': '#ffffff', '--txt2': 'rgba(255,255,255,.65)', '--txt3': 'rgba(255,255,255,.5)', '--faint': 'rgba(255,255,255,.35)',
+    '--hair': 'rgba(255,255,255,.1)', '--seg': 'rgba(255,255,255,.09)', '--segact': 'rgba(255,255,255,.24)', '--segsh': '0 1px 2px rgba(0,0,0,.25)',
+    '--hov': 'rgba(255,255,255,.07)', '--rowbg': 'rgba(255,255,255,.08)',
+    '--inset': 'rgba(255,255,255,.05)', '--insetb': 'rgba(255,255,255,.12)',
+    '--reddot': '#ff453a', '--redt': '#ff9d97', '--redbg': 'rgba(255,69,58,.18)',
+    '--greendot': '#30d158', '--greent': '#63e884', '--greenbg': 'rgba(48,209,88,.18)',
+    '--amberdot': '#ffd60a', '--ambert': '#ffd60a', '--amberbg': 'rgba(255,214,10,.15)',
+    '--bluet': '#9ecbff', '--bluebg': 'rgba(10,132,255,.25)',
+    '--purt': '#d7b8f7', '--purbg': 'rgba(191,90,242,.22)',
+    '--neut': 'rgba(255,255,255,.6)', '--neutbg': 'rgba(255,255,255,.1)',
+    '--btnb': 'rgba(255,255,255,.16)', '--btnt': 'rgba(255,255,255,.7)',
+    '--ckt': 'rgba(255,255,255,.8)', '--ckd': 'rgba(255,255,255,.35)',
+    '--menupanel': 'rgba(50,50,56,.97)', '--blur': '44px'
+  },
+  light: {
+    '--wall': 'linear-gradient(150deg,#dbe6f5 0%,#e9dcec 45%,#f4e6d4 100%)',
+    '--menub': 'rgba(255,255,255,.5)', '--menutxt': '#1d1d1f',
+    '--panel': 'rgba(249,249,251,.78)', '--pborder': 'rgba(0,0,0,.09)', '--psh': '0 24px 70px rgba(60,50,80,.28)',
+    '--txt': '#1d1d1f', '--txt2': '#6e6e73', '--txt3': '#86868b', '--faint': '#a1a1a6',
+    '--hair': 'rgba(0,0,0,.07)', '--seg': 'rgba(0,0,0,.06)', '--segact': '#ffffff', '--segsh': '0 1px 2px rgba(0,0,0,.12)',
+    '--hov': 'rgba(0,0,0,.045)', '--rowbg': 'rgba(0,0,0,.055)',
+    '--inset': 'rgba(0,0,0,.03)', '--insetb': 'rgba(0,0,0,.08)',
+    '--reddot': '#ff453a', '--redt': '#c2261f', '--redbg': 'rgba(255,59,48,.1)',
+    '--greendot': '#34c759', '--greent': '#248a3d', '--greenbg': 'rgba(52,199,89,.14)',
+    '--amberdot': '#ff9f0a', '--ambert': '#b45309', '--amberbg': 'rgba(255,159,10,.15)',
+    '--bluet': '#0a58ce', '--bluebg': 'rgba(10,132,255,.12)',
+    '--purt': '#7c3aed', '--purbg': 'rgba(191,90,242,.12)',
+    '--neut': '#6e6e73', '--neutbg': 'rgba(0,0,0,.06)',
+    '--btnb': 'rgba(0,0,0,.14)', '--btnt': '#515154',
+    '--ckt': '#3a3a3c', '--ckd': '#a1a1a6',
+    '--menupanel': 'rgba(255,255,255,.98)', '--blur': '44px'
+  }
+};
+
+class Component extends DCLogic {
+  state = { tab: 'my', theme: null, expanded: null, snoozeMenu: null, starred: { '482': true }, snoozed: {}, showSnoozed: false, sync: 12, toast: null, team: { MK: true, DV: true, AL: true, RS: true } };
+
+  componentDidMount() {
+    this._iv = setInterval(() => this.setState(s => ({ sync: s.sync + 1 })), 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(this._iv);
+    clearTimeout(this._tt);
+  }
+
+  showToast(m) {
+    clearTimeout(this._tt);
+    this.setState({ toast: m });
+    this._tt = setTimeout(() => this.setState({ toast: null }), 1900);
+  }
+
+  rowsFor(tab, includeSnoozed) {
+    return DATA.filter(pr => {
+      let inTab;
+      if (tab === 'saved') inTab = this.state.starred[pr.id];
+      else if (tab === 'all') inTab = true;
+      else inTab = pr.tabs.includes(tab);
+      if (tab === 'team' && !this.state.team[pr.av]) inTab = false;
+      if (!inTab) return false;
+      if (this.state.snoozed[pr.id] && !includeSnoozed) return false;
+      return true;
+    });
+  }
+
+  makeRow(pr, hideChip) {
+    const s = this.state;
+    const expanded = s.expanded === pr.id;
+    const snoozed = !!s.snoozed[pr.id];
+    const starred = !!s.starred[pr.id];
+    const chip = CHIPS[pr.chip];
+    const nonIgn = pr.checks.filter(c => c[1] !== 'ignored');
+    const okCount = nonIgn.filter(c => c[1] === 'ok').length;
+    const hasFail = pr.checks.some(c => c[1] === 'fail');
+    const stop = fn => e => { e.stopPropagation(); fn(); };
+    return {
+      isRow: true, isHeader: false,
+      title: pr.title, meta: pr.meta, branch: pr.branch, av: pr.av, avBg: AV[pr.av],
+      draft: !!pr.draft, titleStyle: pr.draft ? 'color:var(--txt2)' : '',
+      chipLabel: hideChip ? null : chip[0], chipStyle: chip[1],
+      pillT: pr.pill ? pr.pill[0] : null, pillStyle: pr.pill ? PILLS[pr.pill[1]] : '',
+      dotStyle: DOTS[pr.dot],
+      expanded, chev: expanded ? 180 : 0,
+      rowBg: expanded ? 'var(--rowbg)' : 'transparent',
+      rowOpacity: snoozed ? 0.55 : (pr.chip === 'WAITING' ? 0.75 : 1),
+      isSnoozed: snoozed,
+      snoozeOpen: s.snoozeMenu === pr.id,
+      summary: okCount + ' of ' + nonIgn.length + ' passed',
+      hasFail,
+      starColor: starred ? '#ffd60a' : 'var(--btnt)',
+      starFill: starred ? '#ffd60a' : 'none',
+      checks: pr.checks.map(c => ({
+        name: c[0],
+        dur: c[1] === 'ignored' ? 'ignored · noisy' : (c[1] === 'queued' ? 'queued' : (c[1] === 'run' ? 'running · ' + c[2] : c[2])),
+        ok: c[1] === 'ok', fail: c[1] === 'fail', run: c[1] === 'run', queued: c[1] === 'queued', ign: c[1] === 'ignored',
+        bg: c[1] === 'fail' ? 'var(--redbg)' : 'transparent',
+        nameStyle: c[1] === 'fail' ? 'font-weight:500;color:var(--redt)' : (c[1] === 'ignored' ? 'color:var(--faint)' : 'color:var(--ckt)')
+      })),
+      toggle: () => this.setState(st => ({ expanded: st.expanded === pr.id ? null : pr.id, snoozeMenu: null })),
+      open: stop(() => this.showToast('Would open github.com/' + pr.url)),
+      viewLog: stop(() => this.showToast('Would open the failing check log')),
+      rerun: stop(() => this.showToast('Re-running failed checks…')),
+      copy: stop(() => {
+        try { navigator.clipboard.writeText(pr.branch); } catch (x) {}
+        this.showToast('Copied ' + pr.branch);
+      }),
+      star: stop(() => {
+        const cur = !!this.state.starred[pr.id];
+        this.setState(st => ({ starred: Object.assign({}, st.starred, { [pr.id]: !cur }) }));
+        this.showToast(cur ? 'Removed from Saved' : 'Added to Saved');
+      }),
+      snoozeToggle: stop(() => this.setState(st => ({ snoozeMenu: st.snoozeMenu === pr.id ? null : pr.id }))),
+      snooze1h: stop(() => this.doSnooze(pr.id, 'for 1 hour')),
+      snoozeTom: stop(() => this.doSnooze(pr.id, 'until tomorrow')),
+      snoozeAct: stop(() => this.doSnooze(pr.id, 'until activity')),
+      unsnooze: stop(() => {
+        this.setState(st => {
+          const sn = Object.assign({}, st.snoozed); delete sn[pr.id];
+          return { snoozed: sn };
+        });
+        this.showToast('Unsnoozed');
+      })
+    };
+  }
+
+  doSnooze(id, label) {
+    this.setState(st => ({ snoozed: Object.assign({}, st.snoozed, { [id]: label }), snoozeMenu: null, expanded: null }));
+    this.showToast('Snoozed ' + label);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const theme = s.theme || this.props.theme || 'dark';
+    const vars = Object.assign({}, THEMES[theme]);
+    if (this.props.reduceTransparency) {
+      vars['--blur'] = '0px';
+      vars['--panel'] = theme === 'dark' ? 'rgba(30,30,36,.98)' : 'rgba(249,249,251,.98)';
+    }
+    const themeVars = Object.entries(vars).map(([k, v]) => k + ':' + v).join(';');
+
+    const include = s.showSnoozed;
+    let items = [];
+    if (s.tab === 'rev') {
+      HEADERS.forEach(h => {
+        const rows = this.rowsFor('rev', include).filter(pr => pr.group === h.g);
+        if (rows.length) {
+          items.push({ isHeader: true, isRow: false, hlabel: h.label, hcolor: h.color, hcount: rows.length });
+          rows.forEach(pr => items.push(this.makeRow(pr)));
+        }
+      });
+    } else {
+      let rows = this.rowsFor(s.tab, include);
+      if (s.tab === 'all') rows = rows.slice().sort((a, b) => PRIO[a.chip] - PRIO[b.chip]);
+      items = rows.map(pr => this.makeRow(pr, s.tab === 'all'));
+    }
+
+    const tabs = [['my', 'My PRs'], ['rev', 'Reviewing'], ['team', 'Team'], ['saved', 'Saved'], ['all', 'All']].map(([id, label]) => ({
+      id, label,
+      count: this.rowsFor(id, false).length,
+      st: s.tab === id ? 'background:var(--segact);color:var(--txt);font-weight:500;box-shadow:var(--segsh)' : 'color:var(--txt2)',
+      go: () => this.setState({ tab: id, snoozeMenu: null })
+    }));
+
+    const badge = DATA.filter(pr => (pr.tabs.includes('my') || pr.tabs.includes('rev')) && ACTIONABLE.includes(pr.chip) && !s.snoozed[pr.id]).length;
+    const snCount = Object.keys(s.snoozed).length;
+    const hasRows = items.some(it => it.isRow);
+
+    return {
+      themeVars, tabs, items, badge,
+      emptyMsg: hasRows ? null : (s.tab === 'saved' ? 'Nothing saved yet — star a PR from any tab.' : (s.tab === 'team' ? 'No people shown — toggle someone back on below.' : 'All clear — nothing needs you here.')),
+      teamBar: s.tab === 'team',
+      teamPills: PEOPLE.map(p => ({
+        init: p.k, name: p.name, bg: AV[p.k],
+        st: s.team[p.k] ? 'background:var(--seg);color:var(--txt)' : 'opacity:.45;color:var(--txt2)',
+        toggle: () => this.setState(st => ({ team: Object.assign({}, st.team, { [p.k]: !st.team[p.k] }) }))
+      })),
+      syncText: 'Synced ' + (s.sync < 60 ? s.sync + 's' : Math.floor(s.sync / 60) + 'm') + ' ago',
+      refresh: () => { this.setState({ sync: 0 }); this.showToast('Refreshed'); },
+      openGithub: () => this.showToast('Would open github.com'),
+      snoozeLabel: snCount ? snCount + ' snoozed · ' + (s.showSnoozed ? 'hide' : 'show') : null,
+      toggleSnoozed: () => this.setState(st => ({ showSnoozed: !st.showSnoozed })),
+      toastMsg: s.toast,
+      setLight: () => this.setState({ theme: 'light' }),
+      setDark: () => this.setState({ theme: 'dark' }),
+      lightBtn: theme === 'light' ? 'background:#fff;color:#1d1d1f' : 'color:rgba(255,255,255,.75)',
+      darkBtn: theme === 'dark' ? 'background:rgba(255,255,255,.25);color:#fff' : 'color:rgba(255,255,255,.75)'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><style>doc-page:not(:defined){visibility:hidden}</style></helmet>
+<x-import component-from-global-scope="doc-page" from="./doc-page.js" size="letter" margin="0.8in" hint-size="100%,1400px">
+<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;color:#1d1d1f;font-size:14px;line-height:1.6">
+<h1 style="font-size:26px;font-weight:700;letter-spacing:-.02em;margin:0 0 4px">PR Menubar — v1 spec</h1>
+<p style="margin:0 0 6px;color:#6e6e73;font-size:13px">macOS menubar app (Electron) · July 3, 2026 · draft for review</p>
+<p style="margin:0 0 22px;padding:9px 12px;background:#f5f5f7;border-radius:8px;font-size:13px;color:#3a3a3c"><strong>Philosophy:</strong> ship lean, evolve through use. Everything here is v1-minimal; anything marked <span style="font:600 11px ui-monospace,Menlo,monospace;background:#fde68a;padding:1px 6px;border-radius:4px;color:#78350f">PROPOSAL</span> is a default you can veto, and <span style="font:600 11px ui-monospace,Menlo,monospace;background:#e0e7ff;padding:1px 6px;border-radius:4px;color:#3730a3">LATER</span> is explicitly out of v1.</p>
+
+<h2 style="font-size:17px;font-weight:600;margin:0 0 8px">1. What it is</h2>
+<p style="margin:0 0 18px">A popover from the macOS menubar (≤560px wide, native vibrancy, light + dark following system appearance) that answers one question: <strong>what should I do next on my PRs?</strong> PR lists + CI status only. No issues, no dependabot, no notifications feed.</p>
+
+<h2 style="font-size:17px;font-weight:600;margin:0 0 8px">2. Setup &amp; data</h2>
+<ul style="margin:0 0 18px;padding-left:20px">
+<li><strong>Auth:</strong> reuses <code style="font:12.5px ui-monospace,Menlo,monospace;background:#f5f5f7;padding:1px 5px;border-radius:4px">gh</code> CLI credentials. If <code style="font:12.5px ui-monospace,Menlo,monospace;background:#f5f5f7;padding:1px 5px;border-radius:4px">gh auth status</code> fails, the popover shows a single setup screen with the command to run.</li>
+<li><strong>Repos:</strong> starts with 2, user-configurable list in Settings. No auto-discovery in v1.</li>
+<li><strong>Refresh:</strong> poll every 60s while popover is closed; refresh immediately on open; manual ⌘R. Footer shows "Synced Ns ago".</li>
+</ul>
+
+<h2 style="font-size:17px;font-weight:600;margin:0 0 8px">3. Tabs</h2>
+<ul style="margin:0 0 18px;padding-left:20px">
+<li><strong>All</strong> — every PR the app watches, one feed, sorted by next-action urgency.</li>
+<li><strong>My PRs</strong> — open PRs I authored in watched repos.</li>
+<li><strong>Reviewing</strong> — open PRs where my review is requested OR I've already reviewed/commented and the PR is still open.</li>
+<li><strong>Team</strong> — open PRs authored by a hand-picked set of GitHub usernames (not filtered by my involvement). Master list edited in Settings; a pill row at the bottom of the tab toggles individual people in/out on the fly.</li>
+<li><strong>Saved</strong> — any PR I've starred, from any tab. Manual bookmark, survives across tabs.</li>
+</ul>
+
+<h2 style="font-size:17px;font-weight:600;margin:0 0 8px">4. The list (per design <strong>3a/3b</strong>)</h2>
+<p style="margin:0 0 8px"><strong>Row:</strong> CI dot · title · repo #num · updated-ago · next-action chip · review-status pill · author avatar. Click row = expand; ⌘-click or double-click = open in browser.</p>
+<p style="margin:0 0 8px"><strong>Next-action chip</strong> (the core feature) — computed per PR, drives sort order within each tab:</p>
+<table style="border-collapse:collapse;width:100%;margin:0 0 12px;font-size:13px">
+<tr style="background:#f5f5f7"><th style="text-align:left;padding:6px 10px;border:1px solid #e5e5ea;font-weight:600">Chip</th><th style="text-align:left;padding:6px 10px;border:1px solid #e5e5ea;font-weight:600">Condition (first match wins)</th></tr>
+<tr><td style="padding:6px 10px;border:1px solid #e5e5ea"><strong>FIX CI</strong></td><td style="padding:6px 10px;border:1px solid #e5e5ea">my PR, a <em>meaningful</em> check failed (see §6)</td></tr>
+<tr><td style="padding:6px 10px;border:1px solid #e5e5ea"><strong>MERGE</strong></td><td style="padding:6px 10px;border:1px solid #e5e5ea">my PR, approved, checks green, no conflicts</td></tr>
+<tr><td style="padding:6px 10px;border:1px solid #e5e5ea"><strong>ADDRESS</strong></td><td style="padding:6px 10px;border:1px solid #e5e5ea">my PR: changes requested, unresolved review threads, <strong>or merge conflicts</strong></td></tr>
+<tr><td style="padding:6px 10px;border:1px solid #e5e5ea"><strong>REVIEW</strong></td><td style="padding:6px 10px;border:1px solid #e5e5ea">review requested from me, I haven't started</td></tr>
+<tr><td style="padding:6px 10px;border:1px solid #e5e5ea"><strong>RESUME</strong></td><td style="padding:6px 10px;border:1px solid #e5e5ea">I have a pending/partial review</td></tr>
+<tr><td style="padding:6px 10px;border:1px solid #e5e5ea"><strong>WAITING</strong></td><td style="padding:6px 10px;border:1px solid #e5e5ea">everything else (waiting on reviewers, CI running, draft)</td></tr>
+</table>
+<p style="margin:0 0 8px"><strong>How RESUME is detected</strong> — GitHub stores started-but-unsubmitted reviews server-side (API review state <code style="font:12.5px ui-monospace,Menlo,monospace;background:#f5f5f7;padding:1px 5px;border-radius:4px">PENDING</code>). RESUME = I have a pending review draft, OR I commented without submitting a review, OR my last review predates the newest commit (re-review).</p>
+<p style="margin:0 0 8px"><strong>Expanded row:</strong> per-check CI list (name, status, duration, "View log" on failures), "Re-run failed", and the action strip: Open ↗ · copy branch name · star · snooze.</p>
+<p style="margin:0 0 18px"><strong>Grouping</strong> <span style="font:600 11px ui-monospace,Menlo,monospace;background:#fde68a;padding:1px 6px;border-radius:4px;color:#78350f">PROPOSAL</span>: flat list sorted by chip urgency on My PRs / People / Saved; grouped headers (Start review / Continue / Waiting) on Reviewing only, where the groups are natural.</p>
+
+<h2 style="font-size:17px;font-weight:600;margin:0 0 8px">5. Row actions</h2>
+<ul style="margin:0 0 8px;padding-left:20px">
+<li><strong>Open in browser</strong> — PR page; "View log" opens the failing check directly.</li>
+<li><strong>Copy branch name</strong> — one click, toast "Copied".</li>
+<li><strong>Star</strong> — adds to Saved.</li>
+<li><strong>Snooze</strong> — small menu: <em>1 hour · until tomorrow · until activity</em>. "Activity" = new commit, new review, new comment, or CI state change on that PR. Snoozed rows hide from all tabs (except Saved) and return automatically; a footer count ("2 snoozed") un-hides them.</li>
+<li><strong>Done</strong> <span style="font:600 11px ui-monospace,Menlo,monospace;background:#fde68a;padding:1px 6px;border-radius:4px;color:#78350f">PROPOSAL</span> — same as snooze-until-activity, just named for the "I've dealt with this" gesture. One mechanism, two entry points.</li>
+<li><strong>Merge</strong> <span style="font:600 11px ui-monospace,Menlo,monospace;background:#fde68a;padding:1px 6px;border-radius:4px;color:#78350f">PROPOSAL</span> — in-popover merge with one confirm step, only shown on MERGE-chip rows. Trivial to remove if it feels dangerous; "open GitHub to merge" is always available.</li>
+</ul>
+<p style="margin:0 0 18px"></p>
+
+<h2 style="font-size:17px;font-weight:600;margin:0 0 8px">6. CI status &amp; the codecov problem</h2>
+<p style="margin:0 0 8px">Raw GitHub check status is too noisy to act on. v1 ships a <strong>noisy-checks list</strong> (Settings, per-repo or global, e.g. <code style="font:12.5px ui-monospace,Menlo,monospace;background:#f5f5f7;padding:1px 5px;border-radius:4px">codecov/*</code>):</p>
+<ul style="margin:0 0 8px;padding-left:20px">
+<li>A noisy check's failure <strong>never</strong> triggers a FIX CI chip, red dot, or notification <strong>while other checks are still running</strong>.</li>
+<li>Once all non-noisy checks complete: if they're green, the PR is treated as green — a still-failing noisy check is shown in the expanded breakdown (marked "ignored") but doesn't change the dot. If a noisy check is the <em>only</em> failure at completion, the row shows an amber dot, not red.</li>
+<li>Non-noisy failures report immediately (a real build/test failure is actionable even mid-run).</li>
+</ul>
+<p style="margin:0 0 18px"><strong>Dot colors:</strong> green = all meaningful checks pass · red = meaningful failure · amber = running, or only-noisy failure · hollow amber = queued · gray = no checks.</p>
+
+<h2 style="font-size:17px;font-weight:600;margin:0 0 8px">7. Notifications (macOS)</h2>
+<ul style="margin:0 0 8px;padding-left:20px">
+<li>CI fails on my PR — <em>meaningful failures only</em>, per §6, and only on transitions (green/running → failed), never repeats.</li>
+<li>My PR becomes approved / mergeable.</li>
+<li>Someone requests my review.</li>
+<li>New comments on my PRs — batched: at most one notification per PR per 15 min ("3 new comments on #482").</li>
+</ul>
+<p style="margin:0 0 18px">Clicking a notification opens the PR in the browser. All four are individually toggleable in Settings.</p>
+
+<h2 style="font-size:17px;font-weight:600;margin:0 0 8px">8. Menubar icon <span style="font:600 11px ui-monospace,Menlo,monospace;background:#fde68a;padding:1px 6px;border-radius:4px;color:#78350f">PROPOSAL</span></h2>
+<p style="margin:0 0 18px">Icon + a small count of <strong>PRs where the next action is mine</strong> (FIX CI + MERGE + ADDRESS + REVIEW + RESUME on My PRs/Reviewing only — never the People tab, so watching dozens of PRs doesn't pollute it). No count when zero. Not a "broken things" indicator — it's a to-do count, which stays small by construction. Toggleable to plain icon in Settings.</p>
+
+<h2 style="font-size:17px;font-weight:600;margin:0 0 8px">9. Settings (one small window)</h2>
+<p style="margin:0 0 18px">Repos to watch · People list (for People tab) · noisy-checks patterns · notification toggles · badge on/off · launch at login.</p>
+
+<h2 style="font-size:17px;font-weight:600;margin:0 0 8px">10. Explicitly not in v1 <span style="font:600 11px ui-monospace,Menlo,monospace;background:#e0e7ff;padding:1px 6px;border-radius:4px;color:#3730a3">LATER</span></h2>
+<p style="margin:0 0 18px">Triage/focus mode (revisit after real use) · issues, dependabot · multiple GitHub accounts · in-app review/commenting · keyboard-shortcut layer beyond ⌘R · auto-repo discovery · team/org syncing.</p>
+
+<h2 style="font-size:17px;font-weight:600;margin:0 0 8px">11. Open questions</h2>
+<ul style="margin:0 0 4px;padding-left:20px">
+<li>Merge in popover: keep the confirm-step version, or cut for v1?</li>
+<li>Badge count: is the "my next actions" definition right?</li>
+<li>Is "Done" worth having alongside snooze, or is snooze-until-activity enough?</li>
+</ul>
+</div>
+</x-import>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><style>body{margin:0;background:#f0eee9;font-family:system-ui,sans-serif}.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}</style></helmet>
+<section class="dv-turn" id="t3">
+<div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">macOS vibrancy × browsable lists — <a class="dv-oid" href="#1a">1a</a>’s flat list in dark, <a class="dv-oid" href="#1b">1b</a>’s grouped list in light (no triage modes)</span></div>
+<div class="dv-opts">
+
+<!-- ═══════════ 3a — vibrancy DARK · 1a's flat list + chips + expanded CI ═══════════ -->
+<div class="dv-opt" id="3a"><div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>vibrancy dark · flat list, action chips, row 1 expanded (CI breakdown + actions)</div>
+<div class="dv-card" style="width:664px"><div style="background:linear-gradient(160deg,#0f2447 0%,#3b2f7a 42%,#8b3a62 76%,#c2703f 100%);padding:36px 52px 44px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
+  <div style="width:560px;margin:0 auto;background:rgba(30,30,36,.68);backdrop-filter:blur(44px) saturate(180%);-webkit-backdrop-filter:blur(44px) saturate(180%);border:1px solid rgba(255,255,255,.14);border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.5);color:#ffffff;overflow:hidden">
+    <div style="padding:12px 12px 0">
+      <div style="display:flex;gap:2px;background:rgba(255,255,255,.09);border-radius:7px;padding:2px">
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 0;border-radius:5px;background:rgba(255,255,255,.24);font-size:12px;font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.25)">My PRs<span style="font:600 10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.65)">4</span></div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 0;border-radius:5px;font-size:12px;color:rgba(255,255,255,.65)">Reviewing<span style="font:600 10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">3</span></div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 0;border-radius:5px;font-size:12px;color:rgba(255,255,255,.65)">Team<span style="font:600 10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">6</span></div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 0;border-radius:5px;font-size:12px;color:rgba(255,255,255,.65)">Saved<span style="font:600 10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">2</span></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;padding:8px 6px">
+      <!-- row 1: expanded -->
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:rgba(255,255,255,.08)">
+        <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#ff453a;box-shadow:0 0 0 3px rgba(255,69,58,.2)"></span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fix flaky retry logic in webhook dispatcher</div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.5)">acme/api <span style="font-family:ui-monospace,Menlo,monospace">#482</span> · updated 8m ago</div>
+        </div>
+        <span style="flex:none;font:600 10.5px/1 ui-monospace,Menlo,monospace;padding:4px 7px;border-radius:5px;background:rgba(255,69,58,.2);color:#ff9d97">FIX CI</span>
+        <span style="flex:none;font-size:11px;font-weight:500;padding:3px 7px;border-radius:99px;background:rgba(48,209,88,.18);color:#63e884">Approved</span>
+        <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(10,132,255,.3);color:#9ecbff;font:600 9px system-ui,sans-serif">YOU</span>
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.8" stroke-linecap="round" style="flex:none;transform:rotate(180deg)"><path d="M4 6l4 4 4-4"></path></svg>
+      </div>
+      <div style="margin:4px 10px 8px 28px;display:flex;flex-direction:column;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 10px">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="#30d158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <span style="flex:1;font-size:12px;color:rgba(255,255,255,.8)">build</span>
+          <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">1m 02s</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 10px">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="#30d158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <span style="flex:1;font-size:12px;color:rgba(255,255,255,.8)">lint</span>
+          <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">24s</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,69,58,.1)">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M4 4l8 8M12 4l-8 8" stroke="#ff6961" stroke-width="2" stroke-linecap="round"></path></svg>
+          <span style="flex:1;font-size:12px;font-weight:500;color:#ffb3ad">e2e-tests</span>
+          <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,179,173,.5)">2m 14s</span>
+          <span style="font-size:11px;font-weight:500;color:#ff9d97;text-decoration:underline;text-underline-offset:2px;cursor:pointer">View log</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 10px">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><circle cx="8" cy="8" r="5.5" stroke="rgba(255,255,255,.2)" stroke-width="2"></circle><path d="M8 2.5a5.5 5.5 0 0 1 5.5 5.5" stroke="#ffd60a" stroke-width="2" stroke-linecap="round"></path></svg>
+          <span style="flex:1;font-size:12px;color:rgba(255,255,255,.8)">deploy-preview</span>
+          <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">running · 40s</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;padding:8px 10px;border-top:1px solid rgba(255,255,255,.1)">
+          <span style="font-size:11px;color:rgba(255,255,255,.5)">2 of 4 passed</span>
+          <div style="flex:1"></div>
+          <span style="font-size:11px;font-weight:500;color:#fff;background:rgba(255,69,58,.24);border:1px solid rgba(255,69,58,.35);padding:3px 8px;border-radius:6px;cursor:pointer">Re-run failed</span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.16);padding:3px 8px;border-radius:6px;cursor:pointer" style-hover="color:#fff;border-color:rgba(255,255,255,.3)"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3H3v10h10V9.5"></path><path d="M9.5 3H13v3.5"></path><path d="M13 3L7.5 8.5"></path></svg>Open</span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.16);padding:3px 8px;border-radius:6px;cursor:pointer;font-family:ui-monospace,Menlo,monospace" style-hover="color:#fff;border-color:rgba(255,255,255,.3)"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"></rect><path d="M10.5 3.5h-6a1 1 0 0 0-1 1v6"></path></svg>fix/webhook-retry</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.16);border-radius:6px;cursor:pointer" style-hover="color:#ffd60a;border-color:rgba(255,255,255,.3)"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="8 1.8 9.9 5.7 14.2 6.3 11.1 9.3 11.8 13.6 8 11.5 4.2 13.6 4.9 9.3 1.8 6.3 6.1 5.7"></polygon></svg></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.16);border-radius:6px;cursor:pointer" style-hover="color:#fff;border-color:rgba(255,255,255,.3)"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8V8l2.3 1.4"></path></svg></span>
+        </div>
+      </div>
+      <!-- row 2 -->
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px" style-hover="background:rgba(255,255,255,.07)">
+        <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#30d158"></span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Add rate-limit headers to public API</div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.5)">acme/api <span style="font-family:ui-monospace,Menlo,monospace">#479</span> · updated 26m ago</div>
+        </div>
+        <span style="flex:none;font:600 10.5px/1 ui-monospace,Menlo,monospace;padding:4px 7px;border-radius:5px;background:rgba(48,209,88,.2);color:#63e884">MERGE</span>
+        <span style="flex:none;font-size:11px;font-weight:500;padding:3px 7px;border-radius:99px;background:rgba(48,209,88,.18);color:#63e884">2 approvals</span>
+        <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(10,132,255,.3);color:#9ecbff;font:600 9px system-ui,sans-serif">YOU</span>
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.8" stroke-linecap="round" style="flex:none"><path d="M4 6l4 4 4-4"></path></svg>
+      </div>
+      <!-- row 3 -->
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px" style-hover="background:rgba(255,255,255,.07)">
+        <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#ffd60a"></span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Refactor session cache eviction policy</div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.5)">acme/api <span style="font-family:ui-monospace,Menlo,monospace">#468</span> · updated 3h ago</div>
+        </div>
+        <span style="flex:none;font:600 10.5px/1 ui-monospace,Menlo,monospace;padding:4px 7px;border-radius:5px;background:rgba(255,214,10,.16);color:#ffd60a">ADDRESS</span>
+        <span style="flex:none;font-size:11px;font-weight:500;padding:3px 7px;border-radius:99px;background:rgba(255,69,58,.18);color:#ff9d97">Changes req.</span>
+        <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(10,132,255,.3);color:#9ecbff;font:600 9px system-ui,sans-serif">YOU</span>
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.8" stroke-linecap="round" style="flex:none"><path d="M4 6l4 4 4-4"></path></svg>
+      </div>
+      <!-- row 4 -->
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;opacity:.6" style-hover="background:rgba(255,255,255,.07)">
+        <span style="flex:none;width:8px;height:8px;border-radius:50%;border:2px solid #ffd60a;box-sizing:border-box"></span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Migrate billing webhooks to v2 signatures</div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.5)">acme/billing <span style="font-family:ui-monospace,Menlo,monospace">#91</span> · updated 1h ago</div>
+        </div>
+        <span style="flex:none;font:600 10.5px/1 ui-monospace,Menlo,monospace;padding:4px 7px;border-radius:5px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.55)">WAITING</span>
+        <span style="flex:none;font-size:11px;font-weight:500;padding:3px 7px;border-radius:99px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.6)">0 of 2 reviews</span>
+        <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(10,132,255,.3);color:#9ecbff;font:600 9px system-ui,sans-serif">YOU</span>
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.8" stroke-linecap="round" style="flex:none"><path d="M4 6l4 4 4-4"></path></svg>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid rgba(255,255,255,.1)">
+      <span style="width:6px;height:6px;border-radius:50%;background:#30d158"></span>
+      <span style="font-size:11px;color:rgba(255,255,255,.5)">Synced 12s ago</span>
+      <div style="flex:1"></div>
+      <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">⌘R</span>
+      <span style="font-size:11px;color:rgba(255,255,255,.35)">·</span>
+      <span style="font-size:11px;font-weight:500;color:rgba(255,255,255,.65);cursor:pointer" style-hover="color:#ffffff">Open GitHub ↗</span>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- ═══════════ 3b — vibrancy LIGHT · 1b's grouped list ═══════════ -->
+<div class="dv-opt" id="3b"><div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>vibrancy light · Reviewing tab grouped by next action, row 1 hover state</div>
+<div class="dv-card" style="width:664px"><div style="background:linear-gradient(150deg,#dbe6f5 0%,#e9dcec 45%,#f4e6d4 100%);padding:36px 52px 44px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
+  <div style="width:560px;margin:0 auto;background:rgba(249,249,251,.78);backdrop-filter:blur(44px) saturate(180%);-webkit-backdrop-filter:blur(44px) saturate(180%);border:1px solid rgba(0,0,0,.09);border-radius:14px;box-shadow:0 24px 70px rgba(60,50,80,.28);color:#1d1d1f;overflow:hidden">
+    <div style="padding:12px 12px 0">
+      <div style="display:flex;gap:2px;background:rgba(0,0,0,.06);border-radius:7px;padding:2px">
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 0;border-radius:5px;font-size:12px;color:#6e6e73">My PRs<span style="font:600 10px ui-monospace,Menlo,monospace;color:#a1a1a6">4</span></div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 0;border-radius:5px;background:#ffffff;font-size:12px;font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.12)">Reviewing<span style="font:600 10px ui-monospace,Menlo,monospace;color:#6e6e73">4</span></div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 0;border-radius:5px;font-size:12px;color:#6e6e73">Team<span style="font:600 10px ui-monospace,Menlo,monospace;color:#a1a1a6">6</span></div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 0;border-radius:5px;font-size:12px;color:#6e6e73">Saved<span style="font:600 10px ui-monospace,Menlo,monospace;color:#a1a1a6">2</span></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;padding:10px 6px 8px">
+      <div style="display:flex;align-items:center;gap:7px;padding:2px 10px 6px">
+        <span style="width:7px;height:7px;border-radius:50%;background:#0a84ff"></span>
+        <span style="font:600 10.5px system-ui,sans-serif;letter-spacing:.06em;color:#6e6e73">START REVIEW</span>
+        <span style="font:600 10px ui-monospace,Menlo,monospace;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.06);color:#6e6e73">2</span>
+      </div>
+      <div style="position:relative;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:rgba(0,0,0,.055)">
+        <div style="position:absolute;top:-7px;right:10px;font:600 9px ui-monospace,Menlo,monospace;background:#1d1d1f;color:#fff;padding:2px 6px;border-radius:4px">HOVER</div>
+        <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#34c759"></span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Support SSO domain allow-list</div>
+          <div style="font-size:11.5px;color:#86868b">acme/auth <span style="font-family:ui-monospace,Menlo,monospace">#217</span> · requested 2h ago</div>
+        </div>
+        <div style="flex:none;display:flex;gap:4px;background:#ffffff;border:1px solid rgba(0,0,0,.1);border-radius:7px;padding:3px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+          <span style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;color:#515154;cursor:pointer" style-hover="background:rgba(0,0,0,.06);color:#1d1d1f"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3H3v10h10V9.5"></path><path d="M9.5 3H13v3.5"></path><path d="M13 3L7.5 8.5"></path></svg></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;color:#515154;cursor:pointer" style-hover="background:rgba(0,0,0,.06);color:#1d1d1f"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="8 1.8 9.9 5.7 14.2 6.3 11.1 9.3 11.8 13.6 8 11.5 4.2 13.6 4.9 9.3 1.8 6.3 6.1 5.7"></polygon></svg></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;color:#515154;cursor:pointer" style-hover="background:rgba(0,0,0,.06);color:#1d1d1f"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"></rect><path d="M10.5 3.5h-6a1 1 0 0 0-1 1v6"></path></svg></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;color:#515154;cursor:pointer" style-hover="background:rgba(0,0,0,.06);color:#1d1d1f"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8V8l2.3 1.4"></path></svg></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;color:#515154;cursor:pointer" style-hover="background:rgba(0,0,0,.06);color:#248a3d"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.8"></path></svg></span>
+        </div>
+        <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#e5dcf7;color:#6d28d9;font:600 9px system-ui,sans-serif">MK</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px" style-hover="background:rgba(0,0,0,.045)">
+        <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#ff9f0a"></span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fix N+1 query in org members endpoint</div>
+          <div style="font-size:11.5px;color:#86868b">acme/api <span style="font-family:ui-monospace,Menlo,monospace">#486</span> · requested 4h ago · CI running</div>
+        </div>
+        <span style="flex:none;font-size:11px;font-weight:500;padding:3px 9px;border-radius:6px;background:#0a84ff;color:#fff;cursor:pointer">Review</span>
+        <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#fbe3c9;color:#b45309;font:600 9px system-ui,sans-serif">DV</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:10px 10px 6px">
+        <span style="width:7px;height:7px;border-radius:50%;background:#bf5af2"></span>
+        <span style="font:600 10.5px system-ui,sans-serif;letter-spacing:.06em;color:#6e6e73">CONTINUE REVIEW</span>
+        <span style="font:600 10px ui-monospace,Menlo,monospace;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.06);color:#6e6e73">1</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px" style-hover="background:rgba(0,0,0,.045)">
+        <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#34c759"></span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Rework onboarding checklist state machine</div>
+          <div style="font-size:11.5px;color:#86868b">acme/web <span style="font-family:ui-monospace,Menlo,monospace">#341</span> · you left 3 comments · 12 files left</div>
+        </div>
+        <span style="flex:none;font-size:11px;font-weight:500;padding:3px 9px;border-radius:6px;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.1);color:#1d1d1f;cursor:pointer" style-hover="background:rgba(0,0,0,.09)">Resume</span>
+        <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#cdeed8;color:#15803d;font:600 9px system-ui,sans-serif">AL</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;padding:10px 10px 6px">
+        <span style="width:7px;height:7px;border-radius:50%;background:#c7c7cc"></span>
+        <span style="font:600 10.5px system-ui,sans-serif;letter-spacing:.06em;color:#a1a1a6">WAITING FOR AUTHOR</span>
+        <span style="font:600 10px ui-monospace,Menlo,monospace;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.06);color:#a1a1a6">1</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;opacity:.6" style-hover="background:rgba(0,0,0,.045)">
+        <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#ff453a"></span>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Extract transactional email templates</div>
+          <div style="font-size:11.5px;color:#86868b">acme/web <span style="font-family:ui-monospace,Menlo,monospace">#322</span> · you requested changes 1d ago</div>
+        </div>
+        <span style="flex:none;font-size:11px;font-weight:500;padding:3px 7px;border-radius:99px;background:rgba(255,59,48,.1);color:#c2261f">Changes req.</span>
+        <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#fcd4d9;color:#be123c;font:600 9px system-ui,sans-serif">RS</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid rgba(0,0,0,.07)">
+      <span style="width:6px;height:6px;border-radius:50%;background:#34c759"></span>
+      <span style="font-size:11px;color:#86868b">Synced 12s ago</span>
+      <div style="flex:1"></div>
+      <span style="font:11px ui-monospace,Menlo,monospace;color:#a1a1a6">⌘R</span>
+      <span style="font-size:11px;color:#a1a1a6">·</span>
+      <span style="font-size:11px;font-weight:500;color:#6e6e73;cursor:pointer" style-hover="color:#1d1d1f">Open GitHub ↗</span>
+    </div>
+  </div>
+</div></div></div>
+
+</div>
+<p class="dv-next">Try next: “<a class="dv-oid" href="#3a">3a</a>’s flat list in light too” · “grouped list (<a class="dv-oid" href="#3b">3b</a>) in both themes, build it interactive” · “flat list but with <a class="dv-oid" href="#3b">3b</a>’s group headers on My PRs”</p>
+</section>
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">macOS vibrancy, both themes — completing the matrix with <a class="dv-oid" href="#1c">1c</a>’s hero in light and <a class="dv-oid" href="#1d">1d</a>’s focus queue in dark</span></div>
+<div class="dv-opts">
+
+<!-- ═══════════ 2a — vibrancy LIGHT · "Up next" hero (1c in light) ═══════════ -->
+<div class="dv-opt" id="2a"><div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>vibrancy light · <a class="dv-oid" href="#1c">1c</a>’s “Up next” hero + compact list</div>
+<div class="dv-card" style="width:664px"><div style="background:linear-gradient(150deg,#dbe6f5 0%,#e9dcec 45%,#f4e6d4 100%);padding:36px 52px 44px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
+  <div style="width:560px;margin:0 auto;background:rgba(249,249,251,.78);backdrop-filter:blur(44px) saturate(180%);-webkit-backdrop-filter:blur(44px) saturate(180%);border:1px solid rgba(0,0,0,.09);border-radius:14px;box-shadow:0 24px 70px rgba(60,50,80,.28);color:#1d1d1f;overflow:hidden">
+    <div style="padding:12px 12px 0">
+      <div style="display:flex;gap:2px;background:rgba(0,0,0,.06);border-radius:7px;padding:2px">
+        <div style="flex:1;text-align:center;padding:4px 0;border-radius:5px;background:#ffffff;font-size:12px;font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.12)">My PRs</div>
+        <div style="flex:1;text-align:center;padding:4px 0;border-radius:5px;font-size:12px;color:#6e6e73">Reviewing</div>
+        <div style="flex:1;text-align:center;padding:4px 0;border-radius:5px;font-size:12px;color:#6e6e73">Team</div>
+        <div style="flex:1;text-align:center;padding:4px 0;border-radius:5px;font-size:12px;color:#6e6e73">Saved</div>
+      </div>
+    </div>
+    <div style="margin:12px;display:flex;flex-direction:column;gap:10px;padding:12px;background:rgba(255,255,255,.8);border:1px solid rgba(0,0,0,.07);border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.05)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;padding:3px 7px;border-radius:5px;background:rgba(255,159,10,.16);color:#b45309">UP NEXT · FIX CI</span>
+        <div style="flex:1"></div>
+        <span style="font:11px ui-monospace,Menlo,monospace;color:#86868b">acme/api #482</span>
+      </div>
+      <div style="font-size:14.5px;font-weight:600;letter-spacing:-.01em">Fix flaky retry logic in webhook dispatcher</div>
+      <div style="font-size:12px;line-height:1.45;color:#6e6e73">Approved by 2 reviewers — only <span style="font-family:ui-monospace,Menlo,monospace;color:#d70015">e2e-tests</span> is blocking the merge. Fix it and this ships today.</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.18);border-radius:7px">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M4 4l8 8M12 4l-8 8" stroke="#d70015" stroke-width="2" stroke-linecap="round"></path></svg>
+        <span style="flex:1;font:12px ui-monospace,Menlo,monospace;color:#a3241c">e2e-tests — timeout in webhook-retry.spec.ts</span>
+        <span style="font:11px ui-monospace,Menlo,monospace;color:#86868b">2m 14s</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;font-weight:600;padding:6px 12px;border-radius:7px;background:#0a84ff;color:#fff;cursor:pointer;box-shadow:0 1px 3px rgba(10,132,255,.35)">View failing log</span>
+        <span style="font-size:12px;font-weight:500;padding:6px 12px;border-radius:7px;background:rgba(0,0,0,.05);color:#1d1d1f;cursor:pointer" style-hover="background:rgba(0,0,0,.09)">Re-run checks</span>
+        <div style="flex:1"></div>
+        <span style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:rgba(0,0,0,.05);cursor:pointer" style-hover="background:rgba(0,0,0,.09)"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#6e6e73" stroke-width="1.5" stroke-linejoin="round"><polygon points="8 1.8 9.9 5.7 14.2 6.3 11.1 9.3 11.8 13.6 8 11.5 4.2 13.6 4.9 9.3 1.8 6.3 6.1 5.7"></polygon></svg></span>
+        <span style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:rgba(0,0,0,.05);cursor:pointer" style-hover="background:rgba(0,0,0,.09)"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#6e6e73" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8V8l2.3 1.4"></path></svg></span>
+      </div>
+    </div>
+    <div style="padding:0 12px 6px">
+      <div style="font:600 10.5px system-ui,sans-serif;letter-spacing:.08em;color:#a1a1a6;padding:2px 4px 8px">THEN</div>
+      <div style="display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 6px;border-radius:7px" style-hover="background:rgba(0,0,0,.045)">
+          <span style="flex:none;width:7px;height:7px;border-radius:50%;background:#34c759"></span>
+          <span style="flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Add rate-limit headers to public API</span>
+          <span style="font:11px ui-monospace,Menlo,monospace;color:#a1a1a6">api #479</span>
+          <span style="font-size:10.5px;font-weight:500;padding:2px 6px;border-radius:99px;background:rgba(52,199,89,.15);color:#248a3d">Merge</span>
+          <span style="flex:none;display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#cfe0ff;color:#1d4ed8;font:600 8px system-ui,sans-serif">YOU</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 6px;border-radius:7px" style-hover="background:rgba(0,0,0,.045)">
+          <span style="flex:none;width:7px;height:7px;border-radius:50%;background:#ff9f0a"></span>
+          <span style="flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Refactor session cache eviction policy</span>
+          <span style="font:11px ui-monospace,Menlo,monospace;color:#a1a1a6">api #468</span>
+          <span style="font-size:10.5px;font-weight:500;padding:2px 6px;border-radius:99px;background:rgba(255,59,48,.12);color:#c2261f">Address</span>
+          <span style="flex:none;display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#cfe0ff;color:#1d4ed8;font:600 8px system-ui,sans-serif">YOU</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 6px;border-radius:7px;opacity:.55" style-hover="background:rgba(0,0,0,.045)">
+          <span style="flex:none;width:7px;height:7px;border-radius:50%;border:1.5px solid #ff9f0a;box-sizing:border-box"></span>
+          <span style="flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Migrate billing webhooks to v2 signatures</span>
+          <span style="font:11px ui-monospace,Menlo,monospace;color:#a1a1a6">billing #91</span>
+          <span style="font-size:10.5px;font-weight:500;padding:2px 6px;border-radius:99px;background:rgba(0,0,0,.06);color:#6e6e73">Waiting</span>
+          <span style="flex:none;display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#cfe0ff;color:#1d4ed8;font:600 8px system-ui,sans-serif">YOU</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid rgba(0,0,0,.07)">
+      <span style="width:6px;height:6px;border-radius:50%;background:#34c759"></span>
+      <span style="font-size:11px;color:#86868b">Synced 12s ago</span>
+      <div style="flex:1"></div>
+      <span style="font:11px ui-monospace,Menlo,monospace;color:#a1a1a6">⌘R</span>
+      <span style="font-size:11px;color:#a1a1a6">·</span>
+      <span style="font-size:11px;font-weight:500;color:#6e6e73;cursor:pointer" style-hover="color:#1d1d1f">Open GitHub ↗</span>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- ═══════════ 2b — vibrancy DARK · focus queue (1d in dark) ═══════════ -->
+<div class="dv-opt" id="2b"><div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>vibrancy dark · <a class="dv-oid" href="#1d">1d</a>’s focus queue, keyboard-first</div>
+<div class="dv-card" style="width:664px"><div style="background:linear-gradient(160deg,#0f2447 0%,#3b2f7a 42%,#8b3a62 76%,#c2703f 100%);padding:36px 52px 44px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
+  <div style="width:560px;margin:0 auto;background:rgba(30,30,36,.68);backdrop-filter:blur(44px) saturate(180%);-webkit-backdrop-filter:blur(44px) saturate(180%);border:1px solid rgba(255,255,255,.14);border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.5);color:#ffffff;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
+      <span style="font-size:13px;font-weight:600">Triage</span>
+      <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.5)">2 of 6</span>
+      <div style="flex:1;display:flex;gap:3px;max-width:120px;margin-left:4px">
+        <span style="flex:1;height:3px;border-radius:2px;background:#0a84ff"></span>
+        <span style="flex:1;height:3px;border-radius:2px;background:#0a84ff"></span>
+        <span style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.18)"></span>
+        <span style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.18)"></span>
+        <span style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.18)"></span>
+        <span style="flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.18)"></span>
+      </div>
+      <div style="flex:1"></div>
+      <span style="font-size:11.5px;color:rgba(255,255,255,.55);cursor:pointer" style-hover="color:#ffffff">List view</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;padding:2px 5px;border-radius:4px;border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.55)">esc</span>
+    </div>
+    <div style="margin:0 12px;display:flex;flex-direction:column;gap:11px;padding:16px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.12);border-radius:11px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;padding:3px 7px;border-radius:5px;background:rgba(48,209,88,.2);color:#63e884">READY TO MERGE</span>
+        <div style="flex:1"></div>
+        <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(10,132,255,.3);color:#9ecbff;font:600 9px system-ui,sans-serif">YOU</span>
+        <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.5)">acme/api #479</span>
+      </div>
+      <div style="font-size:16px;font-weight:600;letter-spacing:-.015em">Add rate-limit headers to public API</div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:rgba(255,255,255,.75)"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="#30d158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>5 checks passed</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:rgba(255,255,255,.75)"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="#30d158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>2 approvals</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:rgba(255,255,255,.75)"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="#30d158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>No conflicts</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;font:11.5px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.55)">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"></rect><path d="M10.5 3.5h-6a1 1 0 0 0-1 1v6"></path></svg>
+        jt/rate-limit-headers
+        <span style="font:500 10px system-ui,sans-serif;color:#409cff;cursor:pointer">copy</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding-top:3px">
+        <span style="font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:7px;background:#0a84ff;color:#fff;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3)">Merge pull request</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:500;padding:7px 12px;border-radius:7px;background:rgba(255,255,255,.12);color:#fff;cursor:pointer" style-hover="background:rgba(255,255,255,.18)">Open<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3H3v10h10V9.5"></path><path d="M9.5 3H13v3.5"></path><path d="M13 3L7.5 8.5"></path></svg></span>
+        <div style="flex:1"></div>
+        <span style="font-size:12px;font-weight:500;padding:7px 11px;border-radius:7px;color:rgba(255,255,255,.6);cursor:pointer" style-hover="background:rgba(255,255,255,.1);color:#ffffff">Snooze 1h</span>
+        <span style="font-size:12px;font-weight:500;padding:7px 11px;border-radius:7px;color:rgba(255,255,255,.6);cursor:pointer" style-hover="background:rgba(255,255,255,.1);color:#ffffff">Done</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;margin:10px 12px 0;padding:8px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:9px;opacity:.85">
+      <span style="font:600 9.5px ui-monospace,Menlo,monospace;letter-spacing:.06em;color:#ffd60a;background:rgba(255,159,10,.18);padding:2px 6px;border-radius:4px">UP NEXT · FIX CI</span>
+      <span style="flex:1;min-width:0;font-size:12px;color:rgba(255,255,255,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fix flaky retry logic in webhook dispatcher</span>
+      <span style="font:10.5px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.45)">api #482</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;padding:11px 16px;margin-top:10px;border-top:1px solid rgba(255,255,255,.1)">
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><span style="font:10px ui-monospace,Menlo,monospace;padding:1px 5px;border:1px solid rgba(255,255,255,.22);border-radius:4px;background:rgba(255,255,255,.08)">J</span><span style="font:10px ui-monospace,Menlo,monospace;padding:1px 5px;border:1px solid rgba(255,255,255,.22);border-radius:4px;background:rgba(255,255,255,.08)">K</span>next / prev</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><span style="font:10px ui-monospace,Menlo,monospace;padding:1px 5px;border:1px solid rgba(255,255,255,.22);border-radius:4px;background:rgba(255,255,255,.08)">O</span>open</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><span style="font:10px ui-monospace,Menlo,monospace;padding:1px 5px;border:1px solid rgba(255,255,255,.22);border-radius:4px;background:rgba(255,255,255,.08)">S</span>snooze</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5)"><span style="font:10px ui-monospace,Menlo,monospace;padding:1px 5px;border:1px solid rgba(255,255,255,.22);border-radius:4px;background:rgba(255,255,255,.08)">D</span>done</span>
+      <div style="flex:1"></div>
+      <span style="font-size:11px;color:rgba(255,255,255,.5)">Synced 12s ago</span>
+    </div>
+  </div>
+</div></div></div>
+
+</div>
+<p class="dv-next">Try next: “hero triage, both themes — build it interactive” · “focus queue wins, wire it up” · “hero on top, focus queue behind a Triage button”</p>
+</section>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">PR menubar popover — 4 directions (aesthetic × triage UX, mix-and-matchable)</span></div>
+<p style="margin:-12px 0 20px;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5);max-width:720px">Assumptions: 560px popover, mock data, initials as avatar placeholders. Each card pairs one aesthetic with one triage pattern — any pairing can be swapped. <a class="dv-oid" href="#1a">1a</a> shows the expanded per-check CI breakdown + row actions; <a class="dv-oid" href="#1b">1b</a> shows the hover-actions state.</p>
+<div class="dv-opts">
+
+<!-- ═══════════ 1a — shadcn dark · flat list + action chips ═══════════ -->
+<div class="dv-opt" id="1a"><div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>shadcn dark · flat list, per-row “next action” chip · row 1 expanded (CI breakdown + actions)</div>
+<div class="dv-card" style="width:560px"><div style="background:#0b0b0d;color:#fafafa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
+  <div style="display:flex;flex-direction:column;gap:10px;padding:12px 14px 0">
+    <div style="display:flex;align-items:center;gap:8px">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#a1a1aa" stroke-width="1.6" stroke-linecap="round"><circle cx="4.5" cy="3.7" r="1.9"></circle><circle cx="4.5" cy="12.3" r="1.9"></circle><path d="M4.5 5.6v4.8"></path><circle cx="11.5" cy="12.3" r="1.9"></circle><path d="M11.5 10.4V7.2a2 2 0 0 0-2-2H8.2"></path></svg>
+      <div style="font-size:13px;font-weight:600;letter-spacing:-.01em">Pull Requests</div>
+      <div style="flex:1"></div>
+      <div style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;color:#71717a" style-hover="background:rgba(255,255,255,.06);color:#fafafa"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.2"></circle><path d="M10.2 10.2L13.5 13.5"></path></svg></div>
+      <div style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;color:#71717a" style-hover="background:rgba(255,255,255,.06);color:#fafafa"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 4.5h11"></path><path d="M2.5 8h11"></path><path d="M2.5 11.5h11"></path><circle cx="10.5" cy="4.5" r="1.4" fill="#0b0b0d"></circle><circle cx="5.5" cy="8" r="1.4" fill="#0b0b0d"></circle><circle cx="9" cy="11.5" r="1.4" fill="#0b0b0d"></circle></svg></div>
+    </div>
+    <div style="display:flex;gap:2px;background:rgba(255,255,255,.05);border-radius:8px;padding:3px">
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 0;border-radius:6px;background:#27272a;color:#fafafa;font-size:12px;font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.3)">My PRs<span style="font:600 10px ui-monospace,Menlo,monospace;color:#a1a1aa">4</span></div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 0;border-radius:6px;color:#a1a1aa;font-size:12px;font-weight:500" style-hover="color:#fafafa">Reviewing<span style="font:600 10px ui-monospace,Menlo,monospace;color:#71717a">3</span></div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 0;border-radius:6px;color:#a1a1aa;font-size:12px;font-weight:500" style-hover="color:#fafafa">Team<span style="font:600 10px ui-monospace,Menlo,monospace;color:#71717a">6</span></div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 0;border-radius:6px;color:#a1a1aa;font-size:12px;font-weight:500" style-hover="color:#fafafa">Saved<span style="font:600 10px ui-monospace,Menlo,monospace;color:#71717a">2</span></div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;padding:8px 6px">
+    <!-- row 1: expanded -->
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:rgba(255,255,255,.04)">
+      <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.15)"></span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fix flaky retry logic in webhook dispatcher</div>
+        <div style="font-size:11.5px;color:#71717a">acme/api <span style="font-family:ui-monospace,Menlo,monospace">#482</span> · updated 8m ago</div>
+      </div>
+      <span style="flex:none;font:600 10.5px/1 ui-monospace,Menlo,monospace;padding:4px 7px;border-radius:5px;background:rgba(239,68,68,.14);color:#f87171">FIX CI</span>
+      <span style="flex:none;font-size:11px;font-weight:500;padding:3px 7px;border-radius:99px;background:rgba(34,197,94,.12);color:#4ade80">Approved</span>
+      <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(96,165,250,.2);color:#93c5fd;font:600 9px system-ui,sans-serif">YOU</span>
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#71717a" stroke-width="1.8" stroke-linecap="round" style="flex:none;transform:rotate(180deg)"><path d="M4 6l4 4 4-4"></path></svg>
+    </div>
+    <div style="margin:4px 10px 8px 28px;display:flex;flex-direction:column;gap:0;background:rgba(255,255,255,.03);border:1px solid #26262b;border-radius:8px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 10px">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <span style="flex:1;font-size:12px;color:#d4d4d8">build</span>
+        <span style="font:11px ui-monospace,Menlo,monospace;color:#52525b">1m 02s</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 10px">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <span style="flex:1;font-size:12px;color:#d4d4d8">lint</span>
+        <span style="font:11px ui-monospace,Menlo,monospace;color:#52525b">24s</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(239,68,68,.07)">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M4 4l8 8M12 4l-8 8" stroke="#ef4444" stroke-width="2" stroke-linecap="round"></path></svg>
+        <span style="flex:1;font-size:12px;font-weight:500;color:#fca5a5">e2e-tests</span>
+        <span style="font:11px ui-monospace,Menlo,monospace;color:#7a4a4a">2m 14s</span>
+        <span style="font-size:11px;font-weight:500;color:#f87171;text-decoration:underline;text-underline-offset:2px;cursor:pointer">View log</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 10px">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><circle cx="8" cy="8" r="5.5" stroke="#3f3f46" stroke-width="2"></circle><path d="M8 2.5a5.5 5.5 0 0 1 5.5 5.5" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"></path></svg>
+        <span style="flex:1;font-size:12px;color:#d4d4d8">deploy-preview</span>
+        <span style="font:11px ui-monospace,Menlo,monospace;color:#52525b">running · 40s</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding:8px 10px;border-top:1px solid #26262b">
+        <span style="font-size:11px;color:#71717a">2 of 4 passed</span>
+        <div style="flex:1"></div>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:#fafafa;background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.25);padding:3px 8px;border-radius:6px;cursor:pointer">Re-run failed</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:#a1a1aa;border:1px solid #26262b;padding:3px 8px;border-radius:6px;cursor:pointer" style-hover="color:#fafafa;border-color:#3f3f46"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3H3v10h10V9.5"></path><path d="M9.5 3H13v3.5"></path><path d="M13 3L7.5 8.5"></path></svg>Open</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:#a1a1aa;border:1px solid #26262b;padding:3px 8px;border-radius:6px;cursor:pointer" style-hover="color:#fafafa;border-color:#3f3f46"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"></rect><path d="M10.5 3.5h-6a1 1 0 0 0-1 1v6"></path></svg>fix/webhook-retry</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:#a1a1aa;border:1px solid #26262b;padding:3px 8px;border-radius:6px;cursor:pointer" style-hover="color:#fbbf24;border-color:#3f3f46"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="8 1.8 9.9 5.7 14.2 6.3 11.1 9.3 11.8 13.6 8 11.5 4.2 13.6 4.9 9.3 1.8 6.3 6.1 5.7"></polygon></svg></span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:#a1a1aa;border:1px solid #26262b;padding:3px 8px;border-radius:6px;cursor:pointer" style-hover="color:#fafafa;border-color:#3f3f46"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8V8l2.3 1.4"></path></svg></span>
+      </div>
+    </div>
+    <!-- row 2 -->
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px" style-hover="background:rgba(255,255,255,.04)">
+      <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#22c55e"></span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Add rate-limit headers to public API</div>
+        <div style="font-size:11.5px;color:#71717a">acme/api <span style="font-family:ui-monospace,Menlo,monospace">#479</span> · updated 26m ago</div>
+      </div>
+      <span style="flex:none;font:600 10.5px/1 ui-monospace,Menlo,monospace;padding:4px 7px;border-radius:5px;background:rgba(34,197,94,.14);color:#4ade80">MERGE</span>
+      <span style="flex:none;font-size:11px;font-weight:500;padding:3px 7px;border-radius:99px;background:rgba(34,197,94,.12);color:#4ade80">2 approvals</span>
+      <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(96,165,250,.2);color:#93c5fd;font:600 9px system-ui,sans-serif">YOU</span>
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#71717a" stroke-width="1.8" stroke-linecap="round" style="flex:none"><path d="M4 6l4 4 4-4"></path></svg>
+    </div>
+    <!-- row 3 -->
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px" style-hover="background:rgba(255,255,255,.04)">
+      <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#f59e0b"></span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Refactor session cache eviction policy</div>
+        <div style="font-size:11.5px;color:#71717a">acme/api <span style="font-family:ui-monospace,Menlo,monospace">#468</span> · updated 3h ago</div>
+      </div>
+      <span style="flex:none;font:600 10.5px/1 ui-monospace,Menlo,monospace;padding:4px 7px;border-radius:5px;background:rgba(251,191,36,.13);color:#fbbf24">ADDRESS</span>
+      <span style="flex:none;font-size:11px;font-weight:500;padding:3px 7px;border-radius:99px;background:rgba(239,68,68,.12);color:#f87171">Changes req.</span>
+      <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(96,165,250,.2);color:#93c5fd;font:600 9px system-ui,sans-serif">YOU</span>
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#71717a" stroke-width="1.8" stroke-linecap="round" style="flex:none"><path d="M4 6l4 4 4-4"></path></svg>
+    </div>
+    <!-- row 4 -->
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;opacity:.65" style-hover="background:rgba(255,255,255,.04)">
+      <span style="flex:none;width:8px;height:8px;border-radius:50%;border:2px solid #f59e0b;background:transparent;box-sizing:border-box"></span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Migrate billing webhooks to v2 signatures</div>
+        <div style="font-size:11.5px;color:#71717a">acme/billing <span style="font-family:ui-monospace,Menlo,monospace">#91</span> · updated 1h ago</div>
+      </div>
+      <span style="flex:none;font:600 10.5px/1 ui-monospace,Menlo,monospace;padding:4px 7px;border-radius:5px;background:rgba(255,255,255,.06);color:#71717a">WAITING</span>
+      <span style="flex:none;font-size:11px;font-weight:500;padding:3px 7px;border-radius:99px;background:rgba(255,255,255,.06);color:#a1a1aa">0 of 2 reviews</span>
+      <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(96,165,250,.2);color:#93c5fd;font:600 9px system-ui,sans-serif">YOU</span>
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#71717a" stroke-width="1.8" stroke-linecap="round" style="flex:none"><path d="M4 6l4 4 4-4"></path></svg>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid #1f1f23">
+    <span style="width:6px;height:6px;border-radius:50%;background:#22c55e"></span>
+    <span style="font-size:11px;color:#71717a">Synced 12s ago</span>
+    <div style="flex:1"></div>
+    <span style="font:11px ui-monospace,Menlo,monospace;color:#52525b">⌘R</span>
+    <span style="font-size:11px;color:#71717a">·</span>
+    <span style="font-size:11px;font-weight:500;color:#a1a1aa;cursor:pointer" style-hover="color:#fafafa">Open GitHub ↗</span>
+  </div>
+</div></div></div>
+
+<!-- ═══════════ 1b — shadcn light · grouped by next action ═══════════ -->
+<div class="dv-opt" id="1b"><div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>shadcn light · Reviewing tab, grouped by what to do next · row 1 shows hover actions</div>
+<div class="dv-card" style="width:560px"><div style="background:#ffffff;color:#18181b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
+  <div style="display:flex;flex-direction:column;gap:10px;padding:12px 14px 0">
+    <div style="display:flex;align-items:center;gap:8px">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#71717a" stroke-width="1.6" stroke-linecap="round"><circle cx="4.5" cy="3.7" r="1.9"></circle><circle cx="4.5" cy="12.3" r="1.9"></circle><path d="M4.5 5.6v4.8"></path><circle cx="11.5" cy="12.3" r="1.9"></circle><path d="M11.5 10.4V7.2a2 2 0 0 0-2-2H8.2"></path></svg>
+      <div style="font-size:13px;font-weight:600;letter-spacing:-.01em">Pull Requests</div>
+      <div style="flex:1"></div>
+      <div style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;color:#71717a" style-hover="background:#f4f4f5;color:#18181b"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="4.2"></circle><path d="M10.2 10.2L13.5 13.5"></path></svg></div>
+      <div style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;color:#71717a" style-hover="background:#f4f4f5;color:#18181b"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 4.5h11"></path><path d="M2.5 8h11"></path><path d="M2.5 11.5h11"></path><circle cx="10.5" cy="4.5" r="1.4" fill="#fff"></circle><circle cx="5.5" cy="8" r="1.4" fill="#fff"></circle><circle cx="9" cy="11.5" r="1.4" fill="#fff"></circle></svg></div>
+    </div>
+    <div style="display:flex;gap:2px;background:#f4f4f5;border-radius:8px;padding:3px">
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 0;border-radius:6px;color:#71717a;font-size:12px;font-weight:500" style-hover="color:#18181b">My PRs<span style="font:600 10px ui-monospace,Menlo,monospace;color:#a1a1aa">4</span></div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 0;border-radius:6px;background:#ffffff;color:#18181b;font-size:12px;font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.08)">Reviewing<span style="font:600 10px ui-monospace,Menlo,monospace;color:#71717a">4</span></div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 0;border-radius:6px;color:#71717a;font-size:12px;font-weight:500" style-hover="color:#18181b">Team<span style="font:600 10px ui-monospace,Menlo,monospace;color:#a1a1aa">6</span></div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 0;border-radius:6px;color:#71717a;font-size:12px;font-weight:500" style-hover="color:#18181b">Saved<span style="font:600 10px ui-monospace,Menlo,monospace;color:#a1a1aa">2</span></div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;padding:10px 6px 8px">
+    <div style="display:flex;align-items:center;gap:7px;padding:2px 10px 6px">
+      <span style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></span>
+      <span style="font:600 10.5px system-ui,sans-serif;letter-spacing:.06em;color:#71717a">START REVIEW</span>
+      <span style="font:600 10px ui-monospace,Menlo,monospace;padding:1px 5px;border-radius:4px;background:#f4f4f5;color:#71717a">2</span>
+    </div>
+    <!-- hover row with actions -->
+    <div style="position:relative;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:#f4f4f5">
+      <div style="position:absolute;top:-7px;right:10px;font:600 9px ui-monospace,Menlo,monospace;background:#18181b;color:#fff;padding:2px 6px;border-radius:4px">HOVER</div>
+      <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#22c55e"></span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Support SSO domain allow-list</div>
+        <div style="font-size:11.5px;color:#71717a">acme/auth <span style="font-family:ui-monospace,Menlo,monospace">#217</span> · requested 2h ago</div>
+      </div>
+      <div style="flex:none;display:flex;gap:4px;background:#ffffff;border:1px solid #e4e4e7;border-radius:7px;padding:3px;box-shadow:0 1px 3px rgba(0,0,0,.07)">
+        <span style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;color:#52525b;cursor:pointer" style-hover="background:#f4f4f5;color:#18181b"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3H3v10h10V9.5"></path><path d="M9.5 3H13v3.5"></path><path d="M13 3L7.5 8.5"></path></svg></span>
+        <span style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;color:#52525b;cursor:pointer" style-hover="background:#f4f4f5;color:#18181b"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polygon points="8 1.8 9.9 5.7 14.2 6.3 11.1 9.3 11.8 13.6 8 11.5 4.2 13.6 4.9 9.3 1.8 6.3 6.1 5.7"></polygon></svg></span>
+        <span style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;color:#52525b;cursor:pointer" style-hover="background:#f4f4f5;color:#18181b"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"></rect><path d="M10.5 3.5h-6a1 1 0 0 0-1 1v6"></path></svg></span>
+        <span style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;color:#52525b;cursor:pointer" style-hover="background:#f4f4f5;color:#18181b"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8V8l2.3 1.4"></path></svg></span>
+        <span style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;color:#52525b;cursor:pointer" style-hover="background:#f4f4f5;color:#16a34a"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.8"></path></svg></span>
+      </div>
+      <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#ddd6fe;color:#6d28d9;font:600 9px system-ui,sans-serif">MK</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px" style-hover="background:#fafafa">
+      <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#f59e0b"></span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fix N+1 query in org members endpoint</div>
+        <div style="font-size:11.5px;color:#71717a">acme/api <span style="font-family:ui-monospace,Menlo,monospace">#486</span> · requested 4h ago · CI running</div>
+      </div>
+      <span style="flex:none;font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px;background:#18181b;color:#fff;cursor:pointer">Review</span>
+      <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#fde3c8;color:#b45309;font:600 9px system-ui,sans-serif">DV</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;padding:10px 10px 6px">
+      <span style="width:7px;height:7px;border-radius:50%;background:#a855f7"></span>
+      <span style="font:600 10.5px system-ui,sans-serif;letter-spacing:.06em;color:#71717a">CONTINUE REVIEW</span>
+      <span style="font:600 10px ui-monospace,Menlo,monospace;padding:1px 5px;border-radius:4px;background:#f4f4f5;color:#71717a">1</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px" style-hover="background:#fafafa">
+      <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#22c55e"></span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Rework onboarding checklist state machine</div>
+        <div style="font-size:11.5px;color:#71717a">acme/web <span style="font-family:ui-monospace,Menlo,monospace">#341</span> · you left 3 comments · 12 files left</div>
+      </div>
+      <span style="flex:none;font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px;border:1px solid #e4e4e7;color:#18181b;cursor:pointer" style-hover="background:#f4f4f5">Resume</span>
+      <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#bbf7d0;color:#15803d;font:600 9px system-ui,sans-serif">AL</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;padding:10px 10px 6px">
+      <span style="width:7px;height:7px;border-radius:50%;background:#d4d4d8"></span>
+      <span style="font:600 10.5px system-ui,sans-serif;letter-spacing:.06em;color:#a1a1aa">WAITING FOR AUTHOR</span>
+      <span style="font:600 10px ui-monospace,Menlo,monospace;padding:1px 5px;border-radius:4px;background:#f4f4f5;color:#a1a1aa">1</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;opacity:.6" style-hover="background:#fafafa">
+      <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#ef4444"></span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Extract transactional email templates</div>
+        <div style="font-size:11.5px;color:#71717a">acme/web <span style="font-family:ui-monospace,Menlo,monospace">#322</span> · you requested changes 1d ago</div>
+      </div>
+      <span style="flex:none;font-size:11px;font-weight:500;padding:3px 7px;border-radius:99px;background:#fef2f2;color:#dc2626">Changes req.</span>
+      <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#fecdd3;color:#be123c;font:600 9px system-ui,sans-serif">RS</span>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid #f4f4f5">
+    <span style="width:6px;height:6px;border-radius:50%;background:#22c55e"></span>
+    <span style="font-size:11px;color:#a1a1aa">Synced 12s ago</span>
+    <div style="flex:1"></div>
+    <span style="font:11px ui-monospace,Menlo,monospace;color:#d4d4d8">⌘R</span>
+    <span style="font-size:11px;color:#d4d4d8">·</span>
+    <span style="font-size:11px;font-weight:500;color:#71717a;cursor:pointer" style-hover="color:#18181b">Open GitHub ↗</span>
+  </div>
+</div></div></div>
+
+<!-- ═══════════ 1c — macOS vibrancy dark · "Up next" hero ═══════════ -->
+<div class="dv-opt" id="1c"><div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>macOS vibrancy (dark) · one recommended action as a hero card, rest compact · shown in menubar context</div>
+<div class="dv-card" style="width:664px"><div style="position:relative;background:linear-gradient(160deg,#0f2447 0%,#3b2f7a 42%,#8b3a62 76%,#c2703f 100%);padding:0 0 36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
+  <div style="display:flex;align-items:center;gap:18px;height:28px;padding:0 14px;background:rgba(24,24,28,.45);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);color:rgba(255,255,255,.85);font-size:12.5px">
+    <span style="font-weight:600">Code</span><span style="opacity:.75">File</span><span style="opacity:.75">Edit</span><span style="opacity:.75">View</span>
+    <div style="flex:1"></div>
+    <span style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.22);border-radius:5px;padding:2px 7px;margin-right:2px">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#ffffff" stroke-width="1.7" stroke-linecap="round"><circle cx="4.5" cy="3.7" r="1.9"></circle><circle cx="4.5" cy="12.3" r="1.9"></circle><path d="M4.5 5.6v4.8"></path><circle cx="11.5" cy="12.3" r="1.9"></circle><path d="M11.5 10.4V7.2a2 2 0 0 0-2-2H8.2"></path></svg>
+      <span style="font:600 11px ui-monospace,Menlo,monospace">3</span>
+    </span>
+    <span style="opacity:.85">Thu Jul 3</span><span style="opacity:.85">9:41 AM</span>
+  </div>
+  <div style="position:relative;width:560px;margin:14px auto 0">
+    <div style="position:absolute;top:-6px;right:52px;width:14px;height:14px;background:rgba(34,34,40,.72);transform:rotate(45deg);border-radius:3px;border-top:1px solid rgba(255,255,255,.18);border-left:1px solid rgba(255,255,255,.18)"></div>
+    <div style="background:rgba(30,30,36,.68);backdrop-filter:blur(44px) saturate(180%);-webkit-backdrop-filter:blur(44px) saturate(180%);border:1px solid rgba(255,255,255,.14);border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.5);color:#ffffff;overflow:hidden">
+      <div style="padding:12px 12px 0">
+        <div style="display:flex;gap:2px;background:rgba(255,255,255,.09);border-radius:7px;padding:2px">
+          <div style="flex:1;text-align:center;padding:4px 0;border-radius:5px;background:rgba(255,255,255,.24);font-size:12px;font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.25)">My PRs</div>
+          <div style="flex:1;text-align:center;padding:4px 0;border-radius:5px;font-size:12px;color:rgba(255,255,255,.65)">Reviewing</div>
+          <div style="flex:1;text-align:center;padding:4px 0;border-radius:5px;font-size:12px;color:rgba(255,255,255,.65)">Team</div>
+          <div style="flex:1;text-align:center;padding:4px 0;border-radius:5px;font-size:12px;color:rgba(255,255,255,.65)">Saved</div>
+        </div>
+      </div>
+      <div style="margin:12px;display:flex;flex-direction:column;gap:10px;padding:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;padding:3px 7px;border-radius:5px;background:rgba(255,159,10,.22);color:#ffd60a">UP NEXT · FIX CI</span>
+          <div style="flex:1"></div>
+          <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.5)">acme/api #482</span>
+        </div>
+        <div style="font-size:14.5px;font-weight:600;letter-spacing:-.01em">Fix flaky retry logic in webhook dispatcher</div>
+        <div style="font-size:12px;line-height:1.45;color:rgba(255,255,255,.65)">Approved by 2 reviewers — only <span style="font-family:ui-monospace,Menlo,monospace;color:#ff8a80">e2e-tests</span> is blocking the merge. Fix it and this ships today.</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:rgba(255,69,58,.12);border:1px solid rgba(255,69,58,.22);border-radius:7px">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style="flex:none"><path d="M4 4l8 8M12 4l-8 8" stroke="#ff6961" stroke-width="2" stroke-linecap="round"></path></svg>
+          <span style="flex:1;font:12px ui-monospace,Menlo,monospace;color:#ffb3ad">e2e-tests — timeout in webhook-retry.spec.ts</span>
+          <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">2m 14s</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;font-weight:600;padding:6px 12px;border-radius:7px;background:#0a84ff;color:#fff;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3)">View failing log</span>
+          <span style="font-size:12px;font-weight:500;padding:6px 12px;border-radius:7px;background:rgba(255,255,255,.12);color:#fff;cursor:pointer">Re-run checks</span>
+          <div style="flex:1"></div>
+          <span style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.1);cursor:pointer"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linejoin="round"><polygon points="8 1.8 9.9 5.7 14.2 6.3 11.1 9.3 11.8 13.6 8 11.5 4.2 13.6 4.9 9.3 1.8 6.3 6.1 5.7"></polygon></svg></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.1);cursor:pointer"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8V8l2.3 1.4"></path></svg></span>
+        </div>
+      </div>
+      <div style="padding:0 12px 6px">
+        <div style="font:600 10.5px system-ui,sans-serif;letter-spacing:.08em;color:rgba(255,255,255,.45);padding:2px 4px 8px">THEN</div>
+        <div style="display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:9px;padding:7px 6px;border-radius:7px" style-hover="background:rgba(255,255,255,.07)">
+            <span style="flex:none;width:7px;height:7px;border-radius:50%;background:#30d158"></span>
+            <span style="flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Add rate-limit headers to public API</span>
+            <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">api #479</span>
+            <span style="font-size:10.5px;font-weight:500;padding:2px 6px;border-radius:99px;background:rgba(48,209,88,.18);color:#63e884">Merge</span>
+            <span style="flex:none;display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(10,132,255,.3);color:#9ecbff;font:600 8px system-ui,sans-serif">YOU</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:7px 6px;border-radius:7px" style-hover="background:rgba(255,255,255,.07)">
+            <span style="flex:none;width:7px;height:7px;border-radius:50%;background:#ffd60a"></span>
+            <span style="flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Refactor session cache eviction policy</span>
+            <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">api #468</span>
+            <span style="font-size:10.5px;font-weight:500;padding:2px 6px;border-radius:99px;background:rgba(255,69,58,.18);color:#ff9d97">Address</span>
+            <span style="flex:none;display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(10,132,255,.3);color:#9ecbff;font:600 8px system-ui,sans-serif">YOU</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:7px 6px;border-radius:7px;opacity:.55" style-hover="background:rgba(255,255,255,.07)">
+            <span style="flex:none;width:7px;height:7px;border-radius:50%;border:1.5px solid #ffd60a;box-sizing:border-box"></span>
+            <span style="flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Migrate billing webhooks to v2 signatures</span>
+            <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">billing #91</span>
+            <span style="font-size:10.5px;font-weight:500;padding:2px 6px;border-radius:99px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.6)">Waiting</span>
+            <span style="flex:none;display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(10,132,255,.3);color:#9ecbff;font:600 8px system-ui,sans-serif">YOU</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid rgba(255,255,255,.1)">
+        <span style="width:6px;height:6px;border-radius:50%;background:#30d158"></span>
+        <span style="font-size:11px;color:rgba(255,255,255,.5)">Synced 12s ago</span>
+        <div style="flex:1"></div>
+        <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">⌘R</span>
+        <span style="font-size:11px;color:rgba(255,255,255,.35)">·</span>
+        <span style="font-size:11px;font-weight:500;color:rgba(255,255,255,.65);cursor:pointer">Open GitHub ↗</span>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+
+<!-- ═══════════ 1d — macOS vibrancy light · focus queue ═══════════ -->
+<div class="dv-opt" id="1d"><div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>macOS vibrancy (light) · focus queue — triage one PR at a time, keyboard-first</div>
+<div class="dv-card" style="width:664px"><div style="background:linear-gradient(150deg,#dbe6f5 0%,#e9dcec 45%,#f4e6d4 100%);padding:36px 52px 44px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif">
+  <div style="width:560px;margin:0 auto;background:rgba(249,249,251,.78);backdrop-filter:blur(44px) saturate(180%);-webkit-backdrop-filter:blur(44px) saturate(180%);border:1px solid rgba(0,0,0,.09);border-radius:14px;box-shadow:0 24px 70px rgba(60,50,80,.28);color:#1d1d1f;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
+      <span style="font-size:13px;font-weight:600">Triage</span>
+      <span style="font:11px ui-monospace,Menlo,monospace;color:#86868b">2 of 6</span>
+      <div style="flex:1;display:flex;gap:3px;max-width:120px;margin-left:4px">
+        <span style="flex:1;height:3px;border-radius:2px;background:#0a84ff"></span>
+        <span style="flex:1;height:3px;border-radius:2px;background:#0a84ff"></span>
+        <span style="flex:1;height:3px;border-radius:2px;background:rgba(0,0,0,.12)"></span>
+        <span style="flex:1;height:3px;border-radius:2px;background:rgba(0,0,0,.12)"></span>
+        <span style="flex:1;height:3px;border-radius:2px;background:rgba(0,0,0,.12)"></span>
+        <span style="flex:1;height:3px;border-radius:2px;background:rgba(0,0,0,.12)"></span>
+      </div>
+      <div style="flex:1"></div>
+      <span style="font-size:11.5px;color:#86868b;cursor:pointer" style-hover="color:#1d1d1f">List view</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;padding:2px 5px;border-radius:4px;border:1px solid rgba(0,0,0,.15);color:#86868b">esc</span>
+    </div>
+    <div style="margin:0 12px;display:flex;flex-direction:column;gap:11px;padding:16px;background:rgba(255,255,255,.8);border:1px solid rgba(0,0,0,.07);border-radius:11px;box-shadow:0 2px 10px rgba(0,0,0,.05)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;padding:3px 7px;border-radius:5px;background:rgba(52,199,89,.16);color:#248a3d">READY TO MERGE</span>
+        <div style="flex:1"></div>
+        <span style="flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#cfe0ff;color:#1d4ed8;font:600 9px system-ui,sans-serif">YOU</span>
+        <span style="font:11px ui-monospace,Menlo,monospace;color:#86868b">acme/api #479</span>
+      </div>
+      <div style="font-size:16px;font-weight:600;letter-spacing:-.015em">Add rate-limit headers to public API</div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#3a3a3c"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="#34c759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>5 checks passed</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#3a3a3c"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="#34c759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>2 approvals</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#3a3a3c"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 4.8" stroke="#34c759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>No conflicts</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;font:11.5px ui-monospace,Menlo,monospace;color:#6e6e73">
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"></rect><path d="M10.5 3.5h-6a1 1 0 0 0-1 1v6"></path></svg>
+        jt/rate-limit-headers
+        <span style="font:500 10px system-ui,sans-serif;color:#0a84ff;cursor:pointer">copy</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding-top:3px">
+        <span style="font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:7px;background:#0a84ff;color:#fff;cursor:pointer;box-shadow:0 1px 3px rgba(10,132,255,.35)">Merge pull request</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:500;padding:7px 12px;border-radius:7px;background:rgba(0,0,0,.05);color:#1d1d1f;cursor:pointer" style-hover="background:rgba(0,0,0,.09)">Open<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3H3v10h10V9.5"></path><path d="M9.5 3H13v3.5"></path><path d="M13 3L7.5 8.5"></path></svg></span>
+        <div style="flex:1"></div>
+        <span style="font-size:12px;font-weight:500;padding:7px 11px;border-radius:7px;color:#6e6e73;cursor:pointer" style-hover="background:rgba(0,0,0,.05);color:#1d1d1f">Snooze 1h</span>
+        <span style="font-size:12px;font-weight:500;padding:7px 11px;border-radius:7px;color:#6e6e73;cursor:pointer" style-hover="background:rgba(0,0,0,.05);color:#1d1d1f">Done</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;margin:10px 12px 0;padding:8px 12px;background:rgba(255,255,255,.45);border:1px solid rgba(0,0,0,.06);border-radius:9px;opacity:.8">
+      <span style="font:600 9.5px ui-monospace,Menlo,monospace;letter-spacing:.06em;color:#b45309;background:rgba(255,159,10,.16);padding:2px 6px;border-radius:4px">UP NEXT · FIX CI</span>
+      <span style="flex:1;min-width:0;font-size:12px;color:#3a3a3c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Fix flaky retry logic in webhook dispatcher</span>
+      <span style="font:10.5px ui-monospace,Menlo,monospace;color:#86868b">api #482</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;padding:11px 16px;margin-top:10px;border-top:1px solid rgba(0,0,0,.07)">
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#86868b"><span style="font:10px ui-monospace,Menlo,monospace;padding:1px 5px;border:1px solid rgba(0,0,0,.15);border-radius:4px;background:#fff">J</span><span style="font:10px ui-monospace,Menlo,monospace;padding:1px 5px;border:1px solid rgba(0,0,0,.15);border-radius:4px;background:#fff">K</span>next / prev</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#86868b"><span style="font:10px ui-monospace,Menlo,monospace;padding:1px 5px;border:1px solid rgba(0,0,0,.15);border-radius:4px;background:#fff">O</span>open</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#86868b"><span style="font:10px ui-monospace,Menlo,monospace;padding:1px 5px;border:1px solid rgba(0,0,0,.15);border-radius:4px;background:#fff">S</span>snooze</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#86868b"><span style="font:10px ui-monospace,Menlo,monospace;padding:1px 5px;border:1px solid rgba(0,0,0,.15);border-radius:4px;background:#fff">D</span>done</span>
+      <div style="flex:1"></div>
+      <span style="font-size:11px;color:#86868b">Synced 12s ago</span>
+    </div>
+  </div>
+</div></div></div>
+
+</div>
+<p class="dv-next">Try next: “<a class="dv-oid" href="#1a">1a</a>’s list with <a class="dv-oid" href="#1c">1c</a>’s hero on top” · “make <a class="dv-oid" href="#1d">1d</a> shadcn dark” · “build an interactive prototype of one”</p>
+</section>
+</x-dc>
+</body>
+</html>
