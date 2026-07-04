@@ -1,5 +1,5 @@
 import { classifyChecks } from './noisyChecks'
-import { computeNextAction } from './nextAction'
+import { computeNextAction, resolveDot } from './nextAction'
 import type {
   CheckInfo,
   NoisyPattern,
@@ -167,6 +167,7 @@ export function makeMockPRs(
       dot: classified.dot,
       meaningfulFailure: classified.meaningfulFailure
     }
-    return { ...base, nextAction: computeNextAction(base) }
+    const nextAction = computeNextAction(base)
+    return { ...base, nextAction, dot: resolveDot(base.dot, nextAction) }
   })
 }

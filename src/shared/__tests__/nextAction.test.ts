@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { computeNextAction, type NextActionInput } from '../nextAction'
+import { computeNextAction, resolveDot, type NextActionInput } from '../nextAction'
+import { classifyChecks } from '../noisyChecks'
 
 function base(over: Partial<NextActionInput> = {}): NextActionInput {
   return {
@@ -122,5 +123,29 @@ describe('computeNextAction — first match wins', () => {
 
   it('WAITING: my draft with queued checks', () => {
     expect(computeNextAction(base({ isDraft: true, ciState: 'queued' }))).toBe('WAITING')
+  })
+})
+
+describe('resolveDot', () => {
+  it('MERGE-ready with a still-failing noisy check shows green, not amber', () => {
+    const classified = classifyChecks(
+      [
+        { name: 'build', status: 'ok', duration: '1m' },
+        { name: 'quarantined-specs', status: 'fail', duration: '2m' }
+      ],
+      'a/b',
+      [{ pattern: 'quarantined-*' }]
+    )
+    expect(classified.dot).toBe('amber') // only-noisy failure at completion
+    const action = computeNextAction(
+      base({ ciState: classified.ciState, reviewDecision: 'APPROVED' })
+    )
+    expect(action).toBe('MERGE')
+    expect(resolveDot(classified.dot, action)).toBe('green')
+  })
+
+  it('amber stays amber when the PR is not merge-ready', () => {
+    expect(resolveDot('amber', 'WAITING')).toBe('amber')
+    expect(resolveDot('red', 'MERGE')).toBe('red')
   })
 })

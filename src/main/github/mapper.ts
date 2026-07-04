@@ -1,5 +1,5 @@
 import { classifyChecks, type ClassifiedChecks } from '../../shared/noisyChecks'
-import { computeNextAction } from '../../shared/nextAction'
+import { computeNextAction, resolveDot } from '../../shared/nextAction'
 import type { CheckInfo, PRSnapshot, Settings, TabBucket } from '../../shared/types'
 
 /* ---- raw GraphQL node shapes (only the fields we read) ---- */
@@ -223,7 +223,8 @@ function mapOne(
     dot: classified.dot,
     meaningfulFailure: classified.meaningfulFailure
   }
-  return { ...base, nextAction: computeNextAction(base) }
+  const nextAction = computeNextAction(base)
+  return { ...base, nextAction, dot: resolveDot(base.dot, nextAction) }
 }
 
 /** Merge the aliased search results into deduplicated snapshots with bucket tags. */

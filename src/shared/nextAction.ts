@@ -1,4 +1,4 @@
-import type { NextAction, PRSnapshot } from './types'
+import type { DotColor, NextAction, PRSnapshot } from './types'
 
 export const PRIO: Record<NextAction, number> = {
   FIXCI: 0,
@@ -34,6 +34,16 @@ export type NextActionInput = Pick<
   | 'viewerCommented'
   | 'lastCommitAt'
 >
+
+/**
+ * A MERGE-ready PR shows a green dot even when a noisy check is still failing
+ * (quarantined specs etc. would otherwise leave it amber — a false warning on
+ * a row whose whole point is "good to go"). The failing check stays visible
+ * as "ignored · noisy" in the expanded breakdown.
+ */
+export function resolveDot(dot: DotColor, nextAction: NextAction): DotColor {
+  return nextAction === 'MERGE' && dot === 'amber' ? 'green' : dot
+}
 
 /** First match wins (HANDOFF.md "Next-action computation"). */
 export function computeNextAction(pr: NextActionInput): NextAction {
