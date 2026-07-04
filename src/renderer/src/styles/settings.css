@@ -124,6 +124,40 @@ body {
   color: var(--txt);
 }
 
+.theme-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  padding: 2px 0 8px;
+}
+
+.theme-seg {
+  display: flex;
+  gap: 2px;
+  background: var(--seg);
+  border-radius: 7px;
+  padding: 2px;
+}
+
+.seg-btn {
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--txt2);
+  background: none;
+  border: none;
+  border-radius: 5px;
+  padding: 3px 12px;
+  cursor: pointer;
+}
+
+.seg-btn.active {
+  background: var(--segact);
+  color: var(--txt);
+  font-weight: 500;
+  box-shadow: var(--segsh);
+}
+
 .toggle-row {
   display: flex;
   align-items: center;

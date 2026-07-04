@@ -35,6 +35,11 @@ export function rowsFor(
     if (tab === 'saved') inTab = ctx.starred.has(pr.key)
     else inTab = pr.buckets.includes(tab)
     if (tab === 'team' && ctx.teamToggles[pr.author] === false) inTab = false
+    // Approved and nothing left to do = done reviewing. New commits after the
+    // approval turn it into RESUME (stale review) and it comes back.
+    if (tab === 'rev' && pr.viewerReviewState === 'APPROVED' && pr.nextAction === 'WAITING') {
+      inTab = false
+    }
     if (!inTab) return false
     if (isSnoozedNow(pr, ctx) && !includeSnoozed) return false
     return true

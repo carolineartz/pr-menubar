@@ -78,6 +78,20 @@ export default function SettingsApp(): JSX.Element {
       </Section>
 
       <Section title="General">
+        <div className="theme-row">
+          <span>Appearance</span>
+          <div className="theme-seg">
+            {(['system', 'light', 'dark'] as const).map((t) => (
+              <button
+                key={t}
+                className={settings.theme === t ? 'seg-btn active' : 'seg-btn'}
+                onClick={() => patch({ theme: t })}
+              >
+                {t[0].toUpperCase() + t.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
         <label className="toggle-row">
           <input
             type="checkbox"

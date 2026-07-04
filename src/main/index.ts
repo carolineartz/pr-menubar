@@ -1,4 +1,4 @@
-import { app, Menu, shell } from 'electron'
+import { app, Menu, nativeTheme, shell } from 'electron'
 import { electronApp } from '@electron-toolkit/utils'
 import { join } from 'node:path'
 import { CHANNELS } from '../shared/ipc'
@@ -45,6 +45,10 @@ app.whenReady().then(() => {
   if (MOCK) {
     store.set('settings', MOCK_SETTINGS)
   }
+
+  // 'system' | 'light' | 'dark' — themeSource drives both the CSS
+  // prefers-color-scheme tokens and the native vibrancy appearance
+  nativeTheme.themeSource = store.get('settings').theme
 
   const github = new GithubService()
 
@@ -133,7 +137,9 @@ app.whenReady().then(() => {
     },
     openSettingsWindow,
     onSettingsChanged: () => {
-      app.setLoginItemSettings({ openAtLogin: store.get('settings').launchAtLogin })
+      const settings = store.get('settings')
+      app.setLoginItemSettings({ openAtLogin: settings.launchAtLogin })
+      nativeTheme.themeSource = settings.theme
       poller.refresh()
     },
     resizePopover: (h) => popover.resize(h)

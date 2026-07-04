@@ -103,6 +103,8 @@ export interface NotificationToggles {
   comments: boolean
 }
 
+export type ThemePreference = 'system' | 'light' | 'dark'
+
 export interface Settings {
   repos: string[]
   teamUsernames: string[]
@@ -110,6 +112,7 @@ export interface Settings {
   notifications: NotificationToggles
   badgeEnabled: boolean
   launchAtLogin: boolean
+  theme: ThemePreference
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -118,7 +121,8 @@ export const DEFAULT_SETTINGS: Settings = {
   noisyPatterns: [{ pattern: 'codecov/*' }],
   notifications: { ciFail: true, approved: true, reviewRequested: true, comments: true },
   badgeEnabled: true,
-  launchAtLogin: false
+  launchAtLogin: false,
+  theme: 'system'
 }
 
 export interface PrNotifState {
