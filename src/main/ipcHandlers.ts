@@ -13,6 +13,7 @@ export function registerIpcHandlers(deps: {
   rerunFailed: (prKey: string) => Promise<void>
   openSettingsWindow: () => void
   onSettingsChanged: () => void
+  resizePopover: (height: number) => void
 }): void {
   const { coordinator, store } = deps
   const pr = (key: string) => coordinator.prs.find((p) => p.key === key)
@@ -80,4 +81,8 @@ export function registerIpcHandlers(deps: {
   ipcMain.handle(CHANNELS.openSettingsWindow, () => deps.openSettingsWindow())
 
   ipcMain.handle(CHANNELS.recheckAuth, () => deps.recheckAuth())
+
+  ipcMain.handle(CHANNELS.resizePopover, (_e, height: number) => {
+    if (typeof height === 'number' && Number.isFinite(height)) deps.resizePopover(height)
+  })
 }

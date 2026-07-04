@@ -54,6 +54,25 @@ export default function App(): JSX.Element {
     return () => window.removeEventListener('keydown', onKey)
   }, [refresh])
 
+  // Size the window to the content: fixed chrome + the list's natural height
+  useEffect(() => {
+    const measure = (): void => {
+      const list = document.querySelector('.list')
+      if (!list) return
+      const chrome = document.body.offsetHeight - list.clientHeight
+      void api.resizePopover(chrome + list.scrollHeight + 2)
+    }
+    const ro = new ResizeObserver(measure)
+    ro.observe(document.body)
+    const mo = new MutationObserver(measure)
+    mo.observe(document.body, { childList: true, subtree: true })
+    measure()
+    return () => {
+      ro.disconnect()
+      mo.disconnect()
+    }
+  }, [])
+
   const ctx: ListContext = useMemo(
     () => ({
       starred: new Set(state?.starred ?? []),

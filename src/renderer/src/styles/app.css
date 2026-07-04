@@ -27,6 +27,19 @@ body.no-vibrancy {
   background: var(--panel);
 }
 
+/* Respect Reduce Transparency: paint an opaque panel over the vibrancy */
+@media (prefers-reduced-transparency: reduce) {
+  body {
+    background: rgba(249, 249, 251, 0.98);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) and (prefers-color-scheme: dark) {
+  body {
+    background: rgba(30, 30, 36, 0.98);
+  }
+}
+
 .popover {
   position: relative;
   display: flex;

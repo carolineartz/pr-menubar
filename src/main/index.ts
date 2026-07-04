@@ -1,4 +1,4 @@
-import { app, shell } from 'electron'
+import { app, Menu, shell } from 'electron'
 import { electronApp } from '@electron-toolkit/utils'
 import { CHANNELS } from '../shared/ipc'
 import { makeMockPRs, MOCK_SETTINGS, MOCK_VIEWER } from '../shared/mockData'
@@ -21,6 +21,15 @@ if (!app.requestSingleInstanceLock()) {
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.carolineartz.pr-menubar')
   app.dock?.hide()
+
+  // No visible menu bar (LSUIElement), but roles keep ⌘C/⌘V/⌘Q working
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([
+      { role: 'appMenu' },
+      { role: 'editMenu' },
+      { role: 'windowMenu' }
+    ])
+  )
 
   const store = new Store(MOCK ? 'state-mock.json' : 'state.json')
   if (MOCK) {
@@ -109,7 +118,8 @@ app.whenReady().then(() => {
     onSettingsChanged: () => {
       app.setLoginItemSettings({ openAtLogin: store.get('settings').launchAtLogin })
       poller.refresh()
-    }
+    },
+    resizePopover: (h) => popover.resize(h)
   })
 
   poller.start()

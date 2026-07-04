@@ -75,6 +75,7 @@ function createMockApi(): RendererApi {
     },
     openSettingsWindow: async () => console.log('[mock] open settings'),
     recheckAuth: async () => true,
+    resizePopover: async () => {},
     onDataUpdated: (cb) => {
       listeners.push(cb)
       return () => {

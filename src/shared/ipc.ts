@@ -31,6 +31,8 @@ export interface Invokers {
   setSettings(patch: Partial<Settings>): Promise<void>
   openSettingsWindow(): Promise<void>
   recheckAuth(): Promise<boolean>
+  /** Ask the popover window to match the content's natural height. */
+  resizePopover(height: number): Promise<void>
 }
 
 /** Main → renderer push events. */
@@ -60,6 +62,7 @@ export const CHANNELS = {
   setSettings: 'settings:set',
   openSettingsWindow: 'settings:openWindow',
   recheckAuth: 'auth:recheck',
+  resizePopover: 'popover:resize',
   dataUpdated: 'data:updated',
   popoverShown: 'popover:shown'
 } as const

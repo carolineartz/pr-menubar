@@ -14,6 +14,8 @@ export interface Popover {
    *  blurred it should not immediately reopen it */
   justHid(): boolean
   onShow(cb: () => void): void
+  /** Match the window to the content's natural height (clamped). */
+  resize(contentHeight: number): void
 }
 
 export function createPopover(): Popover {
@@ -97,6 +99,11 @@ export function createPopover(): Popover {
       else show(trayBounds)
     },
     justHid: () => Date.now() - hiddenAt < 300,
-    onShow: (cb) => showListeners.push(cb)
+    onShow: (cb) => showListeners.push(cb),
+    resize: (contentHeight) => {
+      const h = Math.round(Math.min(Math.max(contentHeight, 280), 640))
+      const [w] = win.getSize()
+      if (win.getSize()[1] !== h) win.setSize(w, h, false)
+    }
   }
 }

@@ -19,6 +19,7 @@ const api: RendererApi = {
   setSettings: (patch: Partial<Settings>) => ipcRenderer.invoke(CHANNELS.setSettings, patch),
   openSettingsWindow: () => ipcRenderer.invoke(CHANNELS.openSettingsWindow),
   recheckAuth: () => ipcRenderer.invoke(CHANNELS.recheckAuth),
+  resizePopover: (height: number) => ipcRenderer.invoke(CHANNELS.resizePopover, height),
   onDataUpdated: (cb: (state: AppState) => void) => {
     const listener = (_e: Electron.IpcRendererEvent, state: AppState): void => cb(state)
     ipcRenderer.on(CHANNELS.dataUpdated, listener)
