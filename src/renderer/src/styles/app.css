@@ -22,15 +22,12 @@ body,
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   color: var(--txt);
-  /* transparent so native vibrancy shows through; opaque fallback set via .no-vibrancy */
-  background: transparent;
+  /* the design's panel tint painted OVER the native vibrancy blur — without it
+     the wallpaper bleeds through and washes out the theme */
+  background: var(--panel);
   -webkit-font-smoothing: antialiased;
   user-select: none;
   overflow: hidden;
-}
-
-body.no-vibrancy {
-  background: var(--panel);
 }
 
 /* Respect Reduce Transparency: paint an opaque panel over the vibrancy */
@@ -346,6 +343,22 @@ body.no-vibrancy {
   border: none;
   font-family: inherit;
   padding: 0;
+}
+
+.show-passed {
+  font-size: 11px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--txt3);
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 7px 10px 7px 30px;
+  cursor: pointer;
+}
+
+.show-passed:hover {
+  color: var(--txt);
 }
 
 .action-strip {

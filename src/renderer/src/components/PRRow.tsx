@@ -1,4 +1,4 @@
-import type { JSX, MouseEvent } from 'react'
+import { useState, type JSX, type MouseEvent } from 'react'
 import type { ClassifiedCheck, PRSnapshot, SnoozeMode } from '../../../shared/types'
 import { metaFor, pillFor } from '../../../shared/present'
 import { Avatar } from './Avatar'
@@ -109,6 +109,9 @@ function ExpandedPanel({
   snoozeMenuOpen: boolean
   actions: RowActions
 }): JSX.Element {
+  // big CI pipelines drown the signal — passed checks collapse behind a toggle
+  const [showPassed, setShowPassed] = useState(false)
+
   const nonIgnored = pr.checks.filter((c) => !c.ignored)
   const okCount = nonIgnored.filter((c) => c.status === 'ok').length
   const hasFail = pr.checks.some((c) => c.status === 'fail' && !c.ignored)
@@ -117,6 +120,10 @@ function ExpandedPanel({
   const order = (c: ClassifiedCheck): number =>
     c.ignored ? 4 : { fail: 0, running: 1, queued: 2, ok: 3 }[c.status]
   const sortedChecks = pr.checks.slice().sort((a, b) => order(a) - order(b))
+  const passedCount = sortedChecks.filter((c) => c.status === 'ok' && !c.ignored).length
+  const visibleChecks = showPassed
+    ? sortedChecks
+    : sortedChecks.filter((c) => !(c.status === 'ok' && !c.ignored))
 
   const stop = (fn: () => void) => (e: MouseEvent) => {
     e.stopPropagation()
@@ -125,9 +132,20 @@ function ExpandedPanel({
 
   return (
     <div className="inset">
-      {sortedChecks.map((c) => (
+      {visibleChecks.map((c) => (
         <CheckRow key={c.name} check={c} onViewLog={() => actions.openLog(pr.key, c.name)} />
       ))}
+      {passedCount > 0 && (
+        <button
+          className="show-passed"
+          onClick={(e) => {
+            e.stopPropagation()
+            setShowPassed((v) => !v)
+          }}
+        >
+          {showPassed ? 'Hide passed checks' : `Show ${passedCount} passed`}
+        </button>
+      )}
       <div className="action-strip">
         <span className="check-summary">
           {pr.checksLoaded
