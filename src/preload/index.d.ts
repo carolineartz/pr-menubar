@@ -1,8 +1,10 @@
-import { ElectronAPI } from '@electron-toolkit/preload'
+import type { RendererApi } from '../shared/ipc'
 
 declare global {
   interface Window {
-    electron: ElectronAPI
-    api: unknown
+    /** Absent when running outside Electron (browser preview) — api.ts falls back to a mock. */
+    api?: RendererApi
   }
 }
+
+export {}
