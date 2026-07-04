@@ -1,4 +1,4 @@
-import { classifyChecks } from '../../shared/noisyChecks'
+import { classifyChecks, type ClassifiedChecks } from '../../shared/noisyChecks'
 import { computeNextAction } from '../../shared/nextAction'
 import type { CheckInfo, PRSnapshot, Settings, TabBucket } from '../../shared/types'
 
@@ -41,15 +41,16 @@ export interface GqlPR {
   reviewDecision: string | null
   comments: { totalCount: number }
   allReviews: { totalCount: number }
-  pendingMine: { totalCount: number }
-  reviewThreads: { nodes: { isResolved: boolean }[] }
+  /** absent on PRLite nodes */
+  pendingMine?: { totalCount: number }
+  reviewThreads?: { nodes: { isResolved: boolean }[] }
   latestReviews: { nodes: GqlReview[] }
   reviewRequests: { nodes: { requestedReviewer: { login: string } | null }[] }
   commits: {
     nodes: {
       commit: {
         committedDate: string
-        statusCheckRollup: { contexts: { nodes: GqlContext[] } } | null
+        statusCheckRollup: { state?: string; contexts?: { nodes: GqlContext[] } } | null
       }
     }[]
   }
@@ -128,6 +129,37 @@ function mapCheck(ctx: GqlContext, now: number): CheckInfo {
   }
 }
 
+/** PRLite nodes carry only GitHub's precomputed rollup — no per-check detail,
+ *  so the noisy-checks rule can't apply. Fine: any PR where that matters
+ *  (yours / review-requested) arrives via the full-fragment query. */
+function fromRollupState(state: string | undefined): ClassifiedChecks {
+  let ciState: ClassifiedChecks['ciState']
+  let dot: ClassifiedChecks['dot']
+  switch (state) {
+    case 'SUCCESS':
+      ciState = 'green'
+      dot = 'green'
+      break
+    case 'FAILURE':
+    case 'ERROR':
+      ciState = 'failed'
+      dot = 'red'
+      break
+    case 'PENDING':
+      ciState = 'running'
+      dot = 'amber'
+      break
+    case 'EXPECTED':
+      ciState = 'queued'
+      dot = 'queued'
+      break
+    default:
+      ciState = 'none'
+      dot = 'gray'
+  }
+  return { checks: [], ciState, dot, meaningfulFailure: ciState === 'failed' }
+}
+
 function mapOne(
   pr: GqlPR,
   buckets: TabBucket[],
@@ -138,10 +170,12 @@ function mapOne(
   const repo = pr.repository.nameWithOwner
   const author = pr.author?.login ?? 'ghost'
   const commit = pr.commits.nodes[0]?.commit
-  const rawChecks = dedupeChecks(commit?.statusCheckRollup?.contexts.nodes ?? []).map((c) =>
-    mapCheck(c, now)
-  )
-  const classified = classifyChecks(rawChecks, repo, settings.noisyPatterns)
+  const rollup = commit?.statusCheckRollup
+  const checksLoaded = rollup?.contexts != null || rollup == null
+  const rawChecks = dedupeChecks(rollup?.contexts?.nodes ?? []).map((c) => mapCheck(c, now))
+  const classified = checksLoaded
+    ? classifyChecks(rawChecks, repo, settings.noisyPatterns)
+    : fromRollupState(rollup?.state)
 
   const myLatestReview = pr.latestReviews.nodes.find(
     (r) => r.author?.login === viewer && r.state !== 'PENDING'
@@ -171,11 +205,11 @@ function mapOne(
     reviewDecision: (pr.reviewDecision ?? null) as PRSnapshot['reviewDecision'],
     commentCount: pr.comments.totalCount,
     reviewCount: pr.allReviews.totalCount,
-    unresolvedThreads: pr.reviewThreads.nodes.filter((t) => !t.isResolved).length,
+    unresolvedThreads: (pr.reviewThreads?.nodes ?? []).filter((t) => !t.isResolved).length,
     approvals: pr.latestReviews.nodes.filter((r) => r.state === 'APPROVED').length,
     requestedReviewers: requested,
     reviewRequestedFromViewer: requested.includes(viewer),
-    viewerHasPendingReview: pr.pendingMine.totalCount > 0,
+    viewerHasPendingReview: (pr.pendingMine?.totalCount ?? 0) > 0,
     viewerLastReviewAt: myLatestReview?.submittedAt ?? null,
     viewerReviewState: (myLatestReview &&
     ['APPROVED', 'CHANGES_REQUESTED', 'COMMENTED'].includes(myLatestReview.state)
@@ -183,6 +217,7 @@ function mapOne(
       : null) as PRSnapshot['viewerReviewState'],
     viewerCommented: false, // set from the `commented` search bucket below
     buckets,
+    checksLoaded,
     checks: classified.checks,
     ciState: classified.ciState,
     dot: classified.dot,
@@ -194,14 +229,15 @@ function mapOne(
 /** Merge the aliased search results into deduplicated snapshots with bucket tags. */
 export function mapPoll(data: PollData, settings: Settings, now: number): PRSnapshot[] {
   const viewer = data.viewer.login
+  // full-fragment sources first: on dedupe the first-seen (detailed) node wins
   const sources: [(GqlPR | null)[] | undefined, TabBucket | null, boolean][] = [
-    [data.allOpen?.nodes, 'all', false],
     [data.mine?.nodes, 'my', false],
     [data.reviewReq?.nodes, 'rev', false],
     [data.reviewedBy?.nodes, 'rev', false],
     [data.commented?.nodes, 'rev', true],
     [data.team?.nodes, 'team', false],
-    [data.saved, null, false]
+    [data.saved, null, false],
+    [data.allOpen?.nodes, 'all', false]
   ]
 
   const byId = new Map<string, { pr: GqlPR; buckets: Set<TabBucket>; commented: boolean }>()

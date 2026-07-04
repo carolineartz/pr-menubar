@@ -161,6 +161,7 @@ export function makeMockPRs(
       viewerReviewState: s.viewerReviewState ?? null,
       viewerCommented: s.viewerCommented ?? false,
       buckets: [...s.buckets, 'all' as const],
+      checksLoaded: true,
       checks: classified.checks,
       ciState: classified.ciState,
       dot: classified.dot,

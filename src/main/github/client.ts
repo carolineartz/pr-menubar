@@ -6,6 +6,19 @@ export class AuthFailedError extends Error {
   }
 }
 
+export class GatewayError extends Error {
+  constructor(status: number) {
+    super(`GitHub API gateway error ${status}`)
+  }
+}
+
+/** Secondary rate limit (abuse detection) — GitHub tells us when to come back. */
+export class RateLimitedError extends Error {
+  constructor(public retryAfterMs: number) {
+    super('GitHub rate limit — pausing')
+  }
+}
+
 export interface RateLimitInfo {
   cost: number
   remaining: number
@@ -29,7 +42,16 @@ export class GithubClient {
   }
 
   async graphql<T>(query: string, variables: Record<string, unknown>): Promise<T> {
-    return this.request<T>(query, variables, false)
+    try {
+      return await this.request<T>(query, variables, false)
+    } catch (err) {
+      // GitHub's GraphQL gateway 502/504s transiently under load — retry once
+      if (err instanceof GatewayError) {
+        await new Promise((r) => setTimeout(r, 1500))
+        return this.request<T>(query, variables, false)
+      }
+      throw err
+    }
   }
 
   private async request<T>(
@@ -50,6 +72,11 @@ export class GithubClient {
     if (res.status === 401) {
       if (isRetry) throw new AuthFailedError()
       return this.request<T>(query, variables, true)
+    }
+    if (res.status === 502 || res.status === 504) throw new GatewayError(res.status)
+    if (res.status === 403 || res.status === 429) {
+      const retryAfter = Number(res.headers.get('retry-after')) || 300
+      throw new RateLimitedError(retryAfter * 1000)
     }
     if (!res.ok) {
       throw new Error(`GitHub API ${res.status}: ${(await res.text()).slice(0, 200)}`)

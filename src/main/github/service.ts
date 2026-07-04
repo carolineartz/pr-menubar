@@ -1,7 +1,7 @@
 import type { PRSnapshot, Settings } from '../../shared/types'
 import { AuthFailedError, GithubClient, type RateLimitInfo } from './client'
 import { mapPoll, type PollData } from './mapper'
-import { buildPollQuery } from './queries'
+import { buildAllOpenQuery, buildInvolvementQuery } from './queries'
 
 export { AuthFailedError }
 
@@ -14,13 +14,29 @@ export interface PollOutcome {
 export class GithubService {
   private client = new GithubClient()
 
+  /** Two smaller requests instead of one: a single query with the All feed's
+   *  full detail exceeds GitHub's per-request GraphQL compute budget (504s). */
   async poll(settings: Settings, savedNodeIds: string[]): Promise<PollOutcome> {
-    const { document, variables } = buildPollQuery(settings, savedNodeIds)
-    const data = await this.client.graphql<PollData>(document, variables)
+    const inv = buildInvolvementQuery(settings, savedNodeIds)
+    const allOpen = buildAllOpenQuery(settings)
+    const [invData, allData] = await Promise.all([
+      this.client.graphql<PollData>(inv.document, inv.variables),
+      settings.repos.length > 0
+        ? this.client.graphql<Pick<PollData, 'allOpen' | 'rateLimit'>>(
+            allOpen.document,
+            allOpen.variables
+          )
+        : Promise.resolve(null)
+    ])
+    const data: PollData = { ...invData, allOpen: allData?.allOpen }
+    const rateLimit =
+      allData && allData.rateLimit.remaining < invData.rateLimit.remaining
+        ? allData.rateLimit
+        : invData.rateLimit
     return {
       prs: mapPoll(data, settings, Date.now()),
-      viewer: data.viewer.login,
-      rateLimit: data.rateLimit
+      viewer: invData.viewer.login,
+      rateLimit
     }
   }
 

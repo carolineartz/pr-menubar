@@ -69,6 +69,9 @@ export interface PRSnapshot {
   buckets: TabBucket[]
 
   // ---- derived by classifyChecks + computeNextAction (attached in mapper) ----
+  /** false for PRs fetched via the lightweight All-feed fragment: the dot comes
+   *  from GitHub's rollup state and per-check detail isn't available */
+  checksLoaded: boolean
   checks: ClassifiedCheck[]
   ciState: CiState
   dot: DotColor

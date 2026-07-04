@@ -3,6 +3,7 @@ import { electronApp } from '@electron-toolkit/utils'
 import { CHANNELS } from '../shared/ipc'
 import { makeMockPRs, MOCK_SETTINGS, MOCK_VIEWER } from '../shared/mockData'
 import { Coordinator } from './coordinator'
+import { RateLimitedError } from './github/client'
 import { AuthFailedError, GithubService } from './github/service'
 import { registerIpcHandlers } from './ipcHandlers'
 import { processNotifications } from './notifier'
@@ -83,6 +84,12 @@ app.whenReady().then(() => {
     (err) => {
       const cause = err instanceof Error && err.cause ? ` (cause: ${String(err.cause)})` : ''
       console.error('[poll] failed:', err instanceof Error ? err.message + cause : err)
+      if (err instanceof RateLimitedError) {
+        poller.pause(err.retryAfterMs)
+        const min = Math.ceil(err.retryAfterMs / 60_000)
+        coordinator.setError(`GitHub rate limit — resuming in ~${min}m`)
+        return
+      }
       coordinator.setError(
         err instanceof Error ? err.message : String(err),
         err instanceof AuthFailedError

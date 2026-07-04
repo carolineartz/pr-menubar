@@ -18,6 +18,7 @@ export class Poller {
   private timer: ReturnType<typeof setTimeout> | null = null
   private inFlight = false
   private consecutiveErrors = 0
+  private pausedUntil = 0
   backoffFactor = 1
 
   constructor(
@@ -37,16 +38,26 @@ export class Poller {
 
   /** Immediate poll (popover opened / ⌘R / settings changed). */
   refresh(): void {
+    if (Date.now() < this.pausedUntil) return // rate-limited: retrying makes it worse
     void this.poll()
+  }
+
+  /** Secondary rate limit: honor GitHub's Retry-After instead of the retry ladder. */
+  pause(ms: number): void {
+    this.pausedUntil = Date.now() + ms
+    this.schedule()
   }
 
   private schedule(): void {
     this.stop()
+    const pauseRemaining = this.pausedUntil - Date.now()
     // transient failures (flaky network) retry quickly instead of waiting a full cycle
     const delay =
-      this.consecutiveErrors > 0
-        ? Math.min(10_000 * this.consecutiveErrors, BASE_INTERVAL_MS)
-        : BASE_INTERVAL_MS * this.backoffFactor
+      pauseRemaining > 0
+        ? pauseRemaining + 1000
+        : this.consecutiveErrors > 0
+          ? Math.min(10_000 * this.consecutiveErrors, BASE_INTERVAL_MS)
+          : BASE_INTERVAL_MS * this.backoffFactor
     this.timer = setTimeout(() => void this.poll(), delay)
   }
 

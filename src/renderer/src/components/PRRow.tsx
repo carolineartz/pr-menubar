@@ -130,7 +130,9 @@ function ExpandedPanel({
       ))}
       <div className="action-strip">
         <span className="check-summary">
-          {okCount} of {nonIgnored.length} passed
+          {pr.checksLoaded
+            ? `${okCount} of ${nonIgnored.length} passed`
+            : 'check details on GitHub'}
         </span>
         <div className="spacer" />
         {hasFail && (
