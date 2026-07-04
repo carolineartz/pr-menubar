@@ -116,6 +116,20 @@ export default function App(): JSX.Element {
     )
   }
 
+  if (state.settings.repos.length === 0) {
+    return (
+      <div className="popover">
+        <div className="setup">
+          <h2>No repositories yet</h2>
+          <p>Pick which repos to watch and PRs will show up here.</p>
+          <button className="btn" onClick={() => void api.openSettingsWindow()}>
+            Open Settings
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   const counts = Object.fromEntries(
     TABS.map((t) => [t.id, rowsFor(t.id, state.prs, ctx).length])
   ) as Record<TabId, number>

@@ -1,8 +1,9 @@
-import { app } from 'electron'
+import { app, shell } from 'electron'
 import { electronApp } from '@electron-toolkit/utils'
 import { CHANNELS } from '../shared/ipc'
 import { makeMockPRs, MOCK_SETTINGS, MOCK_VIEWER } from '../shared/mockData'
 import { Coordinator } from './coordinator'
+import { AuthFailedError, GithubService } from './github/service'
 import { registerIpcHandlers } from './ipcHandlers'
 import { createPopover } from './popover'
 import { Poller, type PollResult } from './poller'
@@ -16,14 +17,6 @@ if (!app.requestSingleInstanceLock()) {
   app.quit()
 }
 
-async function fetchPRs(store: Store): Promise<PollResult> {
-  if (MOCK) {
-    return { prs: makeMockPRs(Date.now(), MOCK_SETTINGS.noisyPatterns), viewer: MOCK_VIEWER }
-  }
-  // Real GitHub data layer lands in M4; until then mock keeps the shell testable.
-  return { prs: makeMockPRs(Date.now(), store.get('settings').noisyPatterns), viewer: MOCK_VIEWER }
-}
-
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.carolineartz.pr-menubar')
   app.dock?.hide()
@@ -31,6 +24,23 @@ app.whenReady().then(() => {
   const store = new Store(MOCK ? 'state-mock.json' : 'state.json')
   if (MOCK) {
     store.set('settings', MOCK_SETTINGS)
+  }
+
+  const github = new GithubService()
+
+  const fetchPRs = async (): Promise<PollResult> => {
+    if (MOCK) {
+      return { prs: makeMockPRs(Date.now(), MOCK_SETTINGS.noisyPatterns), viewer: MOCK_VIEWER }
+    }
+    const settings = store.get('settings')
+    const starred = new Set(store.get('starred'))
+    const savedNodeIds = Object.entries(store.get('starredNodeIds'))
+      .filter(([key]) => starred.has(key))
+      .map(([, id]) => id)
+    const { prs, viewer, rateLimit } = await github.poll(settings, savedNodeIds)
+    // ease off when the hourly GraphQL budget runs low
+    poller.backoffFactor = rateLimit.remaining < 500 ? 4 : rateLimit.remaining < 1500 ? 2 : 1
+    return { prs, viewer }
   }
 
   const popover = createPopover()
@@ -51,9 +61,22 @@ app.whenReady().then(() => {
   })
 
   const poller = new Poller(
-    () => fetchPRs(store),
-    ({ prs, viewer }) => coordinator.setData(prs, viewer),
-    (err) => coordinator.setError(err instanceof Error ? err.message : String(err))
+    fetchPRs,
+    ({ prs, viewer }) => {
+      console.log(
+        `[poll] ${prs.length} PRs for ${viewer} · badge ${coordinator.currentBadge()} · ` +
+          prs.map((p) => `${p.key}:${p.nextAction}`).join(' ')
+      )
+      coordinator.setData(prs, viewer)
+    },
+    (err) => {
+      const cause = err instanceof Error && err.cause ? ` (cause: ${String(err.cause)})` : ''
+      console.error('[poll] failed:', err instanceof Error ? err.message + cause : err)
+      coordinator.setError(
+        err instanceof Error ? err.message : String(err),
+        err instanceof AuthFailedError
+      )
+    }
   )
 
   popover.onShow(() => {
@@ -65,8 +88,21 @@ app.whenReady().then(() => {
     coordinator,
     store,
     refresh: () => poller.refresh(),
-    recheckAuth: async () => true, // real gh check lands in M4
-    rerunFailed: async () => {}, // real re-run lands in M4
+    recheckAuth: async () => {
+      const ok = MOCK ? true : await github.checkAuth()
+      if (ok && !coordinator.authOk) {
+        coordinator.authOk = true
+        poller.refresh()
+      }
+      return ok
+    },
+    rerunFailed: async (prKey) => {
+      const pr = coordinator.prs.find((p) => p.key === prKey)
+      if (!pr || MOCK) return
+      const ok = await github.rerunFailed(pr).catch(() => false)
+      if (!ok) void shell.openExternal(`${pr.url}/checks`)
+      else poller.refresh()
+    },
     openSettingsWindow,
     onSettingsChanged: () => {
       app.setLoginItemSettings({ openAtLogin: store.get('settings').launchAtLogin })

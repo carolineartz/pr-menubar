@@ -40,6 +40,11 @@ export function registerIpcHandlers(deps: {
   ipcMain.handle(CHANNELS.setStar, (_e, key: string, on: boolean) => {
     const cur = store.get('starred')
     store.set('starred', on ? [...new Set([...cur, key])] : cur.filter((k) => k !== key))
+    const ids = { ...store.get('starredNodeIds') }
+    const nodeId = pr(key)?.nodeId
+    if (on && nodeId) ids[key] = nodeId
+    if (!on) delete ids[key]
+    store.set('starredNodeIds', ids)
     coordinator.publish()
   })
 

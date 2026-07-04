@@ -7,6 +7,8 @@ import { DEFAULT_SETTINGS } from '../shared/types'
 export interface PersistedState {
   settings: Settings
   starred: string[]
+  /** PrKey → GraphQL node id, so starred PRs can be re-fetched via nodes(ids:) */
+  starredNodeIds: Record<string, string>
   snoozed: Record<string, SnoozeEntry>
   teamToggles: Record<string, boolean>
   notifState: NotifState
@@ -15,6 +17,7 @@ export interface PersistedState {
 const DEFAULTS: PersistedState = {
   settings: DEFAULT_SETTINGS,
   starred: [],
+  starredNodeIds: {},
   snoozed: {},
   teamToggles: {},
   notifState: {}
