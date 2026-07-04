@@ -7,6 +7,12 @@
   box-sizing: border-box;
 }
 
+/* Mouse-driven popover — never show Chromium's focus ring */
+:focus,
+:focus-visible {
+  outline: none;
+}
+
 html,
 body,
 #root {
@@ -102,20 +108,23 @@ body.no-vibrancy {
 .group-header {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 10px 6px;
+  gap: 8px;
+  padding: 14px 10px 7px;
 }
 
-.group-header .gdot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
+.group-header:first-child {
+  padding-top: 6px;
 }
 
 .group-header .glabel {
-  font: 600 10.5px system-ui, sans-serif;
-  letter-spacing: 0.06em;
-  color: var(--txt2);
+  font: 700 11px system-ui, sans-serif;
+  letter-spacing: 0.08em;
+}
+
+.group-header .grule {
+  flex: 1;
+  height: 1px;
+  background: var(--hair);
 }
 
 .group-header .gcount {

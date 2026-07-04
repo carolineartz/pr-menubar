@@ -92,7 +92,8 @@ app.whenReady().then(() => {
 
   popover.onShow(() => {
     popover.win.webContents.send(CHANNELS.popoverShown)
-    poller.refresh()
+    // fresh-enough data doesn't warrant a poll on every open/tab-flip
+    if (Date.now() - (coordinator.lastSyncAt ?? 0) > 15_000) poller.refresh()
   })
 
   registerIpcHandlers({

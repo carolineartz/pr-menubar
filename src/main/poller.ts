@@ -17,6 +17,7 @@ const BASE_INTERVAL_MS = 60_000
 export class Poller {
   private timer: ReturnType<typeof setTimeout> | null = null
   private inFlight = false
+  private consecutiveErrors = 0
   backoffFactor = 1
 
   constructor(
@@ -41,7 +42,12 @@ export class Poller {
 
   private schedule(): void {
     this.stop()
-    this.timer = setTimeout(() => void this.poll(), BASE_INTERVAL_MS * this.backoffFactor)
+    // transient failures (flaky network) retry quickly instead of waiting a full cycle
+    const delay =
+      this.consecutiveErrors > 0
+        ? Math.min(10_000 * this.consecutiveErrors, BASE_INTERVAL_MS)
+        : BASE_INTERVAL_MS * this.backoffFactor
+    this.timer = setTimeout(() => void this.poll(), delay)
   }
 
   private async poll(): Promise<void> {
@@ -49,7 +55,9 @@ export class Poller {
     this.inFlight = true
     try {
       this.onData(await this.fetchFn())
+      this.consecutiveErrors = 0
     } catch (err) {
+      this.consecutiveErrors++
       this.onError(err)
     } finally {
       this.inFlight = false

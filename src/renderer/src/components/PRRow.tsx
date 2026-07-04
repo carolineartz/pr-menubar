@@ -113,6 +113,11 @@ function ExpandedPanel({
   const okCount = nonIgnored.filter((c) => c.status === 'ok').length
   const hasFail = pr.checks.some((c) => c.status === 'fail' && !c.ignored)
 
+  // failures first, then in-flight, passed, and ignored-noisy last
+  const order = (c: ClassifiedCheck): number =>
+    c.ignored ? 4 : { fail: 0, running: 1, queued: 2, ok: 3 }[c.status]
+  const sortedChecks = pr.checks.slice().sort((a, b) => order(a) - order(b))
+
   const stop = (fn: () => void) => (e: MouseEvent) => {
     e.stopPropagation()
     fn()
@@ -120,7 +125,7 @@ function ExpandedPanel({
 
   return (
     <div className="inset">
-      {pr.checks.map((c) => (
+      {sortedChecks.map((c) => (
         <CheckRow key={c.name} check={c} onViewLog={() => actions.openLog(pr.key, c.name)} />
       ))}
       <div className="action-strip">

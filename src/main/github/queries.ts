@@ -8,6 +8,7 @@ export const PR_FRAGMENT = /* GraphQL */ `
     url
     isDraft
     state
+    createdAt
     updatedAt
     headRefName
     headRefOid
@@ -97,15 +98,16 @@ export function buildPollQuery(settings: Settings, savedNodeIds: string[]): Poll
   const variables: Record<string, unknown> = {}
   const varDefs: string[] = []
 
-  const addSearch = (alias: string, q: string): void => {
+  const addSearch = (alias: string, q: string, first = 30): void => {
     varDefs.push(`$${alias}Q: String!`)
     variables[`${alias}Q`] = q
     searches.push(
-      `${alias}: search(query: $${alias}Q, type: ISSUE, first: 30) { nodes { ...PRFields } }`
+      `${alias}: search(query: $${alias}Q, type: ISSUE, first: ${first}) { nodes { ...PRFields } }`
     )
   }
 
   if (settings.repos.length > 0) {
+    addSearch('allOpen', `is:pr is:open sort:created-desc ${repoQualifier}`, 50)
     addSearch('mine', `is:pr is:open author:@me ${repoQualifier}`)
     addSearch('reviewReq', `is:pr is:open review-requested:@me ${repoQualifier}`)
     addSearch('reviewedBy', `is:pr is:open reviewed-by:@me -author:@me ${repoQualifier}`)

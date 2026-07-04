@@ -19,17 +19,19 @@ export function Footer({
   onRefresh: () => void
   onOpenGithub: () => void
 }): JSX.Element {
-  let syncText = 'Never synced'
+  let syncText = 'Syncing…'
   if (lastSyncAt != null) {
     const sec = Math.max(0, Math.floor((now - lastSyncAt) / 1000))
     syncText = `Synced ${sec < 60 ? `${sec}s` : `${Math.floor(sec / 60)}m`} ago`
   }
-  if (syncError) syncText = syncError
+  if (syncError) syncText = lastSyncAt != null ? `${syncText} · retrying` : 'Sync failed · retrying'
 
   return (
     <div className="footer">
       <span className={syncError ? 'sync-dot error' : 'sync-dot'} />
-      <span className="sync-text">{syncText}</span>
+      <span className="sync-text" title={syncError ?? undefined}>
+        {syncText}
+      </span>
       {snoozedCount > 0 && (
         <button className="snooze-toggle" onClick={onToggleSnoozed}>
           {snoozedCount} snoozed · {showSnoozed ? 'hide' : 'show'}

@@ -42,8 +42,8 @@ describe('mock data matches the prototype', () => {
   it('badge excludes snoozed and never counts Team-only PRs', () => {
     const snoozed = { 'acme/api#482': { mode: '1h' as const, until: NOW + 3_600_000 } }
     expect(badgeCount(prs, snoozed, NOW)).toBe(6)
-    // #491 is team-only and actionable-looking rows there never count
-    expect(prs.find((p) => p.number === 491)!.buckets).toEqual(['team'])
+    // #491 is team-only (plus the All feed) — never counted in the badge
+    expect(prs.find((p) => p.number === 491)!.buckets).toEqual(['team', 'all'])
   })
 })
 

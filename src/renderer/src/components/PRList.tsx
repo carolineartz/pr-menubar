@@ -5,6 +5,7 @@ import {
   isSnoozedNow,
   reviewingGroups,
   rowsFor,
+  sortByCreated,
   sortByUrgency,
   type ListContext,
   type TabId
@@ -46,12 +47,16 @@ export function PRList({
   if (tab === 'rev') {
     content = reviewingGroups(rowsFor('rev', prs, ctx, showSnoozed)).flatMap((g) => [
       <div className="group-header" key={`h-${g.key}`}>
-        <span className="gdot" style={{ background: g.color }} />
-        <span className="glabel">{g.label}</span>
+        <span className="glabel" style={{ color: g.color }}>
+          {g.label}
+        </span>
         <span className="gcount">{g.rows.length}</span>
+        <span className="grule" />
       </div>,
       ...g.rows.map(render)
     ])
+  } else if (tab === 'all') {
+    content = sortByCreated(rowsFor('all', prs, ctx, showSnoozed)).map(render)
   } else {
     content = sortByUrgency(rowsFor(tab, prs, ctx, showSnoozed)).map(render)
   }

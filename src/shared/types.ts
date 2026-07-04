@@ -29,8 +29,9 @@ export type DotColor = 'green' | 'red' | 'amber' | 'queued' | 'gray'
 
 export type NextAction = 'FIXCI' | 'MERGE' | 'ADDRESS' | 'REVIEW' | 'RESUME' | 'WAITING'
 
-/** Which poll searches matched this PR (Saved/All derive from stars/union) */
-export type TabBucket = 'my' | 'rev' | 'team'
+/** Which poll searches matched this PR ('all' = every open PR in watched repos;
+ *  Saved derives from stars) */
+export type TabBucket = 'my' | 'rev' | 'team' | 'all'
 
 export type Mergeable = 'MERGEABLE' | 'CONFLICTING' | 'UNKNOWN'
 export type ReviewDecision = 'APPROVED' | 'CHANGES_REQUESTED' | 'REVIEW_REQUIRED' | null
@@ -47,6 +48,7 @@ export interface PRSnapshot {
   author: string
   authorIsViewer: boolean
   isDraft: boolean
+  createdAt: string
   updatedAt: string
   headRefName: string
   headSha: string

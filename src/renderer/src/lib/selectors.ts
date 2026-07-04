@@ -33,7 +33,6 @@ export function rowsFor(
   return prs.filter((pr) => {
     let inTab: boolean
     if (tab === 'saved') inTab = ctx.starred.has(pr.key)
-    else if (tab === 'all') inTab = true
     else inTab = pr.buckets.includes(tab)
     if (tab === 'team' && ctx.teamToggles[pr.author] === false) inTab = false
     if (!inTab) return false
@@ -52,6 +51,11 @@ export function sortByUrgency(rows: PRSnapshot[]): PRSnapshot[] {
     )
 }
 
+/** The All tab is a plain feed: newest-opened first. */
+export function sortByCreated(rows: PRSnapshot[]): PRSnapshot[] {
+  return rows.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+}
+
 export interface Group {
   key: 'start' | 'continue' | 'waiting'
   label: string
@@ -60,9 +64,9 @@ export interface Group {
 }
 
 const GROUPS: Omit<Group, 'rows'>[] = [
-  { key: 'start', label: 'START REVIEW', color: '#0a84ff' },
-  { key: 'continue', label: 'CONTINUE REVIEW', color: '#bf5af2' },
-  { key: 'waiting', label: 'WAITING FOR AUTHOR', color: 'var(--faint)' }
+  { key: 'start', label: 'START REVIEW', color: 'var(--bluet)' },
+  { key: 'continue', label: 'CONTINUE REVIEW', color: 'var(--purt)' },
+  { key: 'waiting', label: 'WAITING FOR AUTHOR', color: 'var(--txt3)' }
 ]
 
 /** Reviewing tab groups: REVIEW → start, RESUME → continue, rest → waiting. */

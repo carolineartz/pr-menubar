@@ -31,6 +31,7 @@ export interface GqlPR {
   url: string
   isDraft: boolean
   state: string
+  createdAt: string
   updatedAt: string
   headRefName: string
   headRefOid: string
@@ -57,6 +58,7 @@ export interface GqlPR {
 export interface PollData {
   viewer: { login: string }
   rateLimit: { cost: number; remaining: number; resetAt: string }
+  allOpen?: { nodes: (GqlPR | null)[] }
   mine?: { nodes: (GqlPR | null)[] }
   reviewReq?: { nodes: (GqlPR | null)[] }
   reviewedBy?: { nodes: (GqlPR | null)[] }
@@ -73,6 +75,26 @@ function fmtDuration(startIso: string | null | undefined, endIso: string | null 
   const m = Math.floor(sec / 60)
   const s = sec % 60
   return m > 0 ? `${m}m ${String(s).padStart(2, '0')}s` : `${s}s`
+}
+
+/**
+ * The rollup returns one CheckRun per workflow run, so re-triggered workflows
+ * repeat the same job name ("label" ×4, "remove-preview-env" ×3…). Match
+ * GitHub's merge-box behavior: keep only the most recent run per check name.
+ */
+function dedupeChecks(contexts: GqlContext[]): GqlContext[] {
+  const byName = new Map<string, GqlContext>()
+  for (const ctx of contexts) {
+    const name = ctx.__typename === 'StatusContext' ? ctx.context : ctx.name
+    if (!name) continue
+    const prev = byName.get(name)
+    if (!prev || started(ctx) >= started(prev)) byName.set(name, ctx)
+  }
+  return [...byName.values()]
+}
+
+function started(ctx: GqlContext): number {
+  return ctx.startedAt ? Date.parse(ctx.startedAt) : 0
 }
 
 function mapCheck(ctx: GqlContext, now: number): CheckInfo {
@@ -116,7 +138,7 @@ function mapOne(
   const repo = pr.repository.nameWithOwner
   const author = pr.author?.login ?? 'ghost'
   const commit = pr.commits.nodes[0]?.commit
-  const rawChecks = (commit?.statusCheckRollup?.contexts.nodes ?? []).map((c) =>
+  const rawChecks = dedupeChecks(commit?.statusCheckRollup?.contexts.nodes ?? []).map((c) =>
     mapCheck(c, now)
   )
   const classified = classifyChecks(rawChecks, repo, settings.noisyPatterns)
@@ -138,6 +160,7 @@ function mapOne(
     author,
     authorIsViewer: author === viewer,
     isDraft: pr.isDraft,
+    createdAt: pr.createdAt,
     updatedAt: pr.updatedAt,
     headRefName: pr.headRefName,
     headSha: pr.headRefOid,
@@ -172,6 +195,7 @@ function mapOne(
 export function mapPoll(data: PollData, settings: Settings, now: number): PRSnapshot[] {
   const viewer = data.viewer.login
   const sources: [(GqlPR | null)[] | undefined, TabBucket | null, boolean][] = [
+    [data.allOpen?.nodes, 'all', false],
     [data.mine?.nodes, 'my', false],
     [data.reviewReq?.nodes, 'rev', false],
     [data.reviewedBy?.nodes, 'rev', false],

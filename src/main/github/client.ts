@@ -44,7 +44,8 @@ export class GithubClient {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ query, variables })
+      body: JSON.stringify({ query, variables }),
+      signal: AbortSignal.timeout(30_000)
     })
     if (res.status === 401) {
       if (isRetry) throw new AuthFailedError()
