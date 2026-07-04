@@ -66,7 +66,7 @@ export interface Group {
 const GROUPS: Omit<Group, 'rows'>[] = [
   { key: 'start', label: 'START REVIEW', color: 'var(--bluet)' },
   { key: 'continue', label: 'CONTINUE REVIEW', color: 'var(--purt)' },
-  { key: 'waiting', label: 'WAITING FOR AUTHOR', color: 'var(--txt3)' }
+  { key: 'waiting', label: 'WAITING FOR AUTHOR', color: 'var(--ambert)' }
 ]
 
 /** Reviewing tab groups: REVIEW → start, RESUME → continue, rest → waiting. */
