@@ -54,13 +54,16 @@ export default function App(): JSX.Element {
     return () => window.removeEventListener('keydown', onKey)
   }, [refresh])
 
-  // Size the window to the content: fixed chrome + the list's natural height
+  // Size the window to the content: fixed chrome + the list's natural height.
+  // .list-inner is unstretched, so this shrinks the window as well as grows it.
   useEffect(() => {
     const measure = (): void => {
-      const list = document.querySelector('.list')
-      if (!list) return
+      const list = document.querySelector<HTMLElement>('.list')
+      const inner = document.querySelector<HTMLElement>('.list-inner')
+      if (!list || !inner) return
       const chrome = document.body.offsetHeight - list.clientHeight
-      void api.resizePopover(chrome + list.scrollHeight + 2)
+      const listPadding = 16
+      void api.resizePopover(chrome + Math.max(inner.offsetHeight + listPadding, 200) + 2)
     }
     const ro = new ResizeObserver(measure)
     ro.observe(document.body)

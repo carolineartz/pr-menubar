@@ -97,12 +97,16 @@ body.no-vibrancy {
 /* ---- list ---- */
 
 .list {
-  display: flex;
-  flex-direction: column;
   padding: 8px 6px;
   min-height: 200px;
   flex: 1;
   overflow-y: auto;
+}
+
+/* natural-height wrapper: the window auto-sizes to this, not the stretched .list */
+.list-inner {
+  display: flex;
+  flex-direction: column;
 }
 
 .group-header {

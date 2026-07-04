@@ -6,6 +6,18 @@ Every PR gets a computed next action — `FIX CI` / `MERGE` / `ADDRESS` / `REVIE
 
 Built with Electron (Tray + vibrancy popover) · React · TypeScript · electron-vite. Design handoff and reference prototype live in [design/](design/HANDOFF.md).
 
+## Screenshots
+
+*Captured from the app itself on its mock dataset (`PRMB_MOCK=1 PRMB_SHOOT=1 electron out/main/index.js` regenerates these). The native vibrancy blur doesn't survive capture — panels look flat here.*
+
+| My PRs — expanded CI breakdown (dark) | Reviewing — grouped by what to do (light) |
+|---|---|
+| ![My PRs, dark](docs/screenshots/my-prs-dark.png) | ![Reviewing, light](docs/screenshots/reviewing-light.png) |
+
+| Team — person toggles (light) | All — every open PR, newest first (dark) |
+|---|---|
+| ![Team, light](docs/screenshots/team-light.png) | ![All, dark](docs/screenshots/all-dark.png) |
+
 ## Requirements
 
 - macOS, [mise](https://mise.jdx.dev) (pins Node + pnpm via `mise.toml`)

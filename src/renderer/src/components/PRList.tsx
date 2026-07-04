@@ -63,7 +63,9 @@ export function PRList({
 
   return (
     <div className="list">
-      {content.length > 0 ? content : <div className="empty">{emptyMessage(tab)}</div>}
+      <div className="list-inner">
+        {content.length > 0 ? content : <div className="empty">{emptyMessage(tab)}</div>}
+      </div>
     </div>
   )
 }

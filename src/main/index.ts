@@ -1,5 +1,6 @@
 import { app, Menu, shell } from 'electron'
 import { electronApp } from '@electron-toolkit/utils'
+import { join } from 'node:path'
 import { CHANNELS } from '../shared/ipc'
 import { makeMockPRs, MOCK_SETTINGS, MOCK_VIEWER } from '../shared/mockData'
 import { Coordinator } from './coordinator'
@@ -9,11 +10,19 @@ import { registerIpcHandlers } from './ipcHandlers'
 import { processNotifications } from './notifier'
 import { createPopover } from './popover'
 import { Poller, type PollResult } from './poller'
+import { captureScreenshots } from './screenshot'
 import { openSettingsWindow } from './settingsWindow'
 import { Store } from './store'
 import { createTray } from './tray'
 
 const MOCK = !!process.env.PRMB_MOCK
+const SHOOT = !!process.env.PRMB_SHOOT
+
+// Mock instances get their own userData so they can run beside the real app
+// (the single-instance lock lives in userData).
+if (MOCK) {
+  app.setPath('userData', `${app.getPath('userData')}-mock`)
+}
 
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -131,6 +140,12 @@ app.whenReady().then(() => {
   })
 
   poller.start()
+
+  if (SHOOT && MOCK) {
+    popover.win.webContents.once('did-finish-load', () => {
+      void captureScreenshots(popover.win, join(process.cwd(), 'docs', 'screenshots'))
+    })
+  }
 })
 
 // Menubar app: stay alive with zero windows; quit only via the tray menu.
