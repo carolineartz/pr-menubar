@@ -1,7 +1,7 @@
 import type { Person, PRSnapshot, Settings } from '../../shared/types'
 import { AuthFailedError, GithubClient, type RateLimitInfo } from './client'
 import { mapPoll, type PollData } from './mapper'
-import { buildAllOpenQuery, buildInvolvementQuery } from './queries'
+import { buildAllOpenQuery, buildInvolvementQueries } from './queries'
 
 export { AuthFailedError }
 
@@ -14,28 +14,29 @@ export interface PollOutcome {
 export class GithubService {
   private client = new GithubClient()
 
-  /** Two smaller requests instead of one: a single query with the All feed's
-   *  full detail exceeds GitHub's per-request GraphQL compute budget (504s). */
+  /** Several small parallel requests instead of one: each involvement search
+   *  costs ~3–4s of GitHub's ~10s per-request execution budget on a large
+   *  repo, so bundling them all 504s. */
   async poll(settings: Settings, savedNodeIds: string[]): Promise<PollOutcome> {
-    const inv = buildInvolvementQuery(settings, savedNodeIds)
+    const invQueries = buildInvolvementQueries(settings, savedNodeIds)
     const allOpen = buildAllOpenQuery(settings)
-    const [invData, allData] = await Promise.all([
-      this.client.graphql<PollData>(inv.document, inv.variables),
+    const [allData, ...invParts] = await Promise.all([
       settings.repos.length > 0
         ? this.client.graphql<Pick<PollData, 'allOpen' | 'rateLimit'>>(
             allOpen.document,
             allOpen.variables
           )
-        : Promise.resolve(null)
+        : Promise.resolve(null),
+      ...invQueries.map((q) => this.client.graphql<PollData>(q.document, q.variables))
     ])
-    const data: PollData = { ...invData, allOpen: allData?.allOpen }
-    const rateLimit =
-      allData && allData.rateLimit.remaining < invData.rateLimit.remaining
-        ? allData.rateLimit
-        : invData.rateLimit
+    const data: PollData = Object.assign({}, ...invParts, { allOpen: allData?.allOpen })
+    const limits = [...invParts.map((p) => p.rateLimit), allData?.rateLimit].filter(
+      (r): r is PollData['rateLimit'] => !!r
+    )
+    const rateLimit = limits.reduce((min, r) => (r.remaining < min.remaining ? r : min))
     return {
       prs: mapPoll(data, settings, Date.now()),
-      viewer: invData.viewer.login,
+      viewer: invParts[0].viewer.login,
       rateLimit
     }
   }
