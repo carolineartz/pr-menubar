@@ -12,6 +12,7 @@ import {
   ExtLinkIcon,
   FailIcon,
   IgnoredIcon,
+  JiraIcon,
   QueuedIcon,
   RunningIcon,
   StarIcon
@@ -204,16 +205,6 @@ function ExpandedPanel({
             Re-run failed
           </button>
         )}
-        {jiraTicket && (
-          <button
-            className="btn mono"
-            title="Open in Jira"
-            onClick={stop(() => actions.openJira(pr.key))}
-          >
-            <ExtLinkIcon />
-            {jiraTicket}
-          </button>
-        )}
         <button className="btn" onClick={stop(() => actions.openPr(pr.key))}>
           <ExtLinkIcon />
           Open
@@ -246,6 +237,15 @@ function ExpandedPanel({
             </div>
           )}
         </span>
+        {jiraTicket && (
+          <button
+            className="btn icon-btn"
+            title={`Open ${jiraTicket} in Jira`}
+            onClick={stop(() => actions.openJira(pr.key))}
+          >
+            <JiraIcon />
+          </button>
+        )}
       </div>
     </div>
   )

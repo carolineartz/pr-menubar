@@ -1,6 +1,6 @@
 {
   "name": "pr-menubar",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "macOS menubar app for monitoring GitHub PRs — what should I do next?",
   "main": "./out/main/index.js",
   "author": "carolineartz",
