@@ -56,12 +56,13 @@ export function pillFor(pr: PRSnapshot): [string, PillTone] | null {
   return null
 }
 
-/** Stable subtle tint per repo — resolves for the active color scheme. */
+/** Stable subtle tint per repo. Blended with the meta-text color so it keeps
+ *  the same contrast as its neighbors in both themes — a hue hint, not a link. */
 export function repoTint(repo: string): string {
   let h = 0
   for (let i = 0; i < repo.length; i++) h = (h * 31 + repo.charCodeAt(i)) >>> 0
   const hue = h % 360
-  return `light-dark(hsl(${hue} 45% 38%), hsl(${hue} 55% 70%))`
+  return `color-mix(in oklab, var(--txt3) 45%, hsl(${hue} 75% 58%))`
 }
 
 /** Everything in the meta line after the repo name: `#123 · context`. */
