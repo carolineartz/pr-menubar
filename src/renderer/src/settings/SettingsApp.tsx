@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type JSX } from 'react'
+import { useEffect, useRef, useState, type JSX, type KeyboardEvent } from 'react'
 import type { NoisyPattern, Settings } from '../../../shared/types'
 import { api } from '../lib/api'
 
@@ -113,18 +113,80 @@ export default function SettingsApp(): JSX.Element {
             Global shortcut
             <span className="row-hint">toggles the popover from anywhere</span>
           </span>
-          <input
-            className="shortcut-input"
-            placeholder="e.g. Cmd+Shift+P"
-            defaultValue={settings.globalShortcut}
-            onBlur={(e) => patch({ globalShortcut: e.target.value.trim() })}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-            }}
+          <ShortcutRecorder
+            value={settings.globalShortcut}
+            onChange={(globalShortcut) => patch({ globalShortcut })}
           />
         </div>
       </Section>
     </div>
+  )
+}
+
+/** Turn the pressed chord into an Electron accelerator, e.g. "Cmd+Shift+P". */
+function chordFrom(e: KeyboardEvent): string | null {
+  const mods = [
+    e.metaKey && 'Cmd',
+    e.ctrlKey && 'Ctrl',
+    e.altKey && 'Alt',
+    e.shiftKey && 'Shift'
+  ].filter(Boolean) as string[]
+  if (mods.length === 0) return null // unmodified globals would hijack typing
+
+  let key: string | null = null
+  const code = e.code
+  if (/^Key[A-Z]$/.test(code)) key = code.slice(3)
+  else if (/^Digit[0-9]$/.test(code)) key = code.slice(5)
+  else if (/^F([1-9]|1[0-2])$/.test(code)) key = code
+  else if (code === 'Space') key = 'Space'
+  else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(code)) {
+    key = code.slice(5)
+  } else if (['Backquote', 'Minus', 'Equal', 'Comma', 'Period', 'Slash'].includes(code)) {
+    key = { Backquote: '`', Minus: '-', Equal: '=', Comma: ',', Period: '.', Slash: '/' }[code]!
+  }
+  if (!key) return null // a bare modifier or something unmappable
+
+  return [...mods, key].join('+')
+}
+
+function ShortcutRecorder({
+  value,
+  onChange
+}: {
+  value: string
+  onChange: (accelerator: string) => void
+}): JSX.Element {
+  const [recording, setRecording] = useState(false)
+
+  return (
+    <span className="recorder-wrap">
+      <button
+        className={recording ? 'shortcut-recorder recording' : 'shortcut-recorder'}
+        onClick={() => setRecording(true)}
+        onBlur={() => setRecording(false)}
+        onKeyDown={(e) => {
+          if (!recording) return
+          e.preventDefault()
+          e.stopPropagation()
+          if (e.key === 'Escape') {
+            setRecording(false)
+            return
+          }
+          const chord = chordFrom(e)
+          if (chord) {
+            onChange(chord)
+            setRecording(false)
+          }
+        }}
+      >
+        {recording ? 'Press shortcut… (Esc to cancel)' : value || 'Click to record'}
+      </button>
+      {value && !recording && (
+        <button className="shortcut-clear" title="Remove shortcut" onClick={() => onChange('')}>
+          ×
+        </button>
+      )}
+    </span>
   )
 }
 

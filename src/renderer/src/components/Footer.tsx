@@ -1,4 +1,5 @@
 import type { JSX } from 'react'
+import { repoTint } from '../../../shared/present'
 
 export function Footer({
   lastSyncAt,
@@ -6,6 +7,8 @@ export function Footer({
   now,
   snoozedCount,
   showSnoozed,
+  repoFocus,
+  onClearRepoFocus,
   onToggleSnoozed,
   onRefresh,
   onOpenGithub
@@ -15,6 +18,8 @@ export function Footer({
   now: number
   snoozedCount: number
   showSnoozed: boolean
+  repoFocus: string | null
+  onClearRepoFocus: () => void
   onToggleSnoozed: () => void
   onRefresh: () => void
   onOpenGithub: () => void
@@ -32,6 +37,16 @@ export function Footer({
       <span className="sync-text" title={syncError ?? undefined}>
         {syncText}
       </span>
+      {repoFocus && (
+        <button
+          className="repo-focus-chip"
+          style={{ color: repoTint(repoFocus) }}
+          title={`Showing only ${repoFocus} — click to clear`}
+          onClick={onClearRepoFocus}
+        >
+          {repoFocus.split('/')[1] ?? repoFocus} ×
+        </button>
+      )}
       {snoozedCount > 0 && (
         <button className="snooze-toggle" onClick={onToggleSnoozed}>
           {snoozedCount} snoozed · {showSnoozed ? 'hide' : 'show'}

@@ -1,6 +1,6 @@
 import { useState, type JSX, type MouseEvent } from 'react'
 import type { ClassifiedCheck, PRSnapshot, SnoozeMode } from '../../../shared/types'
-import { behindSince, metaFor, pillFor, relativeShort } from '../../../shared/present'
+import { behindSince, metaContext, pillFor, relativeShort, repoTint } from '../../../shared/present'
 import { Avatar } from './Avatar'
 import {
   CheckIcon,
@@ -18,6 +18,7 @@ import {
 
 export interface RowActions {
   toggleExpand: (key: string) => void
+  toggleRepoFocus: (repo: string) => void
   openPr: (key: string) => void
   openLog: (key: string, check: string) => void
   rerunFailed: (key: string) => void
@@ -37,6 +38,7 @@ export function PRRow({
   snoozed,
   hideChip,
   timeBadge,
+  repoFocused,
   actions
 }: {
   pr: PRSnapshot
@@ -49,6 +51,7 @@ export function PRRow({
   /** Reviewing tab: the group header names the action, so the chip slot shows
    *  how long this has been waiting instead */
   timeBadge: boolean
+  repoFocused: boolean
   actions: RowActions
 }): JSX.Element {
   const pill = pillFor(pr)
@@ -67,14 +70,28 @@ export function PRRow({
 
   return (
     <>
-      <div className={rowClass} onClick={() => actions.toggleExpand(pr.key)}>
+      <div
+        className={rowClass}
+        onClick={(e) => (e.metaKey ? actions.openPr(pr.key) : actions.toggleExpand(pr.key))}
+      >
         <span className={`dot ${pr.dot}`} />
         <div className="row-main">
           <div className="row-title-line">
             {pr.isDraft && <DraftGlyph />}
             <span className={pr.isDraft ? 'row-title draft' : 'row-title'}>{pr.title}</span>
           </div>
-          <div className="row-meta">{metaFor(pr, now)}</div>
+          <div className="row-meta">
+            {pr.isDraft && 'Draft · '}
+            <button
+              className={repoFocused ? 'repo-name focused' : 'repo-name'}
+              style={{ color: repoTint(pr.repo) }}
+              title={repoFocused ? 'Click to show all repos' : `Only show ${pr.repo}`}
+              onClick={stop(() => actions.toggleRepoFocus(pr.repo))}
+            >
+              {pr.repo}
+            </button>{' '}
+            {metaContext(pr, now)}
+          </div>
         </div>
         {snoozed && (
           <button className="unsnooze-btn" onClick={stop(() => actions.unsnooze(pr.key))}>

@@ -40,6 +40,7 @@ export function PRList({
       snoozed={isSnoozedNow(pr, ctx)}
       hideChip={tab === 'all'}
       timeBadge={tab === 'rev'}
+      repoFocused={ctx.repoFocus === pr.repo}
       actions={actions}
     />
   )

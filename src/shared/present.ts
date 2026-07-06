@@ -56,9 +56,16 @@ export function pillFor(pr: PRSnapshot): [string, PillTone] | null {
   return null
 }
 
-/** Meta line: `repo #num · context` (+ "Draft · " prefix for drafts). */
-export function metaFor(pr: PRSnapshot, now: number): string {
-  const base = `${pr.repo} #${pr.number}`
+/** Stable subtle tint per repo — resolves for the active color scheme. */
+export function repoTint(repo: string): string {
+  let h = 0
+  for (let i = 0; i < repo.length; i++) h = (h * 31 + repo.charCodeAt(i)) >>> 0
+  const hue = h % 360
+  return `light-dark(hsl(${hue} 45% 38%), hsl(${hue} 55% 70%))`
+}
+
+/** Everything in the meta line after the repo name: `#123 · context`. */
+export function metaContext(pr: PRSnapshot, now: number): string {
   let context: string
   if (pr.nextAction === 'REVIEW') {
     // request-event timestamps aren't in the poll query; updatedAt approximates
@@ -77,8 +84,13 @@ export function metaFor(pr: PRSnapshot, now: number): string {
     context = `updated ${relativeTime(pr.updatedAt, now)}`
     if (pr.mergeable === 'CONFLICTING') context += ' · conflicts with main'
   }
+  return `#${pr.number} · ${context}`
+}
+
+/** Full meta line as plain text (tests / non-interactive rendering). */
+export function metaFor(pr: PRSnapshot, now: number): string {
   const draft = pr.isDraft ? 'Draft · ' : ''
-  return `${draft}${base} · ${context}`
+  return `${draft}${pr.repo} ${metaContext(pr, now)}`
 }
 
 /** Stable avatar colors: viewer always blue; others hashed onto the palette. */

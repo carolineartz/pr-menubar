@@ -222,6 +222,23 @@ body {
   color: var(--txt3);
 }
 
+.repo-name {
+  font: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.repo-name:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.repo-name.focused {
+  font-weight: 600;
+}
+
 .chip {
   flex: none;
   font: 600 10.5px/1 ui-monospace, Menlo, monospace;
@@ -656,6 +673,15 @@ body {
 .footer .sync-text {
   font-size: 11px;
   color: var(--txt3);
+}
+
+.footer .repo-focus-chip {
+  font: 600 11px ui-monospace, Menlo, monospace;
+  background: var(--seg);
+  border: none;
+  border-radius: 99px;
+  padding: 2px 9px;
+  cursor: pointer;
 }
 
 .footer .snooze-toggle {

@@ -53,3 +53,24 @@ describe('All tab author filter', () => {
     expect(rowsFor('all', prs, ctx)).toHaveLength(prs.length)
   })
 })
+
+describe('repo focus', () => {
+  const prs = makeMockPRs(NOW)
+
+  it('narrows every tab to the focused repo', () => {
+    const focused = { ...ctx, repoFocus: 'acme/api' }
+    for (const tab of ['my', 'rev', 'team', 'all'] as const) {
+      const rows = rowsFor(tab, prs, focused)
+      expect(rows.every((p) => p.repo === 'acme/api')).toBe(true)
+    }
+    // and it actually excludes other repos on the All tab
+    expect(rowsFor('all', prs, focused).length).toBeLessThan(prs.length)
+    expect(rowsFor('all', prs, focused).length).toBeGreaterThan(0)
+  })
+
+  it('composes with the author filter', () => {
+    const both = { ...ctx, repoFocus: 'acme/api', allAuthor: 'mkatz' }
+    const rows = rowsFor('all', prs, both)
+    expect(rows.every((p) => p.repo === 'acme/api' && p.author === 'mkatz')).toBe(true)
+  })
+})

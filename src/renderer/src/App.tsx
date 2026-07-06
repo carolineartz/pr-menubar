@@ -18,6 +18,7 @@ export default function App(): JSX.Element {
   const [snoozeMenuKey, setSnoozeMenuKey] = useState<string | null>(null)
   const [showSnoozed, setShowSnoozed] = useState(false)
   const [allAuthor, setAllAuthor] = useState<string | null>(null)
+  const [repoFocus, setRepoFocus] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -93,9 +94,10 @@ export default function App(): JSX.Element {
       snoozed: state?.snoozed ?? {},
       teamToggles: state?.teamToggles ?? {},
       now,
-      allAuthor
+      allAuthor,
+      repoFocus
     }),
-    [state, now, allAuthor]
+    [state, now, allAuthor, repoFocus]
   )
 
   const actions: RowActions = useMemo(
@@ -104,6 +106,7 @@ export default function App(): JSX.Element {
         setExpandedKey((cur) => (cur === key ? null : key))
         setSnoozeMenuKey(null)
       },
+      toggleRepoFocus: (repo) => setRepoFocus((cur) => (cur === repo ? null : repo)),
       openPr: (key) => void api.openPr(key),
       openLog: (key, check) => void api.openLog(key, check),
       rerunFailed: (key) => {
@@ -209,6 +212,8 @@ export default function App(): JSX.Element {
         now={now}
         snoozedCount={snoozedCount}
         showSnoozed={showSnoozed}
+        repoFocus={repoFocus}
+        onClearRepoFocus={() => setRepoFocus(null)}
         onToggleSnoozed={() => setShowSnoozed((v) => !v)}
         onRefresh={refresh}
         onOpenGithub={() => void api.openGithub()}

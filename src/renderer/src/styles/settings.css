@@ -182,19 +182,40 @@ body {
   color: var(--txt3);
 }
 
-.shortcut-input {
-  width: 150px;
+.recorder-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.shortcut-recorder {
+  min-width: 150px;
   font: 12px ui-monospace, Menlo, monospace;
   color: var(--txt);
   background: var(--inset);
   border: 1px solid var(--btnb);
   border-radius: 6px;
-  padding: 5px 8px;
-  outline: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-align: center;
 }
 
-.shortcut-input:focus {
+.shortcut-recorder.recording {
   border-color: #0a84ff;
+  color: var(--txt3);
+}
+
+.shortcut-clear {
+  border: none;
+  background: none;
+  color: var(--txt3);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 3px;
+}
+
+.shortcut-clear:hover {
+  color: var(--redt);
 }
 
 .toggle-row input {

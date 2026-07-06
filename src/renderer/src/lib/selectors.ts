@@ -19,6 +19,8 @@ export interface ListContext {
   now: number
   /** All tab only: show a single author's PRs */
   allAuthor?: string | null
+  /** every tab: focus a single repo (click a repo name to toggle) */
+  repoFocus?: string | null
 }
 
 export function isSnoozedNow(pr: PRSnapshot, ctx: ListContext): boolean {
@@ -33,6 +35,7 @@ export function rowsFor(
   includeSnoozed = false
 ): PRSnapshot[] {
   return prs.filter((pr) => {
+    if (ctx.repoFocus && pr.repo !== ctx.repoFocus) return false
     let inTab: boolean
     if (tab === 'saved') inTab = ctx.starred.has(pr.key)
     else inTab = pr.buckets.includes(tab)
