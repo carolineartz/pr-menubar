@@ -3,6 +3,7 @@ import type { AppState } from '../../shared/ipc'
 import type { PRSnapshot, SnoozeMode } from '../../shared/types'
 import { api } from './lib/api'
 import { rowsFor, TABS, type ListContext, type TabId } from './lib/selectors'
+import { AuthorFilterBar } from './components/AuthorFilterBar'
 import { Footer } from './components/Footer'
 import { PRList } from './components/PRList'
 import { SetupScreen } from './components/SetupScreen'
@@ -16,6 +17,7 @@ export default function App(): JSX.Element {
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
   const [snoozeMenuKey, setSnoozeMenuKey] = useState<string | null>(null)
   const [showSnoozed, setShowSnoozed] = useState(false)
+  const [allAuthor, setAllAuthor] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -45,9 +47,18 @@ export default function App(): JSX.Element {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
-      if (e.metaKey && e.key === 'r') {
+      if (!e.metaKey || e.ctrlKey || e.altKey) return
+      if (e.key === 'r') {
         e.preventDefault()
         refresh()
+        return
+      }
+      // ⌘1–⌘5 jump straight to a tab
+      const idx = Number(e.key) - 1
+      if (idx >= 0 && idx < TABS.length) {
+        e.preventDefault()
+        setTab(TABS[idx].id)
+        setSnoozeMenuKey(null)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -81,9 +92,10 @@ export default function App(): JSX.Element {
       starred: new Set(state?.starred ?? []),
       snoozed: state?.snoozed ?? {},
       teamToggles: state?.teamToggles ?? {},
-      now
+      now,
+      allAuthor
     }),
-    [state, now]
+    [state, now, allAuthor]
   )
 
   const actions: RowActions = useMemo(
@@ -187,6 +199,9 @@ export default function App(): JSX.Element {
           toggles={state.teamToggles}
           onToggle={(login, on) => void api.toggleTeam(login, on)}
         />
+      )}
+      {tab === 'all' && (
+        <AuthorFilterBar people={state.people} active={allAuthor} onSelect={setAllAuthor} />
       )}
       <Footer
         lastSyncAt={state.lastSyncAt}

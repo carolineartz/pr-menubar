@@ -1,8 +1,8 @@
-import { app, Menu, nativeTheme, shell } from 'electron'
+import { app, globalShortcut, Menu, nativeTheme, shell } from 'electron'
 import { electronApp } from '@electron-toolkit/utils'
 import { join } from 'node:path'
 import { CHANNELS } from '../shared/ipc'
-import { makeMockPRs, MOCK_SETTINGS, MOCK_VIEWER } from '../shared/mockData'
+import { makeMockPRs, MOCK_PEOPLE, MOCK_SETTINGS, MOCK_VIEWER } from '../shared/mockData'
 import { Coordinator } from './coordinator'
 import { RateLimitedError } from './github/client'
 import { AuthFailedError, GithubService } from './github/service'
@@ -45,6 +45,7 @@ app.whenReady().then(() => {
   if (MOCK) {
     store.set('settings', MOCK_SETTINGS)
   }
+  const mockPeople = MOCK ? MOCK_PEOPLE : []
 
   // 'system' | 'light' | 'dark' — themeSource drives both the CSS
   // prefers-color-scheme tokens and the native vibrancy appearance
@@ -83,6 +84,7 @@ app.whenReady().then(() => {
     getWindow: () => popover.win,
     setBadge: (n) => trayCtl.setBadge(n)
   })
+  coordinator.orgPeople = mockPeople
 
   const poller = new Poller(
     fetchPRs,
@@ -116,6 +118,33 @@ app.whenReady().then(() => {
     if (Date.now() - (coordinator.lastSyncAt ?? 0) > 15_000) poller.refresh()
   })
 
+  const applyGlobalShortcut = (): void => {
+    globalShortcut.unregisterAll()
+    const accel = store.get('settings').globalShortcut.trim()
+    if (!accel) return
+    try {
+      globalShortcut.register(accel, () => {
+        if (popover.win.isVisible()) popover.hide()
+        else popover.show(trayCtl.tray.getBounds())
+      })
+    } catch {
+      // invalid accelerator string — leave unbound rather than crash
+    }
+  }
+  applyGlobalShortcut()
+
+  const refreshPeople = (): void => {
+    if (MOCK) return
+    void github
+      .fetchPeople(store.get('settings').repos)
+      .then((people) => {
+        coordinator.orgPeople = people
+        coordinator.publish()
+      })
+      .catch(() => {})
+  }
+  refreshPeople()
+
   registerIpcHandlers({
     coordinator,
     store,
@@ -140,6 +169,8 @@ app.whenReady().then(() => {
       const settings = store.get('settings')
       app.setLoginItemSettings({ openAtLogin: settings.launchAtLogin })
       nativeTheme.themeSource = settings.theme
+      applyGlobalShortcut()
+      refreshPeople()
       poller.refresh()
     },
     resizePopover: (h) => popover.resize(h)

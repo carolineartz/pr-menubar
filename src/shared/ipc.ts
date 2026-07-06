@@ -1,4 +1,4 @@
-import type { PRSnapshot, Settings, SnoozeEntry, SnoozeMode } from './types'
+import type { Person, PRSnapshot, Settings, SnoozeEntry, SnoozeMode } from './types'
 
 /** Full state pushed to the popover after every poll or mutation. */
 export interface AppState {
@@ -13,6 +13,8 @@ export interface AppState {
   snoozed: Record<string, SnoozeEntry>
   teamToggles: Record<string, boolean>
   badgeCount: number
+  /** org members + feed authors, for the All-tab author filter */
+  people: Person[]
 }
 
 /** Renderer → main (ipcRenderer.invoke). */

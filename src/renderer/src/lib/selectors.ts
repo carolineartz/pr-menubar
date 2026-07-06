@@ -17,6 +17,8 @@ export interface ListContext {
   snoozed: Record<string, SnoozeEntry>
   teamToggles: Record<string, boolean>
   now: number
+  /** All tab only: show a single author's PRs */
+  allAuthor?: string | null
 }
 
 export function isSnoozedNow(pr: PRSnapshot, ctx: ListContext): boolean {
@@ -35,6 +37,7 @@ export function rowsFor(
     if (tab === 'saved') inTab = ctx.starred.has(pr.key)
     else inTab = pr.buckets.includes(tab)
     if (tab === 'team' && ctx.teamToggles[pr.author] === false) inTab = false
+    if (tab === 'all' && ctx.allAuthor && pr.author !== ctx.allAuthor) inTab = false
     // Approved and nothing left to do = done reviewing. New commits after the
     // approval turn it into RESUME (stale review) and it comes back.
     if (tab === 'rev' && pr.viewerReviewState === 'APPROVED' && pr.nextAction === 'WAITING') {

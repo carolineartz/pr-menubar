@@ -1,7 +1,7 @@
 import type { AppState, RendererApi } from '../../../shared/ipc'
 import { badgeCount } from '../../../shared/badge'
 import { activityFingerprint, snoozeUntil } from '../../../shared/fingerprint'
-import { makeMockPRs, MOCK_SETTINGS, MOCK_VIEWER } from '../../../shared/mockData'
+import { makeMockPRs, MOCK_PEOPLE, MOCK_SETTINGS, MOCK_VIEWER } from '../../../shared/mockData'
 import type { SnoozeMode } from '../../../shared/types'
 
 declare global {
@@ -26,7 +26,8 @@ function createMockApi(): RendererApi {
     starred: ['acme/api#482'],
     snoozed: {},
     teamToggles: {},
-    badgeCount: badgeCount(prs, {}, Date.now())
+    badgeCount: badgeCount(prs, {}, Date.now()),
+    people: MOCK_PEOPLE
   }
   let listeners: ((s: AppState) => void)[] = []
   const push = (): void => {

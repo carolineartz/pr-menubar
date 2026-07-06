@@ -11,6 +11,15 @@ import { DEFAULT_SETTINGS } from './types'
 
 export const MOCK_VIEWER = 'carolineartz'
 
+export const MOCK_PEOPLE = [
+  { login: 'alind', name: 'Anna Lindqvist' },
+  { login: 'dvest', name: 'Dan Vestal' },
+  { login: 'jharrow', name: 'Jesse Harrow' },
+  { login: 'mkatz', name: 'Maya Katz' },
+  { login: 'pnovak', name: 'Petra Novak' },
+  { login: 'rsoto', name: 'Rafael Soto' }
+]
+
 export const MOCK_SETTINGS: Settings = {
   ...DEFAULT_SETTINGS,
   repos: ['acme/api', 'acme/web', 'acme/auth', 'acme/billing'],

@@ -3,7 +3,7 @@ import { badgeCount } from '../shared/badge'
 import { isSnoozeActive } from '../shared/fingerprint'
 import type { AppState } from '../shared/ipc'
 import { CHANNELS } from '../shared/ipc'
-import type { PRSnapshot } from '../shared/types'
+import type { Person, PRSnapshot } from '../shared/types'
 import type { Store } from './store'
 
 /**
@@ -17,6 +17,7 @@ export class Coordinator {
   authOk = true
   lastSyncAt: number | null = null
   syncError: string | null = null
+  orgPeople: Person[] = []
 
   constructor(
     private store: Store,
@@ -35,8 +36,18 @@ export class Coordinator {
       starred: this.store.get('starred'),
       snoozed: this.store.get('snoozed'),
       teamToggles: this.store.get('teamToggles'),
-      badgeCount: this.currentBadge()
+      badgeCount: this.currentBadge(),
+      people: this.people()
     }
+  }
+
+  /** Org members plus anyone authoring a PR in the current feed. */
+  private people(): Person[] {
+    const merged = new Map(this.orgPeople.map((p) => [p.login, p]))
+    for (const pr of this.prs) {
+      if (!merged.has(pr.author)) merged.set(pr.author, { login: pr.author, name: null })
+    }
+    return [...merged.values()].sort((a, b) => a.login.localeCompare(b.login))
   }
 
   currentBadge(): number {

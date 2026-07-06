@@ -105,6 +105,13 @@ export interface NotificationToggles {
 
 export type ThemePreference = 'system' | 'light' | 'dark'
 
+/** Someone who can author PRs — feeds the All-tab author autocomplete. */
+export interface Person {
+  login: string
+  /** display name when the org profile has one */
+  name: string | null
+}
+
 export interface Settings {
   repos: string[]
   teamUsernames: string[]
@@ -113,6 +120,8 @@ export interface Settings {
   badgeEnabled: boolean
   launchAtLogin: boolean
   theme: ThemePreference
+  /** Electron accelerator that toggles the popover, e.g. "Cmd+Shift+P"; '' = off */
+  globalShortcut: string
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -122,7 +131,8 @@ export const DEFAULT_SETTINGS: Settings = {
   notifications: { ciFail: true, approved: true, reviewRequested: true, comments: true },
   badgeEnabled: true,
   launchAtLogin: false,
-  theme: 'system'
+  theme: 'system',
+  globalShortcut: ''
 }
 
 export interface PrNotifState {

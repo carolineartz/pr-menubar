@@ -108,6 +108,21 @@ export default function SettingsApp(): JSX.Element {
           />
           Launch at login
         </label>
+        <div className="shortcut-row">
+          <span>
+            Global shortcut
+            <span className="row-hint">toggles the popover from anywhere</span>
+          </span>
+          <input
+            className="shortcut-input"
+            placeholder="e.g. Cmd+Shift+P"
+            defaultValue={settings.globalShortcut}
+            onBlur={(e) => patch({ globalShortcut: e.target.value.trim() })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+            }}
+          />
+        </div>
       </Section>
     </div>
   )

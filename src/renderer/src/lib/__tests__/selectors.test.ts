@@ -34,3 +34,22 @@ describe('Reviewing tab hides PRs I already approved', () => {
     expect(rowsFor('rev', [base], ctx)).toHaveLength(1)
   })
 })
+
+describe('All tab author filter', () => {
+  const prs = makeMockPRs(NOW)
+
+  it('narrows to a single author', () => {
+    const filtered = rowsFor('all', prs, { ...ctx, allAuthor: 'mkatz' })
+    expect(filtered.length).toBeGreaterThan(0)
+    expect(filtered.every((p) => p.author === 'mkatz')).toBe(true)
+  })
+
+  it('does not leak into other tabs', () => {
+    const team = rowsFor('team', prs, { ...ctx, allAuthor: 'mkatz' })
+    expect(new Set(team.map((p) => p.author)).size).toBeGreaterThan(1)
+  })
+
+  it('no filter shows everything', () => {
+    expect(rowsFor('all', prs, ctx)).toHaveLength(prs.length)
+  })
+})

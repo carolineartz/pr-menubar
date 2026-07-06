@@ -167,6 +167,36 @@ body {
   cursor: pointer;
 }
 
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+  padding: 8px 0 2px;
+}
+
+.shortcut-row .row-hint {
+  display: block;
+  font-size: 11px;
+  color: var(--txt3);
+}
+
+.shortcut-input {
+  width: 150px;
+  font: 12px ui-monospace, Menlo, monospace;
+  color: var(--txt);
+  background: var(--inset);
+  border: 1px solid var(--btnb);
+  border-radius: 6px;
+  padding: 5px 8px;
+  outline: none;
+}
+
+.shortcut-input:focus {
+  border-color: #0a84ff;
+}
+
 .toggle-row input {
   accent-color: #0a84ff;
 }

@@ -1,4 +1,4 @@
-import type { PRSnapshot, Settings } from '../../shared/types'
+import type { Person, PRSnapshot, Settings } from '../../shared/types'
 import { AuthFailedError, GithubClient, type RateLimitInfo } from './client'
 import { mapPoll, type PollData } from './mapper'
 import { buildAllOpenQuery, buildInvolvementQuery } from './queries'
@@ -38,6 +38,38 @@ export class GithubService {
       viewer: invData.viewer.login,
       rateLimit
     }
+  }
+
+  /**
+   * Org members for the author autocomplete, derived from the watched repos'
+   * owners. Best-effort: user-owned repos and orgs that hide their member
+   * list just contribute nothing.
+   */
+  async fetchPeople(repos: string[]): Promise<Person[]> {
+    const owners = [...new Set(repos.map((r) => r.split('/')[0]).filter(Boolean))]
+    const people = new Map<string, Person>()
+    for (const owner of owners) {
+      try {
+        const data = await this.client.graphql<{
+          organization: {
+            membersWithRole: { nodes: { login: string; name: string | null }[] }
+          } | null
+        }>(
+          `query Members($org: String!) {
+            organization(login: $org) {
+              membersWithRole(first: 100) { nodes { login name } }
+            }
+          }`,
+          { org: owner }
+        )
+        for (const m of data.organization?.membersWithRole.nodes ?? []) {
+          people.set(m.login, { login: m.login, name: m.name ?? null })
+        }
+      } catch {
+        // not an org / no read:org visibility — skip
+      }
+    }
+    return [...people.values()].sort((a, b) => a.login.localeCompare(b.login))
   }
 
   /** true if gh credentials work. */
