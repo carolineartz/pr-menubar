@@ -52,6 +52,16 @@ export const PR_FRAGMENT = /* GraphQL */ `
         }
       }
     }
+    recentCommits: commits(last: 5) {
+      nodes {
+        commit {
+          committedDate
+          parents {
+            totalCount
+          }
+        }
+      }
+    }
     commits(last: 1) {
       nodes {
         commit {

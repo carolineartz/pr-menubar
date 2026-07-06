@@ -157,6 +157,7 @@ export function makeMockPRs(
       headRefName: s.branch,
       headSha: `sha-${s.number}`,
       lastCommitAt: s.lastCommitMin != null ? iso(s.lastCommitMin) : null,
+      lastMeaningfulCommitAt: s.lastCommitMin != null ? iso(s.lastCommitMin) : null,
       mergeable: s.mergeable ?? ('MERGEABLE' as const),
       reviewDecision: s.reviewDecision ?? null,
       commentCount: s.commentCount ?? 0,

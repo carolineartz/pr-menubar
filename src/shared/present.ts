@@ -12,6 +12,32 @@ export function relativeTime(iso: string | null, now: number): string {
   return `${day}d ago`
 }
 
+/** Compact single-unit age: "8m", "2h", "5d". */
+export function relativeShort(iso: string | null, now: number): string {
+  if (!iso) return ''
+  const min = Math.max(0, Math.floor((now - Date.parse(iso)) / 60_000))
+  if (min < 60) return `${min}m`
+  const hr = Math.floor(min / 60)
+  if (hr < 24) return `${hr}h`
+  return `${Math.floor(hr / 24)}d`
+}
+
+/**
+ * Reviewing tab: what timestamp am I behind on? Stale reviews measure from
+ * the newest real (non-merge) commit; everything else from the PR's update.
+ */
+export function behindSince(pr: PRSnapshot): string {
+  if (
+    pr.nextAction === 'RESUME' &&
+    pr.viewerLastReviewAt &&
+    pr.lastMeaningfulCommitAt &&
+    pr.lastMeaningfulCommitAt > pr.viewerLastReviewAt
+  ) {
+    return pr.lastMeaningfulCommitAt
+  }
+  return pr.updatedAt
+}
+
 export type PillTone = 'green' | 'red' | 'neut'
 
 /**

@@ -46,6 +46,10 @@ export interface GqlPR {
   reviewThreads?: { nodes: { isResolved: boolean }[] }
   latestReviews: { nodes: GqlReview[] }
   reviewRequests: { nodes: { requestedReviewer: { login: string } | null }[] }
+  /** absent on PRLite nodes */
+  recentCommits?: {
+    nodes: { commit: { committedDate: string; parents: { totalCount: number } } }[]
+  }
   commits: {
     nodes: {
       commit: {
@@ -160,6 +164,19 @@ function fromRollupState(state: string | undefined): ClassifiedChecks {
   return { checks: [], ciState, dot, meaningfulFailure: ciState === 'failed' }
 }
 
+/** Newest commit with a single parent — merge commits (2+ parents) are branch
+ *  upkeep, not reviewable activity. When the whole recent window is merges,
+ *  report nothing rather than false-flagging a merge as new work. */
+function lastMeaningfulCommit(pr: GqlPR): string | null {
+  if (!pr.recentCommits) return pr.commits.nodes[0]?.commit.committedDate ?? null
+  const recents = pr.recentCommits.nodes
+    .map((n) => n.commit)
+    .filter((c) => c.parents.totalCount <= 1)
+    .map((c) => c.committedDate)
+    .sort()
+  return recents[recents.length - 1] ?? null
+}
+
 function mapOne(
   pr: GqlPR,
   buckets: TabBucket[],
@@ -199,6 +216,7 @@ function mapOne(
     headRefName: pr.headRefName,
     headSha: pr.headRefOid,
     lastCommitAt: commit?.committedDate ?? null,
+    lastMeaningfulCommitAt: lastMeaningfulCommit(pr),
     mergeable: (pr.mergeable === 'MERGEABLE' || pr.mergeable === 'CONFLICTING'
       ? pr.mergeable
       : 'UNKNOWN') as PRSnapshot['mergeable'],

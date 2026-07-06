@@ -236,6 +236,20 @@ body {
 .chip.RESUME { background: var(--purbg); color: var(--purt); }
 .chip.WAITING { background: var(--neutbg); color: var(--neut); }
 
+.time-badge {
+  flex: none;
+  font: 600 10.5px/1 ui-monospace, Menlo, monospace;
+  padding: 4px 7px;
+  border-radius: 5px;
+  background: var(--neutbg);
+  color: var(--neut);
+}
+
+.time-badge.stale {
+  background: var(--amberbg);
+  color: var(--ambert);
+}
+
 .pill {
   flex: none;
   font-size: 11px;

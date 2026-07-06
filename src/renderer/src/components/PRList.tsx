@@ -39,6 +39,7 @@ export function PRList({
       starred={ctx.starred.has(pr.key)}
       snoozed={isSnoozedNow(pr, ctx)}
       hideChip={tab === 'all'}
+      timeBadge={tab === 'rev'}
       actions={actions}
     />
   )

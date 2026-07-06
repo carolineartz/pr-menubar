@@ -1,6 +1,6 @@
 import { useState, type JSX, type MouseEvent } from 'react'
 import type { ClassifiedCheck, PRSnapshot, SnoozeMode } from '../../../shared/types'
-import { metaFor, pillFor } from '../../../shared/present'
+import { behindSince, metaFor, pillFor, relativeShort } from '../../../shared/present'
 import { Avatar } from './Avatar'
 import {
   CheckIcon,
@@ -36,6 +36,7 @@ export function PRRow({
   starred,
   snoozed,
   hideChip,
+  timeBadge,
   actions
 }: {
   pr: PRSnapshot
@@ -45,6 +46,9 @@ export function PRRow({
   starred: boolean
   snoozed: boolean
   hideChip: boolean
+  /** Reviewing tab: the group header names the action, so the chip slot shows
+   *  how long this has been waiting instead */
+  timeBadge: boolean
   actions: RowActions
 }): JSX.Element {
   const pill = pillFor(pr)
@@ -77,10 +81,14 @@ export function PRRow({
             Unsnooze
           </button>
         )}
-        {!hideChip && (
-          <span className={`chip ${pr.nextAction}`}>
-            {pr.nextAction === 'FIXCI' ? 'FIX CI' : pr.nextAction}
-          </span>
+        {timeBadge ? (
+          <TimeBadge pr={pr} now={now} />
+        ) : (
+          !hideChip && (
+            <span className={`chip ${pr.nextAction}`}>
+              {pr.nextAction === 'FIXCI' ? 'FIX CI' : pr.nextAction}
+            </span>
+          )
         )}
         {pill && <span className={`pill ${pill[1]}`}>{pill[0]}</span>}
         <Avatar login={pr.author} isViewer={pr.authorIsViewer} />
@@ -95,6 +103,18 @@ export function PRRow({
         />
       )}
     </>
+  )
+}
+
+const STALE_MS = 2 * 24 * 60 * 60 * 1000
+
+function TimeBadge({ pr, now }: { pr: PRSnapshot; now: number }): JSX.Element {
+  const since = behindSince(pr)
+  const stale = now - Date.parse(since) >= STALE_MS
+  return (
+    <span className={stale ? 'time-badge stale' : 'time-badge'} title="waiting for you since">
+      {relativeShort(since, now)}
+    </span>
   )
 }
 

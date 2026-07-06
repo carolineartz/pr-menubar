@@ -32,7 +32,7 @@ export type NextActionInput = Pick<
   | 'viewerLastReviewAt'
   | 'viewerReviewState'
   | 'viewerCommented'
-  | 'lastCommitAt'
+  | 'lastMeaningfulCommitAt'
 >
 
 /**
@@ -75,10 +75,12 @@ export function computeNextAction(pr: NextActionInput): NextAction {
       pr.viewerHasPendingReview || pr.viewerCommented || pr.viewerReviewState !== null
     if (pr.reviewRequestedFromViewer && !started) return 'REVIEW'
 
+    // merges from main are routine branch upkeep, not something to re-review —
+    // only real commits after my review pull the PR back into my queue
     const staleReview =
       pr.viewerLastReviewAt !== null &&
-      pr.lastCommitAt !== null &&
-      pr.viewerLastReviewAt < pr.lastCommitAt
+      pr.lastMeaningfulCommitAt !== null &&
+      pr.viewerLastReviewAt < pr.lastMeaningfulCommitAt
     if (
       pr.viewerHasPendingReview ||
       (pr.viewerCommented && pr.viewerReviewState === null) ||

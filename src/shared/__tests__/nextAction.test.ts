@@ -16,7 +16,7 @@ function base(over: Partial<NextActionInput> = {}): NextActionInput {
     viewerLastReviewAt: null,
     viewerReviewState: null,
     viewerCommented: false,
-    lastCommitAt: '2026-07-01T10:00:00Z',
+    lastMeaningfulCommitAt: '2026-07-01T10:00:00Z',
     ...over
   }
 }
@@ -94,17 +94,30 @@ describe('computeNextAction — first match wins', () => {
     )
   })
 
-  it('RESUME: my review predates the newest commit', () => {
+  it('RESUME: my review predates the newest real commit', () => {
     expect(
       computeNextAction(
         base({
           authorIsViewer: false,
           viewerReviewState: 'APPROVED',
           viewerLastReviewAt: '2026-07-01T09:00:00Z',
-          lastCommitAt: '2026-07-01T10:00:00Z'
+          lastMeaningfulCommitAt: '2026-07-01T10:00:00Z'
         })
       )
     ).toBe('RESUME')
+  })
+
+  it('merges from main after my review do NOT pull it back (no meaningful commits)', () => {
+    expect(
+      computeNextAction(
+        base({
+          authorIsViewer: false,
+          viewerReviewState: 'COMMENTED',
+          viewerLastReviewAt: '2026-07-01T09:00:00Z',
+          lastMeaningfulCommitAt: null // recent window was all merge commits
+        })
+      )
+    ).toBe('WAITING')
   })
 
   it('WAITING: I requested changes and nothing new happened', () => {
@@ -115,7 +128,7 @@ describe('computeNextAction — first match wins', () => {
           viewerReviewState: 'CHANGES_REQUESTED',
           viewerCommented: true,
           viewerLastReviewAt: '2026-07-01T11:00:00Z',
-          lastCommitAt: '2026-07-01T10:00:00Z'
+          lastMeaningfulCommitAt: '2026-07-01T10:00:00Z'
         })
       )
     ).toBe('WAITING')

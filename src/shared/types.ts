@@ -53,6 +53,8 @@ export interface PRSnapshot {
   headRefName: string
   headSha: string
   lastCommitAt: string | null
+  /** newest non-merge commit — merges from main don't count as activity */
+  lastMeaningfulCommitAt: string | null
   mergeable: Mergeable
   reviewDecision: ReviewDecision
   commentCount: number
