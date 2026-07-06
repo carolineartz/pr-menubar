@@ -19,6 +19,7 @@ export function PRList({
   showSnoozed,
   expandedKey,
   snoozeMenuKey,
+  jiraEnabled,
   actions
 }: {
   tab: TabId
@@ -27,6 +28,7 @@ export function PRList({
   showSnoozed: boolean
   expandedKey: string | null
   snoozeMenuKey: string | null
+  jiraEnabled: boolean
   actions: RowActions
 }): JSX.Element {
   const render = (pr: PRSnapshot): JSX.Element => (
@@ -41,6 +43,7 @@ export function PRList({
       hideChip={tab === 'all'}
       timeBadge={tab === 'rev'}
       repoFocused={ctx.repoFocus === pr.repo}
+      jiraEnabled={jiraEnabled}
       actions={actions}
     />
   )

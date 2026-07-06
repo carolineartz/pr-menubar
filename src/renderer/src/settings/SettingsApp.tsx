@@ -53,6 +53,22 @@ export default function SettingsApp(): JSX.Element {
         />
       </Section>
 
+      <Section
+        title="Jira"
+        hint="When a PR title contains a ticket like [CFE-1234] (or bare CFE-1234), the expanded row links it: base URL + ticket. Leave empty to disable."
+      >
+        <div className="add-row">
+          <input
+            placeholder="https://yourcompany.atlassian.net/browse"
+            defaultValue={settings.jiraBaseUrl}
+            onBlur={(e) => patch({ jiraBaseUrl: e.target.value.trim() })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+            }}
+          />
+        </div>
+      </Section>
+
       <Section title="Notifications">
         {(
           [

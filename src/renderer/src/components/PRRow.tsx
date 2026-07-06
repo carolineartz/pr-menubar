@@ -1,5 +1,6 @@
 import { useState, type JSX, type MouseEvent } from 'react'
 import type { ClassifiedCheck, PRSnapshot, SnoozeMode } from '../../../shared/types'
+import { jiraTicketFrom } from '../../../shared/jira'
 import { behindSince, metaContext, pillFor, relativeShort, repoTint } from '../../../shared/present'
 import { Avatar } from './Avatar'
 import {
@@ -20,6 +21,7 @@ export interface RowActions {
   toggleExpand: (key: string) => void
   toggleRepoFocus: (repo: string) => void
   openPr: (key: string) => void
+  openJira: (key: string) => void
   openLog: (key: string, check: string) => void
   rerunFailed: (key: string) => void
   copyBranch: (pr: PRSnapshot) => void
@@ -39,6 +41,7 @@ export function PRRow({
   hideChip,
   timeBadge,
   repoFocused,
+  jiraEnabled,
   actions
 }: {
   pr: PRSnapshot
@@ -52,6 +55,8 @@ export function PRRow({
    *  how long this has been waiting instead */
   timeBadge: boolean
   repoFocused: boolean
+  /** Settings → Jira base URL; '' hides ticket buttons */
+  jiraEnabled: boolean
   actions: RowActions
 }): JSX.Element {
   const pill = pillFor(pr)
@@ -116,6 +121,7 @@ export function PRRow({
           pr={pr}
           starred={starred}
           snoozeMenuOpen={snoozeMenuOpen}
+          jiraEnabled={jiraEnabled}
           actions={actions}
         />
       )}
@@ -139,13 +145,16 @@ function ExpandedPanel({
   pr,
   starred,
   snoozeMenuOpen,
+  jiraEnabled,
   actions
 }: {
   pr: PRSnapshot
   starred: boolean
   snoozeMenuOpen: boolean
+  jiraEnabled: boolean
   actions: RowActions
 }): JSX.Element {
+  const jiraTicket = jiraEnabled ? jiraTicketFrom(pr.title) : null
   // big CI pipelines drown the signal — passed checks collapse behind a toggle
   const [showPassed, setShowPassed] = useState(false)
 
@@ -193,6 +202,16 @@ function ExpandedPanel({
         {hasFail && (
           <button className="btn rerun" onClick={stop(() => actions.rerunFailed(pr.key))}>
             Re-run failed
+          </button>
+        )}
+        {jiraTicket && (
+          <button
+            className="btn mono"
+            title="Open in Jira"
+            onClick={stop(() => actions.openJira(pr.key))}
+          >
+            <ExtLinkIcon />
+            {jiraTicket}
           </button>
         )}
         <button className="btn" onClick={stop(() => actions.openPr(pr.key))}>

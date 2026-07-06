@@ -124,6 +124,8 @@ export interface Settings {
   theme: ThemePreference
   /** Electron accelerator that toggles the popover, e.g. "Cmd+Shift+P"; '' = off */
   globalShortcut: string
+  /** e.g. "https://acme.atlassian.net/browse" — '' disables Jira links */
+  jiraBaseUrl: string
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -134,7 +136,8 @@ export const DEFAULT_SETTINGS: Settings = {
   badgeEnabled: true,
   launchAtLogin: false,
   theme: 'system',
-  globalShortcut: ''
+  globalShortcut: '',
+  jiraBaseUrl: ''
 }
 
 export interface PrNotifState {

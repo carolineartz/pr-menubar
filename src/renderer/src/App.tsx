@@ -108,6 +108,7 @@ export default function App(): JSX.Element {
       },
       toggleRepoFocus: (repo) => setRepoFocus((cur) => (cur === repo ? null : repo)),
       openPr: (key) => void api.openPr(key),
+      openJira: (key) => void api.openJira(key),
       openLog: (key, check) => void api.openLog(key, check),
       rerunFailed: (key) => {
         void api.rerunFailed(key)
@@ -194,6 +195,7 @@ export default function App(): JSX.Element {
         showSnoozed={showSnoozed}
         expandedKey={expandedKey}
         snoozeMenuKey={snoozeMenuKey}
+        jiraEnabled={state.settings.jiraBaseUrl.trim() !== ''}
         actions={actions}
       />
       {tab === 'team' && (

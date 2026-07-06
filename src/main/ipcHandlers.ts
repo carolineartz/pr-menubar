@@ -1,5 +1,6 @@
 import { ipcMain, shell } from 'electron'
 import { activityFingerprint, snoozeUntil } from '../shared/fingerprint'
+import { jiraTicketFrom, jiraUrl } from '../shared/jira'
 import { CHANNELS } from '../shared/ipc'
 import type { Settings, SnoozeMode } from '../shared/types'
 import type { Coordinator } from './coordinator'
@@ -37,6 +38,14 @@ export function registerIpcHandlers(deps: {
   ipcMain.handle(CHANNELS.rerunFailed, (_e, key: string) => deps.rerunFailed(key))
 
   ipcMain.handle(CHANNELS.openGithub, () => void shell.openExternal('https://github.com/pulls'))
+
+  ipcMain.handle(CHANNELS.openJira, (_e, key: string) => {
+    const p = pr(key)
+    const base = store.get('settings').jiraBaseUrl.trim()
+    if (!p || !base) return
+    const ticket = jiraTicketFrom(p.title)
+    if (ticket) void shell.openExternal(jiraUrl(base, ticket))
+  })
 
   ipcMain.handle(CHANNELS.setStar, (_e, key: string, on: boolean) => {
     const cur = store.get('starred')

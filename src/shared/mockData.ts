@@ -24,7 +24,8 @@ export const MOCK_SETTINGS: Settings = {
   ...DEFAULT_SETTINGS,
   repos: ['acme/api', 'acme/web', 'acme/auth', 'acme/billing'],
   teamUsernames: ['mkatz', 'dvest', 'alind', 'rsoto'],
-  noisyPatterns: [{ pattern: 'codecov/*' }]
+  noisyPatterns: [{ pattern: 'codecov/*' }],
+  jiraBaseUrl: 'https://acme.atlassian.net/browse'
 }
 
 interface MockSpec {
@@ -56,7 +57,7 @@ interface MockSpec {
  *  classify/next-action logic derives the chips, dots, and pills. */
 const SPECS: MockSpec[] = [
   {
-    repo: 'acme/api', number: 482, title: 'Fix flaky retry logic in webhook dispatcher',
+    repo: 'acme/api', number: 482, title: '[ACME-1482] Fix flaky retry logic in webhook dispatcher',
     branch: 'fix/webhook-retry', author: MOCK_VIEWER, buckets: ['my'], updatedMin: 8,
     reviewDecision: 'APPROVED', approvals: 1, commentCount: 4, reviewCount: 2, lastCommitMin: 12,
     checks: [

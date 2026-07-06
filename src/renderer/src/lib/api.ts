@@ -76,6 +76,7 @@ function createMockApi(): RendererApi {
     },
     openSettingsWindow: async () => console.log('[mock] open settings'),
     recheckAuth: async () => true,
+    openJira: async (key) => console.log('[mock] open jira for', key),
     resizePopover: async () => {},
     onDataUpdated: (cb) => {
       listeners.push(cb)
