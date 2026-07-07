@@ -20,6 +20,8 @@ const api: RendererApi = {
   openSettingsWindow: () => ipcRenderer.invoke(CHANNELS.openSettingsWindow),
   recheckAuth: () => ipcRenderer.invoke(CHANNELS.recheckAuth),
   openJira: (prKey: string) => ipcRenderer.invoke(CHANNELS.openJira, prKey),
+  setAuthorFilter: (login: string | null) =>
+    ipcRenderer.invoke(CHANNELS.setAuthorFilter, login),
   resizePopover: (height: number) => ipcRenderer.invoke(CHANNELS.resizePopover, height),
   onDataUpdated: (cb: (state: AppState) => void) => {
     const listener = (_e: Electron.IpcRendererEvent, state: AppState): void => cb(state)

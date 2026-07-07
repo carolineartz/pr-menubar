@@ -206,7 +206,16 @@ export default function App(): JSX.Element {
         />
       )}
       {tab === 'all' && (
-        <AuthorFilterBar people={state.people} active={allAuthor} onSelect={setAllAuthor} />
+        <AuthorFilterBar
+          people={state.people}
+          active={allAuthor}
+          onSelect={(login) => {
+            setAllAuthor(login)
+            // fetch this author's complete open-PR list — the All feed itself
+            // only carries the 50 newest across all repos
+            void api.setAuthorFilter(login)
+          }}
+        />
       )}
       <Footer
         lastSyncAt={state.lastSyncAt}

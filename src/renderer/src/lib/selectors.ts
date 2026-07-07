@@ -40,7 +40,11 @@ export function rowsFor(
     if (tab === 'saved') inTab = ctx.starred.has(pr.key)
     else inTab = pr.buckets.includes(tab)
     if (tab === 'team' && ctx.teamToggles[pr.author] === false) inTab = false
-    if (tab === 'all' && ctx.allAuthor && pr.author !== ctx.allAuthor) inTab = false
+    if (tab === 'all' && ctx.allAuthor) {
+      // author filter: bucket-less rows from the on-demand author fetch count
+      // too — they exist precisely to escape the All feed's newest-50 window
+      inTab = pr.author === ctx.allAuthor
+    }
     // Approved and nothing left to do = done reviewing. New commits after the
     // approval turn it into RESUME (stale review) and it comes back.
     if (tab === 'rev' && pr.viewerReviewState === 'APPROVED' && pr.nextAction === 'WAITING') {

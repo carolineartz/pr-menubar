@@ -18,18 +18,26 @@ export class Coordinator {
   lastSyncAt: number | null = null
   syncError: string | null = null
   orgPeople: Person[] = []
+  /** on-demand author-filter results (bucket-less); poll data wins on dedupe */
+  private authorExtra: PRSnapshot[] = []
 
   constructor(
     private store: Store,
     private targets: { getWindow(): BrowserWindow | null; setBadge(count: number): void }
   ) {}
 
+  setAuthorExtra(prs: PRSnapshot[]): void {
+    this.authorExtra = prs
+    this.publish()
+  }
+
   snapshot(): AppState {
     const settings = this.store.get('settings')
+    const seen = new Set(this.prs.map((p) => p.key))
     return {
       authOk: this.authOk,
       viewer: this.viewer,
-      prs: this.prs,
+      prs: [...this.prs, ...this.authorExtra.filter((p) => !seen.has(p.key))],
       lastSyncAt: this.lastSyncAt,
       syncError: this.syncError,
       settings,

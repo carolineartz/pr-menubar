@@ -35,6 +35,9 @@ export interface Invokers {
   recheckAuth(): Promise<boolean>
   /** Open the Jira ticket for a PR (main validates against jiraBaseUrl). */
   openJira(prKey: string): Promise<void>
+  /** All tab author filter: fetch that author's complete open-PR list.
+   *  Pass null when the filter clears. */
+  setAuthorFilter(login: string | null): Promise<void>
   /** Ask the popover window to match the content's natural height. */
   resizePopover(height: number): Promise<void>
 }
@@ -67,6 +70,7 @@ export const CHANNELS = {
   openSettingsWindow: 'settings:openWindow',
   recheckAuth: 'auth:recheck',
   openJira: 'pr:openJira',
+  setAuthorFilter: 'all:authorFilter',
   resizePopover: 'popover:resize',
   dataUpdated: 'data:updated',
   popoverShown: 'popover:shown'

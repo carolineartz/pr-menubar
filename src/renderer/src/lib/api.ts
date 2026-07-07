@@ -77,6 +77,7 @@ function createMockApi(): RendererApi {
     openSettingsWindow: async () => console.log('[mock] open settings'),
     recheckAuth: async () => true,
     openJira: async (key) => console.log('[mock] open jira for', key),
+    setAuthorFilter: async (login) => console.log('[mock] author filter', login),
     resizePopover: async () => {},
     onDataUpdated: (cb) => {
       listeners.push(cb)

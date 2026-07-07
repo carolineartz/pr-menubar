@@ -223,6 +223,33 @@ export function buildInvolvementQueries(settings: Settings, savedNodeIds: string
   return [build(groupA, true), build(groupB, false)]
 }
 
+/** On-demand: one author's full open-PR list in the watched repos (the All
+ *  feed caps at the 50 newest overall, which can miss older PRs). */
+export function buildAuthorQuery(settings: Settings, login: string): PollQuery {
+  const repoQualifier = settings.repos.map((r) => `repo:${r}`).join(' ')
+  return {
+    document: /* GraphQL */ `
+      query AuthorPRs($authorQ: String!) {
+        viewer {
+          login
+        }
+        rateLimit {
+          cost
+          remaining
+          resetAt
+        }
+        allOpen: search(query: $authorQ, type: ISSUE, first: 50) {
+          nodes {
+            ...PRLite
+          }
+        }
+      }
+      ${PR_LITE_FRAGMENT}
+    `,
+    variables: { authorQ: `is:pr is:open author:${login} sort:created-desc ${repoQualifier}` }
+  }
+}
+
 /** The All feed: newest open PRs across watched repos, light fragment. */
 export function buildAllOpenQuery(settings: Settings): PollQuery {
   const repoQualifier = settings.repos.map((r) => `repo:${r}`).join(' ')

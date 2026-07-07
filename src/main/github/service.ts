@@ -1,7 +1,7 @@
 import type { Person, PRSnapshot, Settings } from '../../shared/types'
 import { AuthFailedError, GithubClient, type RateLimitInfo } from './client'
 import { mapPoll, type PollData } from './mapper'
-import { buildAllOpenQuery, buildInvolvementQueries } from './queries'
+import { buildAllOpenQuery, buildAuthorQuery, buildInvolvementQueries } from './queries'
 
 export { AuthFailedError }
 
@@ -39,6 +39,17 @@ export class GithubService {
       viewer: invParts[0].viewer.login,
       rateLimit
     }
+  }
+
+  /**
+   * One author's complete open-PR list (lite fragment). Returned bucket-less:
+   * these rows only surface while that author filter is active.
+   */
+  async fetchAuthorPRs(settings: Settings, login: string): Promise<PRSnapshot[]> {
+    if (settings.repos.length === 0) return []
+    const q = buildAuthorQuery(settings, login)
+    const data = await this.client.graphql<PollData>(q.document, q.variables)
+    return mapPoll(data, settings, Date.now()).map((pr) => ({ ...pr, buckets: [] }))
   }
 
   /**

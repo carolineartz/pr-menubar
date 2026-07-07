@@ -52,6 +52,18 @@ describe('All tab author filter', () => {
   it('no filter shows everything', () => {
     expect(rowsFor('all', prs, ctx)).toHaveLength(prs.length)
   })
+
+  it('bucket-less rows from the on-demand author fetch appear only while filtered', () => {
+    const extra = { ...prs[0], key: 'acme/api#9001', author: 'mkatz', buckets: [] as never[] }
+    const all = [...prs, extra]
+    // invisible without the filter (not part of the newest-50 feed)
+    expect(rowsFor('all', all, ctx).find((p) => p.key === extra.key)).toBeUndefined()
+    // visible when their author is focused
+    const filtered = rowsFor('all', all, { ...ctx, allAuthor: 'mkatz' })
+    expect(filtered.find((p) => p.key === extra.key)).toBeDefined()
+    // and never leaks into other tabs
+    expect(rowsFor('my', all, ctx).find((p) => p.key === extra.key)).toBeUndefined()
+  })
 })
 
 describe('repo focus', () => {

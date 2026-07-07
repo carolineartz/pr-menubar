@@ -164,6 +164,11 @@ app.whenReady().then(() => {
       if (!ok) void shell.openExternal(`${pr.url}/checks`)
       else poller.refresh()
     },
+    fetchAuthorPRs: async (login) => {
+      if (MOCK) return
+      const prs = await github.fetchAuthorPRs(store.get('settings'), login).catch(() => [])
+      coordinator.setAuthorExtra(prs)
+    },
     openSettingsWindow,
     onSettingsChanged: () => {
       const settings = store.get('settings')

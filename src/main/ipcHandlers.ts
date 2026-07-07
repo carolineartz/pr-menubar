@@ -12,6 +12,7 @@ export function registerIpcHandlers(deps: {
   refresh: () => void
   recheckAuth: () => Promise<boolean>
   rerunFailed: (prKey: string) => Promise<void>
+  fetchAuthorPRs: (login: string) => Promise<void>
   openSettingsWindow: () => void
   onSettingsChanged: () => void
   resizePopover: (height: number) => void
@@ -90,6 +91,12 @@ export function registerIpcHandlers(deps: {
   ipcMain.handle(CHANNELS.openSettingsWindow, () => deps.openSettingsWindow())
 
   ipcMain.handle(CHANNELS.recheckAuth, () => deps.recheckAuth())
+
+  ipcMain.handle(CHANNELS.setAuthorFilter, (_e, login: string | null) => {
+    if (login) return deps.fetchAuthorPRs(login)
+    coordinator.setAuthorExtra([])
+    return undefined
+  })
 
   ipcMain.handle(CHANNELS.resizePopover, (_e, height: number) => {
     if (typeof height === 'number' && Number.isFinite(height)) deps.resizePopover(height)
