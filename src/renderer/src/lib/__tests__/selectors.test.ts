@@ -1,37 +1,77 @@
 import { describe, expect, it } from 'vitest'
 import { makeMockPRs } from '../../../../shared/mockData'
-import { rowsFor, type ListContext } from '../selectors'
+import { isBotAuthor, myGroups, reviewingGroups, rowsFor, type ListContext } from '../selectors'
 
 const NOW = Date.parse('2026-07-04T12:00:00Z')
 
 const ctx: ListContext = { starred: new Set(), snoozed: {}, teamToggles: {}, now: NOW }
 
-describe('Reviewing tab hides PRs I already approved', () => {
-  const base = makeMockPRs(NOW).find((p) => p.key === 'acme/web#322')! // rev bucket, WAITING
+const BOTS = ['dependabot']
 
-  it('approved + nothing to do → hidden from Reviewing', () => {
-    const approved = { ...base, viewerReviewState: 'APPROVED' as const }
-    expect(rowsFor('rev', [approved], ctx)).toHaveLength(0)
+describe('Reviewing tab groups', () => {
+  const prs = makeMockPRs(NOW)
+  const groups = reviewingGroups(rowsFor('rev', prs, ctx), BOTS)
+  const group = (key: string): (typeof groups)[number] | undefined =>
+    groups.find((g) => g.key === key)
+
+  it('approved PRs stay on the tab, in their own group', () => {
+    expect(group('approved')?.rows.map((p) => p.key)).toContain('acme/auth#210')
   })
 
-  it('still visible everywhere else', () => {
-    const approved = { ...base, viewerReviewState: 'APPROVED' as const }
-    expect(rowsFor('all', [approved], ctx)).toHaveLength(1)
-    expect(rowsFor('team', [approved], ctx)).toHaveLength(1)
+  it('approval wins even when new commits landed after it', () => {
+    // #96 has commits newer than the viewer's approval (would otherwise be RESUME)
+    const pr = prs.find((p) => p.key === 'acme/billing#96')!
+    expect(pr.nextAction).toBe('RESUME')
+    expect(group('approved')?.rows.map((p) => p.key)).toContain('acme/billing#96')
+    expect(group('continue')?.rows.map((p) => p.key) ?? []).not.toContain('acme/billing#96')
   })
 
-  it('new commits after my approval bring it back as RESUME', () => {
-    const reReview = {
-      ...base,
-      viewerReviewState: 'APPROVED' as const,
-      nextAction: 'RESUME' as const
-    }
-    expect(rowsFor('rev', [reReview], ctx)).toHaveLength(1)
+  it('team-owed requests split from individually-requested reviews', () => {
+    expect(group('team')?.rows.map((p) => p.key)).toContain('acme/web#350')
+    expect(group('start')?.rows.map((p) => p.key)).toEqual(
+      expect.arrayContaining(['acme/auth#217', 'acme/api#486'])
+    )
+    expect(group('start')?.rows.map((p) => p.key)).not.toContain('acme/web#350')
   })
 
-  it('changes-requested reviews still show under waiting-for-author', () => {
-    expect(base.viewerReviewState).toBe('CHANGES_REQUESTED')
-    expect(rowsFor('rev', [base], ctx)).toHaveLength(1)
+  it('bot authors collect in the bots group, ahead of anything else', () => {
+    expect(group('bots')?.rows.map((p) => p.key)).toEqual(['acme/api#495'])
+    expect(group('team')?.rows.map((p) => p.key)).not.toContain('acme/api#495')
+  })
+
+  it('empty groups are dropped', () => {
+    const none = reviewingGroups([], BOTS)
+    expect(none).toHaveLength(0)
+  })
+})
+
+describe('My PRs groups', () => {
+  const prs = makeMockPRs(NOW)
+  const groups = myGroups(rowsFor('my', prs, ctx))
+  const keys = (key: string): string[] =>
+    groups.find((g) => g.key === key)?.rows.map((p) => p.key) ?? []
+
+  it('review-decision-approved PRs group under APPROVED, even with failing CI', () => {
+    // #482 is FIXCI but fully approved — approval state and CI state are orthogonal
+    expect(keys('ready').sort()).toEqual(['acme/api#479', 'acme/api#482'])
+  })
+
+  it('drafts get their own group', () => {
+    expect(keys('drafts')).toEqual(['acme/billing#91'])
+    expect(keys('active')).not.toContain('acme/billing#91')
+  })
+
+  it('everything else is in progress', () => {
+    expect(keys('active').sort()).toEqual(['acme/api#455', 'acme/api#468'])
+  })
+})
+
+describe('isBotAuthor', () => {
+  it('normalizes [bot] suffixes and app/ prefixes', () => {
+    expect(isBotAuthor('dependabot[bot]', ['dependabot'])).toBe(true)
+    expect(isBotAuthor('dependabot', ['app/dependabot'])).toBe(true)
+    expect(isBotAuthor('Renovate[bot]', ['renovate'])).toBe(true)
+    expect(isBotAuthor('mkatz', ['dependabot'])).toBe(false)
   })
 })
 

@@ -42,6 +42,7 @@ interface MockSpec {
   approvals?: number
   requestedReviewers?: string[]
   reviewRequestedFromViewer?: boolean
+  reviewRequestedFromTeam?: boolean
   viewerHasPendingReview?: boolean
   viewerLastReviewMin?: number
   viewerReviewState?: PRSnapshot['viewerReviewState']
@@ -122,6 +123,34 @@ const SPECS: MockSpec[] = [
     checks: [['build', 'ok', '1m 02s'], ['e2e-tests', 'fail', '1m 40s']]
   },
   {
+    repo: 'acme/web', number: 350, title: '[ACME-1521] Consolidate consent banner analytics events',
+    branch: 'pn/consent-analytics', author: 'pnovak', buckets: ['rev'], updatedMin: 90,
+    reviewRequestedFromTeam: true, commentCount: 2, reviewCount: 0, lastCommitMin: 95,
+    checks: [['build', 'ok', '1m 04s'], ['lint', 'ok', '18s'], ['e2e-tests', 'ok', '2m 10s']]
+  },
+  {
+    repo: 'acme/auth', number: 210, title: 'Rotate signing keys on a schedule',
+    branch: 'jh/key-rotation', author: 'jharrow', buckets: ['rev'], updatedMin: 700,
+    reviewDecision: 'APPROVED', approvals: 1, viewerReviewState: 'APPROVED',
+    viewerLastReviewMin: 720, commentCount: 3, reviewCount: 1, lastCommitMin: 800,
+    checks: [['build', 'ok', '59s'], ['lint', 'ok', '20s']]
+  },
+  {
+    // approved, then new commits landed — still belongs to the Approved group
+    repo: 'acme/billing', number: 96, title: 'Improve retry semantics for failed invoices',
+    branch: 'pn/invoice-retry-exponential-backoff-with-jitter', author: 'pnovak',
+    buckets: ['rev'], updatedMin: 100, approvals: 1, viewerReviewState: 'APPROVED',
+    viewerLastReviewMin: 900, commentCount: 5, reviewCount: 2, lastCommitMin: 120,
+    checks: [['build', 'ok', '1m 10s'], ['e2e-tests', 'ok', '2m 31s']]
+  },
+  {
+    repo: 'acme/api', number: 495, title: 'Bump undici from 6.19.2 to 6.21.1',
+    branch: 'dependabot/npm_and_yarn/acme/api-workspace/undici-6.21.1', author: 'dependabot',
+    buckets: ['rev'], updatedMin: 55, reviewRequestedFromTeam: true,
+    commentCount: 0, reviewCount: 0, lastCommitMin: 55,
+    checks: [['build', 'ok', '1m 01s'], ['lint', 'ok', '17s']]
+  },
+  {
     repo: 'acme/api', number: 491, title: 'Add audit log export endpoint',
     branch: 'mk/audit-export', author: 'mkatz', buckets: ['team'], updatedMin: 30,
     approvals: 1, requestedReviewers: ['dvest'], commentCount: 3, reviewCount: 1,
@@ -167,6 +196,7 @@ export function makeMockPRs(
       approvals: s.approvals ?? 0,
       requestedReviewers: s.requestedReviewers ?? [],
       reviewRequestedFromViewer: s.reviewRequestedFromViewer ?? false,
+      reviewRequestedFromTeam: s.reviewRequestedFromTeam ?? false,
       viewerHasPendingReview: s.viewerHasPendingReview ?? false,
       viewerLastReviewAt: s.viewerLastReviewMin != null ? iso(s.viewerLastReviewMin) : null,
       viewerReviewState: s.viewerReviewState ?? null,

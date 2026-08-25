@@ -105,7 +105,11 @@ export function avatarColor(login: string, isViewer: boolean): string {
   return OTHER_COLORS[h % OTHER_COLORS.length]
 }
 
-export function initials(login: string, isViewer: boolean): string {
+/** First + last initial of the display name; first two of the login otherwise. */
+export function initials(login: string, isViewer: boolean, name?: string | null): string {
   if (isViewer) return 'YOU'
+  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
   return login.slice(0, 2).toUpperCase()
 }

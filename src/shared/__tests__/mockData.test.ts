@@ -35,13 +35,14 @@ describe('mock data matches the prototype', () => {
     expect(codecov.ignored).toBe(true)
   })
 
-  it('tray badge = 7 actionable on My PRs + Reviewing (matches prototype)', () => {
-    expect(badgeCount(prs, {}, NOW)).toBe(7)
+  it('tray badge counts actionable on My PRs + Reviewing', () => {
+    // the prototype's 7, plus #96: approved-then-updated is RESUME (actionable)
+    expect(badgeCount(prs, {}, NOW)).toBe(8)
   })
 
   it('badge excludes snoozed and never counts Team-only PRs', () => {
     const snoozed = { 'acme/api#482': { mode: '1h' as const, until: NOW + 3_600_000 } }
-    expect(badgeCount(prs, snoozed, NOW)).toBe(6)
+    expect(badgeCount(prs, snoozed, NOW)).toBe(7)
     // #491 is team-only (plus the All feed) — never counted in the badge
     expect(prs.find((p) => p.number === 491)!.buckets).toEqual(['team', 'all'])
   })

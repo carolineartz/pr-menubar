@@ -45,11 +45,6 @@ export function rowsFor(
       // too — they exist precisely to escape the All feed's newest-50 window
       inTab = pr.author === ctx.allAuthor
     }
-    // Approved and nothing left to do = done reviewing. New commits after the
-    // approval turn it into RESUME (stale review) and it comes back.
-    if (tab === 'rev' && pr.viewerReviewState === 'APPROVED' && pr.nextAction === 'WAITING') {
-      inTab = false
-    }
     if (!inTab) return false
     if (isSnoozedNow(pr, ctx) && !includeSnoozed) return false
     return true
@@ -71,30 +66,97 @@ export function sortByCreated(rows: PRSnapshot[]): PRSnapshot[] {
   return rows.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
+export type GroupKey =
+  // Reviewing tab
+  | 'start'
+  | 'team'
+  | 'continue'
+  | 'waiting'
+  | 'approved'
+  | 'bots'
+  // My PRs tab
+  | 'ready'
+  | 'active'
+  | 'drafts'
+
 export interface Group {
-  key: 'start' | 'continue' | 'waiting'
+  key: GroupKey
   label: string
   color: string
   rows: PRSnapshot[]
 }
 
-const GROUPS: Omit<Group, 'rows'>[] = [
-  { key: 'start', label: 'START REVIEW', color: 'var(--bluet)' },
-  { key: 'continue', label: 'CONTINUE REVIEW', color: 'var(--purt)' },
-  { key: 'waiting', label: 'WAITING FOR AUTHOR', color: 'var(--ambert)' }
+type GroupDef = Omit<Group, 'rows'> & { collapsedByDefault: boolean }
+
+const GROUPS: GroupDef[] = [
+  { key: 'start', label: 'START REVIEW', color: 'var(--bluet)', collapsedByDefault: false },
+  {
+    key: 'team',
+    label: 'REQUESTED FROM YOUR TEAM',
+    color: 'var(--tealt)',
+    collapsedByDefault: false
+  },
+  { key: 'continue', label: 'CONTINUE REVIEW', color: 'var(--purt)', collapsedByDefault: false },
+  { key: 'waiting', label: 'WAITING FOR AUTHOR', color: 'var(--ambert)', collapsedByDefault: false },
+  { key: 'approved', label: 'APPROVED BY YOU', color: 'var(--greent)', collapsedByDefault: true },
+  { key: 'bots', label: 'BOTS', color: 'var(--neut)', collapsedByDefault: true }
 ]
 
-/** Reviewing tab groups: REVIEW → start, RESUME → continue, rest → waiting. */
-export function reviewingGroups(rows: PRSnapshot[]): Group[] {
-  const of = (key: Group['key']): PRSnapshot[] =>
-    rows.filter((pr) => {
-      if (key === 'start') return pr.nextAction === 'REVIEW'
-      if (key === 'continue') return pr.nextAction === 'RESUME'
-      return pr.nextAction !== 'REVIEW' && pr.nextAction !== 'RESUME'
-    })
-  return GROUPS.map((g) => ({ ...g, rows: sortByUrgency(of(g.key)) })).filter(
-    (g) => g.rows.length > 0
-  )
+const MY_GROUPS: GroupDef[] = [
+  { key: 'ready', label: 'APPROVED', color: 'var(--greent)', collapsedByDefault: false },
+  { key: 'active', label: 'IN PROGRESS', color: 'var(--bluet)', collapsedByDefault: false },
+  { key: 'drafts', label: 'DRAFTS', color: 'var(--faint)', collapsedByDefault: false }
+]
+
+export const DEFAULT_COLLAPSED_GROUPS: readonly GroupKey[] = [...GROUPS, ...MY_GROUPS]
+  .filter((g) => g.collapsedByDefault)
+  .map((g) => g.key)
+
+const toGroups = (
+  defs: GroupDef[],
+  rows: PRSnapshot[],
+  keyFor: (pr: PRSnapshot) => GroupKey
+): Group[] =>
+  defs
+    .map((g) => ({
+      key: g.key,
+      label: g.label,
+      color: g.color,
+      rows: sortByUrgency(rows.filter((pr) => keyFor(pr) === g.key))
+    }))
+    .filter((g) => g.rows.length > 0)
+
+/** "dependabot", "dependabot[bot]", and "app/dependabot" are the same account. */
+const botName = (login: string): string =>
+  login.replace(/^app\//i, '').replace(/\[bot\]$/i, '').toLowerCase()
+
+export function isBotAuthor(login: string, botAuthors: string[]): boolean {
+  return botAuthors.some((b) => botName(b) === botName(login))
+}
+
+/** First match wins: bot author, then your approval (kept there even when new
+ *  commits landed after it), then the next-action verbs, then team requests. */
+function groupKeyFor(pr: PRSnapshot, botAuthors: string[]): GroupKey {
+  if (isBotAuthor(pr.author, botAuthors)) return 'bots'
+  if (pr.viewerReviewState === 'APPROVED') return 'approved'
+  if (pr.nextAction === 'REVIEW') return 'start'
+  if (pr.nextAction === 'RESUME') return 'continue'
+  if (pr.reviewRequestedFromTeam) return 'team'
+  return 'waiting'
+}
+
+export function reviewingGroups(rows: PRSnapshot[], botAuthors: string[] = []): Group[] {
+  return toGroups(GROUPS, rows, (pr) => groupKeyFor(pr, botAuthors))
+}
+
+/** My PRs groups. "Approved" means GitHub's review decision — required approval
+ *  count met and every blocking code-owner group satisfied. */
+export function myGroups(rows: PRSnapshot[]): Group[] {
+  return toGroups(MY_GROUPS, rows, (pr) => {
+    if (pr.isDraft) return 'drafts'
+    if (pr.reviewDecision === 'APPROVED') return 'ready'
+    return 'active'
+  })
 }
 
 export function emptyMessage(tab: TabId): string {

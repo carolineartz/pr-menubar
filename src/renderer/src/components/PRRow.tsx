@@ -34,6 +34,7 @@ export interface RowActions {
 
 export function PRRow({
   pr,
+  authorName,
   now,
   expanded,
   snoozeMenuOpen,
@@ -43,9 +44,14 @@ export function PRRow({
   timeBadge,
   repoFocused,
   jiraEnabled,
+  showOwnAvatar,
   actions
 }: {
   pr: PRSnapshot
+  /** author's display name for the avatar tooltip, when the org profile has one */
+  authorName: string | null
+  /** All tab: mixed authorship, so the viewer's rows keep their YOU circle */
+  showOwnAvatar: boolean
   now: number
   expanded: boolean
   snoozeMenuOpen: boolean
@@ -107,14 +113,14 @@ export function PRRow({
         {timeBadge ? (
           <TimeBadge pr={pr} now={now} />
         ) : (
-          !hideChip && (
-            <span className={`chip ${pr.nextAction}`}>
-              {pr.nextAction === 'FIXCI' ? 'FIX CI' : pr.nextAction}
-            </span>
-          )
+          // FIXCI has no chip — the red dot already says it
+          !hideChip &&
+          pr.nextAction !== 'FIXCI' && <span className={`chip ${pr.nextAction}`}>{pr.nextAction}</span>
         )}
         {pill && <span className={`pill ${pill[1]}`}>{pill[0]}</span>}
-        <Avatar login={pr.author} isViewer={pr.authorIsViewer} />
+        {(!pr.authorIsViewer || showOwnAvatar) && (
+          <Avatar login={pr.author} name={authorName} isViewer={pr.authorIsViewer} />
+        )}
         <ChevronIcon open={expanded} />
       </div>
       {expanded && (
@@ -194,58 +200,67 @@ function ExpandedPanel({
         </button>
       )}
       <div className="action-strip">
-        <span className="check-summary">
-          {pr.checksLoaded
-            ? `${okCount} of ${nonIgnored.length} passed`
-            : 'check details on GitHub'}
-        </span>
-        <div className="spacer" />
-        {hasFail && (
-          <button className="btn rerun" onClick={stop(() => actions.rerunFailed(pr.key))}>
-            Re-run failed
-          </button>
-        )}
-        <button className="btn" onClick={stop(() => actions.openPr(pr.key))}>
-          <ExtLinkIcon />
-          Open
-        </button>
-        <button className="btn mono" onClick={stop(() => actions.copyBranch(pr))}>
-          <CopyIcon />
-          {pr.headRefName}
-        </button>
-        <button
-          className={starred ? 'btn icon-btn starred' : 'btn icon-btn'}
-          onClick={stop(() => actions.toggleStar(pr))}
-        >
-          <StarIcon filled={starred} />
-        </button>
-        <span className="snooze-wrap">
-          <button className="btn icon-btn" onClick={stop(() => actions.toggleSnoozeMenu(pr.key))}>
-            <ClockIcon />
-          </button>
-          {snoozeMenuOpen && (
-            <div className="snooze-menu">
-              <button className="snooze-item" onClick={stop(() => actions.snooze(pr, '1h'))}>
-                Snooze 1 hour
-              </button>
-              <button className="snooze-item" onClick={stop(() => actions.snooze(pr, 'tomorrow'))}>
-                Until tomorrow
-              </button>
-              <button className="snooze-item" onClick={stop(() => actions.snooze(pr, 'activity'))}>
-                Until activity
-              </button>
-            </div>
+        <div className="action-row">
+          <span className="check-summary">
+            {pr.checksLoaded
+              ? `${okCount}/${nonIgnored.length} passed`
+              : 'check details on GitHub'}
+          </span>
+          <div className="spacer" />
+          {hasFail && (
+            <button className="btn rerun" onClick={stop(() => actions.rerunFailed(pr.key))}>
+              Re-run failed
+            </button>
           )}
-        </span>
-        {jiraTicket && (
-          <button
-            className="btn icon-btn"
-            title={`Open ${jiraTicket} in Jira`}
-            onClick={stop(() => actions.openJira(pr.key))}
-          >
-            <JiraIcon />
+          <button className="btn" onClick={stop(() => actions.openPr(pr.key))}>
+            <ExtLinkIcon />
+            Open
           </button>
-        )}
+        </div>
+        <div className="action-row">
+          <button
+            className="btn mono branch-btn"
+            title={`Copy ${pr.headRefName}`}
+            onClick={stop(() => actions.copyBranch(pr))}
+          >
+            <CopyIcon />
+            <span className="branch-name">{pr.headRefName}</span>
+          </button>
+          <div className="spacer" />
+          <button
+            className={starred ? 'btn icon-btn starred' : 'btn icon-btn'}
+            onClick={stop(() => actions.toggleStar(pr))}
+          >
+            <StarIcon filled={starred} />
+          </button>
+          <span className="snooze-wrap">
+            <button className="btn icon-btn" onClick={stop(() => actions.toggleSnoozeMenu(pr.key))}>
+              <ClockIcon />
+            </button>
+            {snoozeMenuOpen && (
+              <div className="snooze-menu">
+                <button className="snooze-item" onClick={stop(() => actions.snooze(pr, '1h'))}>
+                  Snooze 1 hour
+                </button>
+                <button className="snooze-item" onClick={stop(() => actions.snooze(pr, 'tomorrow'))}>
+                  Until tomorrow
+                </button>
+                <button className="snooze-item" onClick={stop(() => actions.snooze(pr, 'activity'))}>
+                  Until activity
+                </button>
+              </div>
+            )}
+          </span>
+          {jiraTicket && (
+            <button
+              className="btn icon-btn"
+              title={`Open ${jiraTicket} in Jira`}
+              onClick={stop(() => actions.openJira(pr.key))}
+            >
+              <JiraIcon />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

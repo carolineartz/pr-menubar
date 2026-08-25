@@ -2,7 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from 'rea
 import type { AppState } from '../../shared/ipc'
 import type { PRSnapshot, SnoozeMode } from '../../shared/types'
 import { api } from './lib/api'
-import { rowsFor, TABS, type ListContext, type TabId } from './lib/selectors'
+import {
+  DEFAULT_COLLAPSED_GROUPS,
+  rowsFor,
+  TABS,
+  type GroupKey,
+  type ListContext,
+  type TabId
+} from './lib/selectors'
 import { AuthorFilterBar } from './components/AuthorFilterBar'
 import { Footer } from './components/Footer'
 import { PRList } from './components/PRList'
@@ -10,6 +17,26 @@ import { SetupScreen } from './components/SetupScreen'
 import { TabBar } from './components/TabBar'
 import { TeamPillBar } from './components/TeamPillBar'
 import type { RowActions } from './components/PRRow'
+
+const COLLAPSED_LS_KEY = 'rev-collapsed-groups'
+
+function loadCollapsed(): ReadonlySet<GroupKey> {
+  try {
+    const raw = localStorage.getItem(COLLAPSED_LS_KEY)
+    if (raw) return new Set(JSON.parse(raw) as GroupKey[])
+  } catch {
+    // fall through to defaults
+  }
+  return new Set(DEFAULT_COLLAPSED_GROUPS)
+}
+
+function saveCollapsed(keys: ReadonlySet<GroupKey>): void {
+  try {
+    localStorage.setItem(COLLAPSED_LS_KEY, JSON.stringify([...keys]))
+  } catch {
+    // non-fatal: collapse state just won't survive a relaunch
+  }
+}
 
 export default function App(): JSX.Element {
   const [state, setState] = useState<AppState | null>(null)
@@ -20,6 +47,7 @@ export default function App(): JSX.Element {
   const [allAuthor, setAllAuthor] = useState<string | null>(null)
   const [repoFocus, setRepoFocus] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [collapsedGroups, setCollapsedGroups] = useState<ReadonlySet<GroupKey>>(loadCollapsed)
   const [now, setNow] = useState(() => Date.now())
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -33,6 +61,16 @@ export default function App(): JSX.Element {
       offShown()
       clearInterval(iv)
     }
+  }, [])
+
+  const toggleGroup = useCallback((key: GroupKey): void => {
+    setCollapsedGroups((cur) => {
+      const next = new Set(cur)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      saveCollapsed(next)
+      return next
+    })
   }, [])
 
   const showToast = useCallback((msg: string): void => {
@@ -87,6 +125,14 @@ export default function App(): JSX.Element {
       mo.disconnect()
     }
   }, [])
+
+  const peopleNames = useMemo(
+    () =>
+      new Map(
+        (state?.people ?? []).filter((p) => p.name).map((p) => [p.login, p.name as string])
+      ),
+    [state?.people]
+  )
 
   const ctx: ListContext = useMemo(
     () => ({
@@ -196,6 +242,10 @@ export default function App(): JSX.Element {
         expandedKey={expandedKey}
         snoozeMenuKey={snoozeMenuKey}
         jiraEnabled={state.settings.jiraBaseUrl.trim() !== ''}
+        botAuthors={state.settings.botAuthors}
+        collapsedGroups={collapsedGroups}
+        onToggleGroup={toggleGroup}
+        peopleNames={peopleNames}
         actions={actions}
       />
       {tab === 'team' && (

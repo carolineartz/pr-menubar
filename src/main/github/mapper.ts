@@ -227,6 +227,7 @@ function mapOne(
     approvals: pr.latestReviews.nodes.filter((r) => r.state === 'APPROVED').length,
     requestedReviewers: requested,
     reviewRequestedFromViewer: requested.includes(viewer),
+    reviewRequestedFromTeam: false, // set from the `reviewReq` search bucket below
     viewerHasPendingReview: (pr.pendingMine?.totalCount ?? 0) > 0,
     viewerLastReviewAt: myLatestReview?.submittedAt ?? null,
     viewerReviewState: (myLatestReview &&
@@ -249,32 +250,47 @@ function mapOne(
 export function mapPoll(data: PollData, settings: Settings, now: number): PRSnapshot[] {
   const viewer = data.viewer.login
   // full-fragment sources first: on dedupe the first-seen (detailed) node wins
-  const sources: [(GqlPR | null)[] | undefined, TabBucket | null, boolean][] = [
-    [data.mine?.nodes, 'my', false],
-    [data.reviewReq?.nodes, 'rev', false],
-    [data.reviewedBy?.nodes, 'rev', false],
-    [data.commented?.nodes, 'rev', true],
-    [data.team?.nodes, 'team', false],
-    [data.saved, null, false],
-    [data.allOpen?.nodes, 'all', false]
+  const sources: [
+    (GqlPR | null)[] | undefined,
+    TabBucket | null,
+    flag: 'commented' | 'reviewReq' | null
+  ][] = [
+    [data.mine?.nodes, 'my', null],
+    [data.reviewReq?.nodes, 'rev', 'reviewReq'],
+    [data.reviewedBy?.nodes, 'rev', null],
+    [data.commented?.nodes, 'rev', 'commented'],
+    [data.team?.nodes, 'team', null],
+    [data.saved, null, null],
+    [data.allOpen?.nodes, 'all', null]
   ]
 
-  const byId = new Map<string, { pr: GqlPR; buckets: Set<TabBucket>; commented: boolean }>()
-  for (const [nodes, bucket, isCommented] of sources) {
+  const byId = new Map<
+    string,
+    { pr: GqlPR; buckets: Set<TabBucket>; commented: boolean; reviewReq: boolean }
+  >()
+  for (const [nodes, bucket, flag] of sources) {
     for (const pr of nodes ?? []) {
       if (!pr || pr.state !== 'OPEN') continue
-      const entry = byId.get(pr.id) ?? { pr, buckets: new Set<TabBucket>(), commented: false }
+      const entry =
+        byId.get(pr.id) ??
+        { pr, buckets: new Set<TabBucket>(), commented: false, reviewReq: false }
       if (bucket) entry.buckets.add(bucket)
-      if (isCommented) entry.commented = true
+      if (flag === 'commented') entry.commented = true
+      if (flag === 'reviewReq') entry.reviewReq = true
       byId.set(pr.id, entry)
     }
   }
 
-  return [...byId.values()].map(({ pr, buckets, commented }) => {
+  return [...byId.values()].map(({ pr, buckets, commented, reviewReq }) => {
     const snap = mapOne(pr, [...buckets], viewer, settings, now)
     if (commented && !snap.authorIsViewer) {
       snap.viewerCommented = true
       snap.nextAction = computeNextAction({ ...snap, viewerCommented: true })
+    }
+    // review-requested:@me matches direct requests AND teams the viewer is in;
+    // no individual request on the PR ⇒ the request is via a team
+    if (reviewReq && !snap.reviewRequestedFromViewer && !snap.authorIsViewer) {
+      snap.reviewRequestedFromTeam = true
     }
     return snap
   })

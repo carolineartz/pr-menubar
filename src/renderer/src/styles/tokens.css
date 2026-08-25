@@ -34,6 +34,7 @@
   --purbg: rgba(191, 90, 242, 0.12);
   --neut: #6e6e73;
   --neutbg: rgba(0, 0, 0, 0.06);
+  --tealt: #0f7e8b;
   --btnb: rgba(0, 0, 0, 0.14);
   --btnt: #515154;
   --ckt: #3a3a3c;
@@ -73,6 +74,7 @@
     --purbg: rgba(191, 90, 242, 0.22);
     --neut: rgba(255, 255, 255, 0.6);
     --neutbg: rgba(255, 255, 255, 0.1);
+    --tealt: #7ce3ef;
     --btnb: rgba(255, 255, 255, 0.16);
     --btnt: rgba(255, 255, 255, 0.7);
     --ckt: rgba(255, 255, 255, 0.8);

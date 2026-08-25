@@ -3,13 +3,17 @@ import type { PRSnapshot } from '../../../shared/types'
 import {
   emptyMessage,
   isSnoozedNow,
+  myGroups,
   reviewingGroups,
   rowsFor,
   sortByCreated,
   sortByUrgency,
+  type Group,
+  type GroupKey,
   type ListContext,
   type TabId
 } from '../lib/selectors'
+import { ChevronIcon } from './icons'
 import { PRRow, type RowActions } from './PRRow'
 
 export function PRList({
@@ -20,6 +24,10 @@ export function PRList({
   expandedKey,
   snoozeMenuKey,
   jiraEnabled,
+  botAuthors,
+  collapsedGroups,
+  onToggleGroup,
+  peopleNames,
   actions
 }: {
   tab: TabId
@@ -29,12 +37,17 @@ export function PRList({
   expandedKey: string | null
   snoozeMenuKey: string | null
   jiraEnabled: boolean
+  botAuthors: string[]
+  collapsedGroups: ReadonlySet<GroupKey>
+  onToggleGroup: (key: GroupKey) => void
+  peopleNames: ReadonlyMap<string, string>
   actions: RowActions
 }): JSX.Element {
   const render = (pr: PRSnapshot): JSX.Element => (
     <PRRow
       key={pr.key}
       pr={pr}
+      authorName={peopleNames.get(pr.author) ?? null}
       now={ctx.now}
       expanded={expandedKey === pr.key}
       snoozeMenuOpen={snoozeMenuKey === pr.key}
@@ -42,24 +55,38 @@ export function PRList({
       snoozed={isSnoozedNow(pr, ctx)}
       hideChip={tab === 'all'}
       timeBadge={tab === 'rev'}
+      showOwnAvatar={tab === 'all'}
       repoFocused={ctx.repoFocus === pr.repo}
       jiraEnabled={jiraEnabled}
       actions={actions}
     />
   )
 
+  const renderGroups = (groups: Group[]): JSX.Element[] =>
+    groups.flatMap((g) => {
+      const collapsed = collapsedGroups.has(g.key)
+      return [
+        <button
+          className={collapsed ? 'group-header collapsed' : 'group-header'}
+          key={`h-${g.key}`}
+          onClick={() => onToggleGroup(g.key)}
+        >
+          <ChevronIcon open={false} />
+          <span className="glabel" style={{ color: g.color }}>
+            {g.label}
+          </span>
+          <span className="gcount">{g.rows.length}</span>
+          <span className="grule" />
+        </button>,
+        ...(collapsed ? [] : g.rows.map(render))
+      ]
+    })
+
   let content: JSX.Element[]
   if (tab === 'rev') {
-    content = reviewingGroups(rowsFor('rev', prs, ctx, showSnoozed)).flatMap((g) => [
-      <div className="group-header" key={`h-${g.key}`}>
-        <span className="glabel" style={{ color: g.color }}>
-          {g.label}
-        </span>
-        <span className="gcount">{g.rows.length}</span>
-        <span className="grule" />
-      </div>,
-      ...g.rows.map(render)
-    ])
+    content = renderGroups(reviewingGroups(rowsFor('rev', prs, ctx, showSnoozed), botAuthors))
+  } else if (tab === 'my') {
+    content = renderGroups(myGroups(rowsFor('my', prs, ctx, showSnoozed)))
   } else if (tab === 'all') {
     content = sortByCreated(rowsFor('all', prs, ctx, showSnoozed)).map(render)
   } else {

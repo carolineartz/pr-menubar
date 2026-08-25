@@ -23,7 +23,7 @@ describe('diffSnapshots', () => {
   it('first run seeds silently — no notification storm', () => {
     const { events, nextState } = diffSnapshots({}, makeMockPRs(NOW), opts())
     expect(events).toEqual([])
-    expect(Object.keys(nextState).length).toBe(10)
+    expect(Object.keys(nextState).length).toBe(makeMockPRs(NOW).length)
   })
 
   it('CI fail fires on transition, once, and again only on a new SHA', () => {

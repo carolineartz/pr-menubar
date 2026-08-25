@@ -64,6 +64,9 @@ export interface PRSnapshot {
   /** logins with an outstanding review request */
   requestedReviewers: string[]
   reviewRequestedFromViewer: boolean
+  /** matched the review-requested:@me search without an individual request —
+   *  the review is owed by a team/code-owner group the viewer belongs to */
+  reviewRequestedFromTeam: boolean
   viewerHasPendingReview: boolean
   viewerLastReviewAt: string | null
   viewerReviewState: ViewerReviewState
@@ -126,6 +129,8 @@ export interface Settings {
   globalShortcut: string
   /** e.g. "https://acme.atlassian.net/browse" — '' disables Jira links */
   jiraBaseUrl: string
+  /** authors grouped into the Reviewing tab's Bots section ("[bot]" suffix ignored) */
+  botAuthors: string[]
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -137,7 +142,8 @@ export const DEFAULT_SETTINGS: Settings = {
   launchAtLogin: false,
   theme: 'system',
   globalShortcut: '',
-  jiraBaseUrl: ''
+  jiraBaseUrl: '',
+  botAuthors: ['dependabot']
 }
 
 export interface PrNotifState {
