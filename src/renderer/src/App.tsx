@@ -19,8 +19,21 @@ import { TeamPillBar } from './components/TeamPillBar'
 import type { RowActions } from './components/PRRow'
 
 const COLLAPSED_LS_KEY = 'rev-collapsed-groups'
-/** 'shown' | 'hidden' — drafts inside the Code owner requests group (default hidden) */
-const DRAFTS_LS_KEY = 'codeowner-drafts'
+/** Reviewing groups whose divider toggle has un-hidden drafts (default: hidden) */
+const DRAFTS_LS_KEY = 'rev-drafts-shown'
+/** pre-v0.6.1 single-group form of the same preference */
+const LEGACY_DRAFTS_KEY = 'codeowner-drafts'
+
+function loadDraftsShown(): ReadonlySet<GroupKey> {
+  try {
+    const raw = localStorage.getItem(DRAFTS_LS_KEY)
+    if (raw) return new Set(JSON.parse(raw) as GroupKey[])
+    if (localStorage.getItem(LEGACY_DRAFTS_KEY) === 'shown') return new Set(['team'])
+  } catch {
+    // fall through to default
+  }
+  return new Set()
+}
 
 function loadCollapsed(): ReadonlySet<GroupKey> {
   try {
@@ -50,13 +63,8 @@ export default function App(): JSX.Element {
   const [repoFocus, setRepoFocus] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [collapsedGroups, setCollapsedGroups] = useState<ReadonlySet<GroupKey>>(loadCollapsed)
-  const [codeownerDraftsHidden, setCodeownerDraftsHidden] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem(DRAFTS_LS_KEY) !== 'shown'
-    } catch {
-      return true
-    }
-  })
+  const [draftsShownGroups, setDraftsShownGroups] =
+    useState<ReadonlySet<GroupKey>>(loadDraftsShown)
   const [now, setNow] = useState(() => Date.now())
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -72,14 +80,17 @@ export default function App(): JSX.Element {
     }
   }, [])
 
-  const toggleCodeownerDrafts = useCallback((): void => {
-    setCodeownerDraftsHidden((cur) => {
+  const toggleGroupDrafts = useCallback((key: GroupKey): void => {
+    setDraftsShownGroups((cur) => {
+      const next = new Set(cur)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
       try {
-        localStorage.setItem(DRAFTS_LS_KEY, cur ? 'shown' : 'hidden')
+        localStorage.setItem(DRAFTS_LS_KEY, JSON.stringify([...next]))
       } catch {
         // non-fatal: preference just won't survive a relaunch
       }
-      return !cur
+      return next
     })
   }, [])
 
@@ -265,8 +276,8 @@ export default function App(): JSX.Element {
         botAuthors={state.settings.botAuthors}
         collapsedGroups={collapsedGroups}
         onToggleGroup={toggleGroup}
-        codeownerDraftsHidden={codeownerDraftsHidden}
-        onToggleCodeownerDrafts={toggleCodeownerDrafts}
+        draftsShownGroups={draftsShownGroups}
+        onToggleGroupDrafts={toggleGroupDrafts}
         peopleNames={peopleNames}
         actions={actions}
       />

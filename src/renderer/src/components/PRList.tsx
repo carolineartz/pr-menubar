@@ -27,8 +27,8 @@ export function PRList({
   botAuthors,
   collapsedGroups,
   onToggleGroup,
-  codeownerDraftsHidden,
-  onToggleCodeownerDrafts,
+  draftsShownGroups,
+  onToggleGroupDrafts,
   peopleNames,
   actions
 }: {
@@ -42,9 +42,9 @@ export function PRList({
   botAuthors: string[]
   collapsedGroups: ReadonlySet<GroupKey>
   onToggleGroup: (key: GroupKey) => void
-  /** Code owner requests only: drafts are clutter there until they're ready */
-  codeownerDraftsHidden: boolean
-  onToggleCodeownerDrafts: () => void
+  /** Reviewing groups where the divider toggle has un-hidden drafts (hidden by default) */
+  draftsShownGroups: ReadonlySet<GroupKey>
+  onToggleGroupDrafts: (key: GroupKey) => void
   peopleNames: ReadonlyMap<string, string>
   actions: RowActions
 }): JSX.Element {
@@ -70,11 +70,11 @@ export function PRList({
   const renderGroups = (groups: Group[]): JSX.Element[] =>
     groups.flatMap((g) => {
       const collapsed = collapsedGroups.has(g.key)
-      // code-owner group: drafts hide behind a toggle on the divider itself
-      const draftCount =
-        g.key === 'team' ? g.rows.filter((pr) => pr.isDraft).length : 0
-      const rows =
-        g.key === 'team' && codeownerDraftsHidden ? g.rows.filter((pr) => !pr.isDraft) : g.rows
+      // Reviewing groups: drafts hide behind a per-group toggle on the divider
+      // itself. My PRs is exempt — drafts have their own section there.
+      const draftCount = tab === 'rev' ? g.rows.filter((pr) => pr.isDraft).length : 0
+      const draftsHidden = draftCount > 0 && !draftsShownGroups.has(g.key)
+      const rows = draftsHidden ? g.rows.filter((pr) => !pr.isDraft) : g.rows
       return [
         <button
           className={collapsed ? 'group-header collapsed' : 'group-header'}
@@ -93,10 +93,10 @@ export function PRList({
               role="button"
               onClick={(e) => {
                 e.stopPropagation()
-                onToggleCodeownerDrafts()
+                onToggleGroupDrafts(g.key)
               }}
             >
-              {codeownerDraftsHidden
+              {draftsHidden
                 ? `show ${draftCount} draft${draftCount === 1 ? '' : 's'}`
                 : 'hide drafts'}
             </span>
