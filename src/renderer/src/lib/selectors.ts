@@ -92,7 +92,7 @@ const GROUPS: GroupDef[] = [
   { key: 'start', label: 'START REVIEW', color: 'var(--bluet)', collapsedByDefault: false },
   {
     key: 'team',
-    label: 'REQUESTED FROM YOUR TEAM',
+    label: 'CODE OWNER REQUESTS',
     color: 'var(--tealt)',
     collapsedByDefault: false
   },

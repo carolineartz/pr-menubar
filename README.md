@@ -1,7 +1,7 @@
 # PR Menubar
 
 > [!WARNING]
-> YOU MUST run xattr -cr "/Applications/PR Menubar.app" initially and every time you download a new release. Otherwise it will warn it is corrupt and say to move to the trash. 
+> **YOU MUST run `xattr -cr "/Applications/PR Menubar.app"`** initially *and every time you download a new release*. Otherwise it will warn it is corrupt and say to move to the trash. 
 
 macOS menubar app for monitoring GitHub PRs. The popover answers one question: **what should I do next on my PRs?**
 
