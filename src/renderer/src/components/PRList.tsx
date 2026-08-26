@@ -27,6 +27,8 @@ export function PRList({
   botAuthors,
   collapsedGroups,
   onToggleGroup,
+  codeownerDraftsHidden,
+  onToggleCodeownerDrafts,
   peopleNames,
   actions
 }: {
@@ -40,6 +42,9 @@ export function PRList({
   botAuthors: string[]
   collapsedGroups: ReadonlySet<GroupKey>
   onToggleGroup: (key: GroupKey) => void
+  /** Code owner requests only: drafts are clutter there until they're ready */
+  codeownerDraftsHidden: boolean
+  onToggleCodeownerDrafts: () => void
   peopleNames: ReadonlyMap<string, string>
   actions: RowActions
 }): JSX.Element {
@@ -65,6 +70,11 @@ export function PRList({
   const renderGroups = (groups: Group[]): JSX.Element[] =>
     groups.flatMap((g) => {
       const collapsed = collapsedGroups.has(g.key)
+      // code-owner group: drafts hide behind a toggle on the divider itself
+      const draftCount =
+        g.key === 'team' ? g.rows.filter((pr) => pr.isDraft).length : 0
+      const rows =
+        g.key === 'team' && codeownerDraftsHidden ? g.rows.filter((pr) => !pr.isDraft) : g.rows
       return [
         <button
           className={collapsed ? 'group-header collapsed' : 'group-header'}
@@ -75,10 +85,24 @@ export function PRList({
           <span className="glabel" style={{ color: g.color }}>
             {g.label}
           </span>
-          <span className="gcount">{g.rows.length}</span>
+          <span className="gcount">{rows.length}</span>
           <span className="grule" />
+          {draftCount > 0 && (
+            <span
+              className="gdraft-toggle"
+              role="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggleCodeownerDrafts()
+              }}
+            >
+              {codeownerDraftsHidden
+                ? `show ${draftCount} draft${draftCount === 1 ? '' : 's'}`
+                : 'hide drafts'}
+            </span>
+          )}
         </button>,
-        ...(collapsed ? [] : g.rows.map(render))
+        ...(collapsed ? [] : rows.map(render))
       ]
     })
 

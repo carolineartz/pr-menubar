@@ -19,6 +19,8 @@ import { TeamPillBar } from './components/TeamPillBar'
 import type { RowActions } from './components/PRRow'
 
 const COLLAPSED_LS_KEY = 'rev-collapsed-groups'
+/** 'shown' | 'hidden' — drafts inside the Code owner requests group (default hidden) */
+const DRAFTS_LS_KEY = 'codeowner-drafts'
 
 function loadCollapsed(): ReadonlySet<GroupKey> {
   try {
@@ -48,6 +50,13 @@ export default function App(): JSX.Element {
   const [repoFocus, setRepoFocus] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [collapsedGroups, setCollapsedGroups] = useState<ReadonlySet<GroupKey>>(loadCollapsed)
+  const [codeownerDraftsHidden, setCodeownerDraftsHidden] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(DRAFTS_LS_KEY) !== 'shown'
+    } catch {
+      return true
+    }
+  })
   const [now, setNow] = useState(() => Date.now())
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -61,6 +70,17 @@ export default function App(): JSX.Element {
       offShown()
       clearInterval(iv)
     }
+  }, [])
+
+  const toggleCodeownerDrafts = useCallback((): void => {
+    setCodeownerDraftsHidden((cur) => {
+      try {
+        localStorage.setItem(DRAFTS_LS_KEY, cur ? 'shown' : 'hidden')
+      } catch {
+        // non-fatal: preference just won't survive a relaunch
+      }
+      return !cur
+    })
   }, [])
 
   const toggleGroup = useCallback((key: GroupKey): void => {
@@ -245,6 +265,8 @@ export default function App(): JSX.Element {
         botAuthors={state.settings.botAuthors}
         collapsedGroups={collapsedGroups}
         onToggleGroup={toggleGroup}
+        codeownerDraftsHidden={codeownerDraftsHidden}
+        onToggleCodeownerDrafts={toggleCodeownerDrafts}
         peopleNames={peopleNames}
         actions={actions}
       />

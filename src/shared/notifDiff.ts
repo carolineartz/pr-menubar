@@ -48,6 +48,7 @@ export function diffSnapshots(
       ciPhase: ciPhase(pr),
       mergeReadyNotified: pr.nextAction === 'MERGE' ? (before?.mergeReadyNotified ?? false) : false,
       reviewRequestSeen: pr.reviewRequestedFromViewer ? (before?.reviewRequestSeen ?? false) : false,
+      wasDraft: pr.isDraft,
       lastNotifiedCommentCount: before?.lastNotifiedCommentCount ?? pr.commentCount,
       lastCommentNotifAt: before?.lastCommentNotifAt ?? 0
     }
@@ -88,13 +89,36 @@ export function diffSnapshots(
     }
 
     // 3. Someone requests my review
+    let firedReviewRequested = false
     if (pr.reviewRequestedFromViewer && !after.reviewRequestSeen) {
       after.reviewRequestSeen = true
       if (settings.notifications.reviewRequested) {
+        firedReviewRequested = true
         fire({
           kind: 'reviewRequested',
           prKey: pr.key,
           title: `Review requested: ${shortRef}`,
+          body: `${pr.author} · ${pr.title}`,
+          url: pr.url
+        })
+      }
+    }
+
+    // 3b. A PR awaiting my review (directly or via code owners) leaves draft.
+    // Skipped when #3 fired this same poll — one notification per event.
+    // Old state (pre-wasDraft) reads as not-draft, so no transition fires.
+    if (
+      !mine &&
+      !pr.isDraft &&
+      (before?.wasDraft ?? false) &&
+      (pr.reviewRequestedFromViewer || pr.reviewRequestedFromTeam) &&
+      !firedReviewRequested
+    ) {
+      if (settings.notifications.readyForReview) {
+        fire({
+          kind: 'readyForReview',
+          prKey: pr.key,
+          title: `Ready for review: ${shortRef}`,
           body: `${pr.author} · ${pr.title}`,
           url: pr.url
         })

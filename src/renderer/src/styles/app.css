@@ -136,6 +136,20 @@ body {
   transform: rotate(-90deg);
 }
 
+/* sits at the end of the divider line — costs no vertical space */
+.gdraft-toggle {
+  flex: none;
+  font: 500 10px system-ui, sans-serif;
+  color: var(--txt3);
+  cursor: pointer;
+}
+
+.gdraft-toggle:hover {
+  color: var(--txt);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .group-header .glabel {
   font: 700 11px system-ui, sans-serif;
   letter-spacing: 0.08em;

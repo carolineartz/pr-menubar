@@ -105,6 +105,8 @@ export interface NotificationToggles {
   ciFail: boolean
   approved: boolean
   reviewRequested: boolean
+  /** a PR awaiting my review (directly or via code owners) leaves draft */
+  readyForReview: boolean
   comments: boolean
 }
 
@@ -137,7 +139,13 @@ export const DEFAULT_SETTINGS: Settings = {
   repos: [],
   teamUsernames: [],
   noisyPatterns: [{ pattern: 'codecov/*' }],
-  notifications: { ciFail: true, approved: true, reviewRequested: true, comments: true },
+  notifications: {
+    ciFail: true,
+    approved: true,
+    reviewRequested: true,
+    readyForReview: true,
+    comments: true
+  },
   badgeEnabled: true,
   launchAtLogin: false,
   theme: 'system',
@@ -152,6 +160,8 @@ export interface PrNotifState {
   ciPhase: 'none' | 'green' | 'running' | 'failed'
   mergeReadyNotified: boolean
   reviewRequestSeen: boolean
+  /** draft status at last poll — absent in state persisted before v0.6 */
+  wasDraft?: boolean
   lastNotifiedCommentCount: number
   /** epoch ms of last comment notification (0 = never) */
   lastCommentNotifAt: number
@@ -159,7 +169,12 @@ export interface PrNotifState {
 
 export type NotifState = Record<PrKey, PrNotifState>
 
-export type NotifKind = 'ciFail' | 'mergeReady' | 'reviewRequested' | 'comments'
+export type NotifKind =
+  | 'ciFail'
+  | 'mergeReady'
+  | 'reviewRequested'
+  | 'readyForReview'
+  | 'comments'
 
 export interface NotifEvent {
   kind: NotifKind

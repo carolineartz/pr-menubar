@@ -87,6 +87,7 @@ export default function SettingsApp(): JSX.Element {
             ['ciFail', 'CI fails on my PR'],
             ['approved', 'My PR becomes approved / mergeable'],
             ['reviewRequested', 'Someone requests my review'],
+            ['readyForReview', 'A PR awaiting my review leaves draft'],
             ['comments', 'New comments on my PRs (batched, 15 min)']
           ] as const
         ).map(([key, label]) => (

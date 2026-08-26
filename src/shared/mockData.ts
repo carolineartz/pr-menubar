@@ -129,6 +129,13 @@ const SPECS: MockSpec[] = [
     checks: [['build', 'ok', '1m 04s'], ['lint', 'ok', '18s'], ['e2e-tests', 'ok', '2m 10s']]
   },
   {
+    repo: 'acme/web', number: 355, title: 'Prototype: streaming export pipeline',
+    branch: 'jh/streaming-export', author: 'jharrow', buckets: ['rev'], updatedMin: 30,
+    isDraft: true, reviewRequestedFromTeam: true, commentCount: 1, reviewCount: 0,
+    lastCommitMin: 35,
+    checks: [['build', 'ok', '1m 12s'], ['lint', 'ok', '19s']]
+  },
+  {
     repo: 'acme/auth', number: 210, title: 'Rotate signing keys on a schedule',
     branch: 'jh/key-rotation', author: 'jharrow', buckets: ['rev'], updatedMin: 700,
     reviewDecision: 'APPROVED', approvals: 1, viewerReviewState: 'APPROVED',

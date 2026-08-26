@@ -49,6 +49,40 @@ describe('diffSnapshots', () => {
     expect(r3.events.map((e) => e.kind)).toEqual(['ciFail'])
   })
 
+  it('a PR awaiting my review leaving draft fires readyForReview, once', () => {
+    const draft = makeMockPRs(NOW).find((p) => p.key === 'acme/web#355')! // code-owner draft
+    const state0 = seed([draft])
+
+    const ready = { ...draft, isDraft: false }
+    const r1 = diffSnapshots(state0, [ready], opts())
+    expect(r1.events.map((e) => e.kind)).toEqual(['readyForReview'])
+
+    const r2 = diffSnapshots(r1.nextState, [ready], opts())
+    expect(r2.events).toEqual([])
+  })
+
+  it('draft→ready that also creates a direct request fires reviewRequested only', () => {
+    const draft = makeMockPRs(NOW).find((p) => p.key === 'acme/web#355')!
+    const state0 = seed([draft])
+
+    const ready = { ...draft, isDraft: false, reviewRequestedFromViewer: true }
+    const r1 = diffSnapshots(state0, [ready], opts())
+    expect(r1.events.map((e) => e.kind)).toEqual(['reviewRequested'])
+  })
+
+  it('readyForReview respects its settings toggle', () => {
+    const draft = makeMockPRs(NOW).find((p) => p.key === 'acme/web#355')!
+    const state0 = seed([draft])
+
+    const ready = { ...draft, isDraft: false }
+    const muted = {
+      ...MOCK_SETTINGS,
+      notifications: { ...MOCK_SETTINGS.notifications, readyForReview: false }
+    }
+    const r1 = diffSnapshots(state0, [ready], opts({ settings: muted }))
+    expect(r1.events).toEqual([])
+  })
+
   it('merge-ready fires on false→true and re-arms after dropping out', () => {
     const waiting = myPr({ nextAction: 'WAITING' })
     const state0 = seed([waiting])
