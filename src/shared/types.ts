@@ -27,7 +27,7 @@ export type CiState = 'none' | 'queued' | 'running' | 'green' | 'failed'
 
 export type DotColor = 'green' | 'red' | 'amber' | 'queued' | 'gray'
 
-export type NextAction = 'FIXCI' | 'MERGE' | 'ADDRESS' | 'REVIEW' | 'RESUME' | 'WAITING'
+export type NextAction = 'FIXCI' | 'MERGE' | 'RESPOND' | 'FIX' | 'REVIEW' | 'RESUME' | 'WAITING'
 
 /** Which poll searches matched this PR ('all' = every open PR in watched repos;
  *  Saved derives from stars) */

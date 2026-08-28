@@ -75,8 +75,10 @@ export function metaContext(pr: PRSnapshot, now: number): string {
     // request-event timestamps aren't in the poll query; updatedAt approximates
     context = `review requested ${relativeTime(pr.updatedAt, now)}`
   } else if (pr.nextAction === 'RESUME') {
-    if (pr.viewerHasPendingReview) context = 'you have an unfinished review'
-    else if (pr.viewerCommented && pr.viewerReviewState === null) context = 'you commented — review not submitted'
+    if (pr.viewerHasPendingReview) context = 'you have an unfinished review draft'
+    // commenting without a formal review is a normal workflow — no nagging
+    else if (pr.viewerCommented && pr.viewerReviewState === null)
+      context = `you commented · updated ${relativeTime(pr.updatedAt, now)}`
     else context = `updated since your review · ${relativeTime(pr.updatedAt, now)}`
   } else if (
     !pr.authorIsViewer &&

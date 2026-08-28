@@ -68,7 +68,10 @@ app.whenReady().then(() => {
     return { prs, viewer }
   }
 
-  const popover = createPopover()
+  const popover = createPopover({
+    get: () => store.get('popoverMaxHeight'),
+    set: (h) => store.set('popoverMaxHeight', h)
+  })
 
   const trayCtl = createTray({
     onClick: (bounds) => {

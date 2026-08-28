@@ -280,7 +280,8 @@ body {
 }
 
 .chip.MERGE { background: var(--greenbg); color: var(--greent); }
-.chip.ADDRESS { background: var(--amberbg); color: var(--ambert); }
+.chip.RESPOND { background: var(--purbg); color: var(--purt); }
+.chip.FIX { background: var(--amberbg); color: var(--ambert); }
 .chip.REVIEW { background: var(--bluebg); color: var(--bluet); }
 .chip.RESUME { background: var(--purbg); color: var(--purt); }
 .chip.WAITING { background: var(--neutbg); color: var(--neut); }

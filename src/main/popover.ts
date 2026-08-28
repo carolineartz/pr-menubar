@@ -4,6 +4,7 @@ import { join } from 'node:path'
 
 const WIDTH = 560
 const HEIGHT = 540
+const MIN_HEIGHT = 280
 
 export interface Popover {
   win: BrowserWindow
@@ -18,8 +19,13 @@ export interface Popover {
   resize(contentHeight: number): void
 }
 
-export function createPopover(): Popover {
+/** maxHeight: the persisted cap set by dragging the window edge — auto-size
+ *  follows the content up to it, and taller content scrolls inside. */
+export function createPopover(maxHeight: { get(): number; set(h: number): void }): Popover {
   let hiddenAt = 0
+  let programmaticResize = false
+  /** mid-drag: the content auto-sizer must not fight the user's hand */
+  let userResizing = false
   const showListeners: (() => void)[] = []
 
   const win = new BrowserWindow({
@@ -27,7 +33,11 @@ export function createPopover(): Popover {
     height: HEIGHT,
     show: false,
     frame: false,
-    resizable: false,
+    // min/max width identical → the frameless window resizes vertically only
+    resizable: true,
+    minWidth: WIDTH,
+    maxWidth: WIDTH,
+    minHeight: MIN_HEIGHT,
     movable: false,
     minimizable: false,
     maximizable: false,
@@ -46,6 +56,17 @@ export function createPopover(): Popover {
 
   win.setAlwaysOnTop(true, 'pop-up-menu')
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+
+  // will-resize only fires for manual resizing — pause auto-size for the drag
+  win.on('will-resize', () => {
+    userResizing = true
+  })
+
+  // a manual drag (not our own setSize) records the new height as the cap
+  win.on('resized', () => {
+    userResizing = false
+    if (!programmaticResize) maxHeight.set(win.getSize()[1])
+  })
 
   win.on('blur', () => {
     // Keep open while devtools are focused during development
@@ -101,9 +122,16 @@ export function createPopover(): Popover {
     justHid: () => Date.now() - hiddenAt < 300,
     onShow: (cb) => showListeners.push(cb),
     resize: (contentHeight) => {
-      const h = Math.round(Math.min(Math.max(contentHeight, 280), 640))
-      const [w] = win.getSize()
-      if (win.getSize()[1] !== h) win.setSize(w, h, false)
+      if (userResizing) return
+      const cap = Math.max(MIN_HEIGHT, maxHeight.get())
+      const h = Math.round(Math.min(Math.max(contentHeight, MIN_HEIGHT), cap))
+      if (win.getSize()[1] !== h) {
+        programmaticResize = true
+        win.setSize(WIDTH, h, false)
+        setTimeout(() => {
+          programmaticResize = false
+        }, 150)
+      }
     }
   }
 }

@@ -112,14 +112,13 @@ export function PRRow({
             Unsnooze
           </button>
         )}
-        {timeBadge ? (
-          <TimeBadge pr={pr} now={now} />
-        ) : (
-          // FIXCI has no chip — the red dot already says it
-          !hideChip &&
-          pr.nextAction !== 'FIXCI' && <span className={`chip ${pr.nextAction}`}>{pr.nextAction}</span>
+        {/* FIXCI has no chip — the red dot already says it */}
+        {!timeBadge && !hideChip && pr.nextAction !== 'FIXCI' && (
+          <span className={`chip ${pr.nextAction}`}>{pr.nextAction}</span>
         )}
         {pill && <span className={`pill ${pill[1]}`}>{pill[0]}</span>}
+        {/* the age chip reads best as the row's last word before the avatar */}
+        {timeBadge && <TimeBadge pr={pr} now={now} />}
         {(!pr.authorIsViewer || showOwnAvatar) && (
           <Avatar login={pr.author} name={authorName} isViewer={pr.authorIsViewer} />
         )}

@@ -78,11 +78,19 @@ const SPECS: MockSpec[] = [
     ]
   },
   {
+    // reviewer replied and awaits an answer — RESPOND outranks the changes-requested FIX
     repo: 'acme/api', number: 468, title: 'Refactor session cache eviction policy',
     branch: 'jt/cache-eviction', author: MOCK_VIEWER, buckets: ['my'], updatedMin: 180,
-    reviewDecision: 'CHANGES_REQUESTED', unresolvedThreads: 3, commentCount: 11, reviewCount: 2,
-    lastCommitMin: 200,
+    reviewDecision: 'CHANGES_REQUESTED', unresolvedThreads: 3, threadsAwaitingViewer: 2,
+    commentCount: 11, reviewCount: 2, lastCommitMin: 200,
     checks: [['build', 'ok', '1m 05s'], ['lint', 'ok', '22s'], ['e2e-tests', 'ok', '2m 30s']]
+  },
+  {
+    // both reviewers engaged, nothing owed — relax-and-wait
+    repo: 'acme/api', number: 465, title: 'Stream large export downloads',
+    branch: 'jt/streaming-downloads', author: MOCK_VIEWER, buckets: ['my'], updatedMin: 240,
+    engagedReviewers: 2, reviewCount: 2, commentCount: 3, lastCommitMin: 300,
+    checks: [['build', 'ok', '1m 09s'], ['lint', 'ok', '21s'], ['e2e-tests', 'ok', '2m 12s']]
   },
   {
     repo: 'acme/api', number: 455, title: 'Bump minimum Node to 22 in CI images',

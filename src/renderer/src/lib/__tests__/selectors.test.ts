@@ -82,27 +82,28 @@ describe('My PRs groups', () => {
   const keys = (key: string): string[] =>
     groups.find((g) => g.key === key)?.rows.map((p) => p.key) ?? []
 
-  it('review-decision-approved PRs group under APPROVED, even with failing CI', () => {
-    // #482 is FIXCI but fully approved — approval state and CI state are orthogonal
-    expect(keys('ready').sort()).toEqual(['acme/api#479', 'acme/api#482'])
+  it('every own-PR verb lands in YOUR MOVE — merge, respond, fix, and red CI', () => {
+    expect(keys('yourmove').sort()).toEqual([
+      'acme/api#455', // FIX (conflicts)
+      'acme/api#468', // RESPOND (comment awaiting reply, despite changes-requested)
+      'acme/api#479', // MERGE (clean)
+      'acme/api#482' // FIXCI (red dot)
+    ])
   })
 
   it('one approval but not enough engaged reviewers → awaiting reviewers', () => {
     expect(keys('nudge')).toEqual(['acme/web#360'])
   })
 
-  it('the nudge group empties when the engagement bar is met', () => {
+  it('enough engagement and nothing owed → in review', () => {
+    expect(keys('inreview')).toEqual(['acme/api#465'])
     const g = myGroups(rowsFor('my', prs, ctx), 1)
     expect(g.find((x) => x.key === 'nudge')).toBeUndefined()
   })
 
   it('drafts get their own group', () => {
     expect(keys('drafts')).toEqual(['acme/billing#91'])
-    expect(keys('active')).not.toContain('acme/billing#91')
-  })
-
-  it('PRs with something on your plate are in progress', () => {
-    expect(keys('active').sort()).toEqual(['acme/api#455', 'acme/api#468'])
+    expect(keys('yourmove')).not.toContain('acme/billing#91')
   })
 })
 

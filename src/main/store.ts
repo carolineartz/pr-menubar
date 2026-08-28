@@ -12,6 +12,8 @@ export interface PersistedState {
   snoozed: Record<string, SnoozeEntry>
   teamToggles: Record<string, boolean>
   notifState: NotifState
+  /** user-dragged popover height — the cap the content auto-size grows to */
+  popoverMaxHeight: number
 }
 
 const DEFAULTS: PersistedState = {
@@ -20,7 +22,8 @@ const DEFAULTS: PersistedState = {
   starredNodeIds: {},
   snoozed: {},
   teamToggles: {},
-  notifState: {}
+  notifState: {},
+  popoverMaxHeight: 640
 }
 
 /** Minimal atomic JSON store in userData — one file, write-through. */

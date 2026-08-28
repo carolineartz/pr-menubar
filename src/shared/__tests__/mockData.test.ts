@@ -15,8 +15,9 @@ describe('mock data matches the prototype', () => {
   it.each([
     [482, 'FIXCI', 'red', 'Approved'],
     [479, 'MERGE', 'green', '2 approvals'],
-    [468, 'ADDRESS', 'green', 'Changes req.'],
-    [455, 'ADDRESS', 'green', 'Conflicts'],
+    [468, 'RESPOND', 'green', 'Changes req.'],
+    [465, 'WAITING', 'green', null],
+    [455, 'FIX', 'green', 'Conflicts'],
     [91, 'WAITING', 'queued', '0 of 2 reviews'],
     [217, 'REVIEW', 'green', null],
     [486, 'REVIEW', 'amber', null],

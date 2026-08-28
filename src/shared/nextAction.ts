@@ -3,16 +3,18 @@ import type { DotColor, NextAction, PRSnapshot } from './types'
 export const PRIO: Record<NextAction, number> = {
   FIXCI: 0,
   MERGE: 1,
-  ADDRESS: 2,
-  REVIEW: 3,
-  RESUME: 4,
-  WAITING: 5
+  RESPOND: 2,
+  FIX: 3,
+  REVIEW: 4,
+  RESUME: 5,
+  WAITING: 6
 }
 
 export const ACTIONABLE: ReadonlySet<NextAction> = new Set([
   'FIXCI',
   'MERGE',
-  'ADDRESS',
+  'RESPOND',
+  'FIX',
   'REVIEW',
   'RESUME'
 ])
@@ -26,7 +28,7 @@ export type NextActionInput = Pick<
   | 'ciState'
   | 'mergeable'
   | 'reviewDecision'
-  | 'unresolvedThreads'
+  | 'threadsAwaitingViewer'
   | 'reviewRequestedFromViewer'
   | 'viewerHasPendingReview'
   | 'viewerLastReviewAt'
@@ -45,29 +47,28 @@ export function resolveDot(dot: DotColor, nextAction: NextAction): DotColor {
   return nextAction === 'MERGE' && dot === 'amber' ? 'green' : dot
 }
 
-/** First match wins (HANDOFF.md "Next-action computation"). */
+/** First match wins. Own PRs answer "what's my move": fix CI, respond to
+ *  comments (which outranks merging — an approved PR with an unanswered
+ *  comment isn't done), fix requested changes/conflicts, or merge. MERGE
+ *  therefore means truly clean: approvals in, green, nothing awaiting you. */
 export function computeNextAction(pr: NextActionInput): NextAction {
   const mine = pr.authorIsViewer
 
   if (mine && pr.meaningfulFailure) return 'FIXCI'
 
-  if (
-    mine &&
-    !pr.isDraft &&
-    pr.reviewDecision === 'APPROVED' &&
-    (pr.ciState === 'green' || pr.ciState === 'none') &&
-    pr.mergeable !== 'CONFLICTING'
-  ) {
-    return 'MERGE'
+  if (mine && pr.threadsAwaitingViewer > 0) return 'RESPOND'
+
+  if (mine && (pr.reviewDecision === 'CHANGES_REQUESTED' || pr.mergeable === 'CONFLICTING')) {
+    return 'FIX'
   }
 
   if (
     mine &&
-    (pr.reviewDecision === 'CHANGES_REQUESTED' ||
-      pr.unresolvedThreads > 0 ||
-      pr.mergeable === 'CONFLICTING')
+    !pr.isDraft &&
+    pr.reviewDecision === 'APPROVED' &&
+    (pr.ciState === 'green' || pr.ciState === 'none')
   ) {
-    return 'ADDRESS'
+    return 'MERGE'
   }
 
   if (!mine) {

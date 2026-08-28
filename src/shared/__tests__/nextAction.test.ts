@@ -10,7 +10,7 @@ function base(over: Partial<NextActionInput> = {}): NextActionInput {
     ciState: 'green',
     mergeable: 'MERGEABLE',
     reviewDecision: null,
-    unresolvedThreads: 0,
+    threadsAwaitingViewer: 0,
     reviewRequestedFromViewer: false,
     viewerHasPendingReview: false,
     viewerLastReviewAt: null,
@@ -52,18 +52,27 @@ describe('computeNextAction — first match wins', () => {
     expect(computeNextAction(base({ reviewDecision: 'APPROVED', isDraft: true }))).toBe('WAITING')
   })
 
-  it('ADDRESS: changes requested', () => {
-    expect(computeNextAction(base({ reviewDecision: 'CHANGES_REQUESTED' }))).toBe('ADDRESS')
+  it('RESPOND: a comment awaits my reply — even on an approved, green PR', () => {
+    expect(computeNextAction(base({ threadsAwaitingViewer: 1 }))).toBe('RESPOND')
+    expect(
+      computeNextAction(base({ threadsAwaitingViewer: 1, reviewDecision: 'APPROVED' }))
+    ).toBe('RESPOND')
   })
 
-  it('ADDRESS: unresolved review threads', () => {
-    expect(computeNextAction(base({ unresolvedThreads: 2 }))).toBe('ADDRESS')
+  it('threads I already answered do not block MERGE', () => {
+    expect(
+      computeNextAction(base({ reviewDecision: 'APPROVED', threadsAwaitingViewer: 0 }))
+    ).toBe('MERGE')
   })
 
-  it('ADDRESS: merge conflicts (even when approved)', () => {
+  it('FIX: changes requested', () => {
+    expect(computeNextAction(base({ reviewDecision: 'CHANGES_REQUESTED' }))).toBe('FIX')
+  })
+
+  it('FIX: merge conflicts (even when approved)', () => {
     expect(
       computeNextAction(base({ reviewDecision: 'APPROVED', mergeable: 'CONFLICTING' }))
-    ).toBe('ADDRESS')
+    ).toBe('FIX')
   })
 
   it('mergeable UNKNOWN is not treated as a conflict', () => {

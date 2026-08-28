@@ -76,9 +76,9 @@ export type GroupKey =
   | 'approved'
   | 'bots'
   // My PRs tab
-  | 'ready'
+  | 'yourmove'
   | 'nudge'
-  | 'active'
+  | 'inreview'
   | 'drafts'
   // Team tab: one section per teammate
   | `author:${string}`
@@ -107,9 +107,9 @@ const GROUPS: GroupDef[] = [
 ]
 
 const MY_GROUPS: GroupDef[] = [
-  { key: 'ready', label: 'APPROVED', color: 'var(--greent)', collapsedByDefault: false },
+  { key: 'yourmove', label: 'YOUR MOVE', color: 'var(--purt)', collapsedByDefault: false },
   { key: 'nudge', label: 'AWAITING REVIEWERS', color: 'var(--ambert)', collapsedByDefault: false },
-  { key: 'active', label: 'IN PROGRESS', color: 'var(--bluet)', collapsedByDefault: false },
+  { key: 'inreview', label: 'IN REVIEW', color: 'var(--bluet)', collapsedByDefault: false },
   { key: 'drafts', label: 'DRAFTS', color: 'var(--faint)', collapsedByDefault: false }
 ]
 
@@ -168,16 +168,16 @@ export function reviewingGroups(rows: PRSnapshot[], botAuthors: string[] = []): 
   return toGroups(GROUPS, rows, (pr) => groupKeyFor(pr, botAuthors))
 }
 
-/** My PRs groups. "Approved" means GitHub's review decision — required approval
- *  count met and every blocking code-owner group satisfied. "Awaiting
- *  reviewers" is the nudge list: nothing on your plate, but fewer reviewers
- *  engaged than the repo requires. */
+/** My PRs groups, by whose move it is. "Your move" holds every own-PR verb
+ *  (merge / respond / fix, plus red-dot CI failures); "Awaiting reviewers" is
+ *  the nudge list — nothing on your plate, but fewer reviewers engaged than
+ *  the repo requires; "In review" is relax-and-wait. */
 export function myGroups(rows: PRSnapshot[], requiredReviews: number): Group[] {
   return toGroups(MY_GROUPS, rows, (pr) => {
     if (pr.isDraft) return 'drafts'
-    if (pr.reviewDecision === 'APPROVED') return 'ready'
-    if (pr.nextAction === 'WAITING' && pr.engagedReviewers < requiredReviews) return 'nudge'
-    return 'active'
+    if (pr.nextAction !== 'WAITING') return 'yourmove'
+    if (pr.engagedReviewers < requiredReviews) return 'nudge'
+    return 'inreview'
   })
 }
 
