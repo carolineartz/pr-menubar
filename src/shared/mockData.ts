@@ -48,6 +48,8 @@ interface MockSpec {
   viewerReviewState?: PRSnapshot['viewerReviewState']
   viewerCommented?: boolean
   unresolvedThreads?: number
+  threadsAwaitingViewer?: number
+  engagedReviewers?: number
   commentCount?: number
   reviewCount?: number
   lastCommitMin?: number
@@ -89,6 +91,14 @@ const SPECS: MockSpec[] = [
     checks: [['build', 'ok', '1m 11s'], ['lint', 'ok', '20s'], ['e2e-tests', 'ok', '2m 21s']]
   },
   {
+    // one approval banked, second reviewer hasn't engaged — Awaiting reviewers
+    repo: 'acme/web', number: 360, title: 'Add SSR cache warming on deploy',
+    branch: 'jt/ssr-cache-warming', author: MOCK_VIEWER, buckets: ['my'], updatedMin: 420,
+    approvals: 1, engagedReviewers: 1, requestedReviewers: ['mkatz'],
+    commentCount: 2, reviewCount: 1, lastCommitMin: 900,
+    checks: [['build', 'ok', '1m 03s'], ['lint', 'ok', '22s'], ['e2e-tests', 'ok', '2m 18s']]
+  },
+  {
     repo: 'acme/billing', number: 91, title: 'Migrate billing webhooks to v2 signatures',
     branch: 'jt/webhooks-v2', author: MOCK_VIEWER, buckets: ['my'], updatedMin: 60, isDraft: true,
     requestedReviewers: ['mkatz', 'dvest'], commentCount: 0, reviewCount: 0, lastCommitMin: 65,
@@ -109,10 +119,21 @@ const SPECS: MockSpec[] = [
     checks: [['build', 'ok', '1m 00s'], ['e2e-tests', 'running', '1m 10s']]
   },
   {
+    // alind replied to the viewer's comment — waiting on you
     repo: 'acme/web', number: 341, title: 'Rework onboarding checklist state machine',
     branch: 'al/onboarding-sm', author: 'alind', buckets: ['rev', 'team'], updatedMin: 300,
-    viewerCommented: true, commentCount: 9, reviewCount: 1, lastCommitMin: 400,
+    viewerCommented: true, unresolvedThreads: 1, threadsAwaitingViewer: 1,
+    commentCount: 9, reviewCount: 1, lastCommitMin: 400,
     checks: [['build', 'ok', '1m 21s'], ['lint', 'ok', '25s'], ['e2e-tests', 'ok', '2m 44s']]
+  },
+  {
+    // viewer reviewed, dvest clicked re-request — waiting on you
+    repo: 'acme/auth', number: 221, title: 'Harden token refresh against clock skew',
+    branch: 'dv/token-refresh-skew', author: 'dvest', buckets: ['rev', 'team'], updatedMin: 45,
+    reviewRequestedFromViewer: true, requestedReviewers: [MOCK_VIEWER],
+    viewerReviewState: 'COMMENTED', viewerLastReviewMin: 600, viewerCommented: true,
+    commentCount: 5, reviewCount: 1, lastCommitMin: 650,
+    checks: [['build', 'ok', '1m 07s'], ['lint', 'ok', '18s']]
   },
   {
     repo: 'acme/web', number: 322, title: 'Extract transactional email templates',
@@ -200,6 +221,8 @@ export function makeMockPRs(
       commentCount: s.commentCount ?? 0,
       reviewCount: s.reviewCount ?? 0,
       unresolvedThreads: s.unresolvedThreads ?? 0,
+      threadsAwaitingViewer: s.threadsAwaitingViewer ?? 0,
+      engagedReviewers: s.engagedReviewers ?? s.approvals ?? 0,
       approvals: s.approvals ?? 0,
       requestedReviewers: s.requestedReviewers ?? [],
       reviewRequestedFromViewer: s.reviewRequestedFromViewer ?? false,

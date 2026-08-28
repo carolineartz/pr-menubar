@@ -18,7 +18,7 @@ export function registerIpcHandlers(deps: {
   resizePopover: (height: number) => void
 }): void {
   const { coordinator, store } = deps
-  const pr = (key: string) => coordinator.prs.find((p) => p.key === key)
+  const pr = (key: string) => coordinator.find(key)
 
   ipcMain.handle(CHANNELS.getState, () => coordinator.snapshot())
 

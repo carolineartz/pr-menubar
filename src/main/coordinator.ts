@@ -31,6 +31,15 @@ export class Coordinator {
     this.publish()
   }
 
+  /** Look up a PR by key across everything the renderer can see. The renderer
+   *  also shows authorExtra rows (and stars keep them on Saved), so IPC
+   *  lookups must search both — prs alone made those rows dead to clicks. */
+  find(key: string): PRSnapshot | undefined {
+    return (
+      this.prs.find((p) => p.key === key) ?? this.authorExtra.find((p) => p.key === key)
+    )
+  }
+
   snapshot(): AppState {
     const settings = this.store.get('settings')
     const seen = new Set(this.prs.map((p) => p.key))
@@ -78,8 +87,27 @@ export class Coordinator {
     this.authOk = true
     this.lastSyncAt = Date.now()
     this.syncError = null
+    this.backfillStarredNodeIds()
     this.expireSnoozes()
     this.publish()
+  }
+
+  /** Stars saved without a node id (pre-fix authorExtra rows) can't be
+   *  re-fetched via nodes(ids:) — capture the id whenever the PR shows up. */
+  private backfillStarredNodeIds(): void {
+    const ids = this.store.get('starredNodeIds')
+    const missing = this.store.get('starred').filter((key) => !ids[key])
+    if (missing.length === 0) return
+    const next = { ...ids }
+    let changed = false
+    for (const key of missing) {
+      const found = this.find(key)
+      if (found) {
+        next[key] = found.nodeId
+        changed = true
+      }
+    }
+    if (changed) this.store.set('starredNodeIds', next)
   }
 
   setError(message: string, authFailed = false): void {

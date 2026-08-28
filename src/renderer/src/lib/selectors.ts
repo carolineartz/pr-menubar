@@ -1,4 +1,5 @@
 import { PRIO } from '../../../shared/nextAction'
+import { avatarColor } from '../../../shared/present'
 import { isSnoozeActive } from '../../../shared/fingerprint'
 import type { PRSnapshot, SnoozeEntry } from '../../../shared/types'
 
@@ -69,15 +70,18 @@ export function sortByCreated(rows: PRSnapshot[]): PRSnapshot[] {
 export type GroupKey =
   // Reviewing tab
   | 'start'
+  | 'you'
+  | 'them'
   | 'team'
-  | 'continue'
-  | 'waiting'
   | 'approved'
   | 'bots'
   // My PRs tab
   | 'ready'
+  | 'nudge'
   | 'active'
   | 'drafts'
+  // Team tab: one section per teammate
+  | `author:${string}`
 
 export interface Group {
   key: GroupKey
@@ -90,20 +94,21 @@ type GroupDef = Omit<Group, 'rows'> & { collapsedByDefault: boolean }
 
 const GROUPS: GroupDef[] = [
   { key: 'start', label: 'START REVIEW', color: 'var(--bluet)', collapsedByDefault: false },
+  { key: 'you', label: 'WAITING ON YOU', color: 'var(--purt)', collapsedByDefault: false },
+  { key: 'them', label: 'WAITING ON THEM', color: 'var(--ambert)', collapsedByDefault: false },
   {
     key: 'team',
     label: 'CODE OWNER REQUESTS',
     color: 'var(--tealt)',
     collapsedByDefault: false
   },
-  { key: 'continue', label: 'CONTINUE REVIEW', color: 'var(--purt)', collapsedByDefault: false },
-  { key: 'waiting', label: 'WAITING FOR AUTHOR', color: 'var(--ambert)', collapsedByDefault: false },
   { key: 'approved', label: 'APPROVED BY YOU', color: 'var(--greent)', collapsedByDefault: true },
   { key: 'bots', label: 'BOTS', color: 'var(--neut)', collapsedByDefault: true }
 ]
 
 const MY_GROUPS: GroupDef[] = [
   { key: 'ready', label: 'APPROVED', color: 'var(--greent)', collapsedByDefault: false },
+  { key: 'nudge', label: 'AWAITING REVIEWERS', color: 'var(--ambert)', collapsedByDefault: false },
   { key: 'active', label: 'IN PROGRESS', color: 'var(--bluet)', collapsedByDefault: false },
   { key: 'drafts', label: 'DRAFTS', color: 'var(--faint)', collapsedByDefault: false }
 ]
@@ -134,15 +139,29 @@ export function isBotAuthor(login: string, botAuthors: string[]): boolean {
   return botAuthors.some((b) => botName(b) === botName(login))
 }
 
-/** First match wins: bot author, then your approval (kept there even when new
- *  commits landed after it), then the next-action verbs, then team requests. */
+/**
+ * Reviewing classification — a PR waits on you only if their move is newer
+ * than yours. First match wins:
+ * - bots
+ * - re-requested review (you reviewed, they clicked re-request) → waiting on you
+ * - you approved (sticky, even through later commits) → approved
+ * - fresh direct request, not started → start review
+ * - code-owner group request, not started → code owner requests (never PRs
+ *   where you're tagged individually — those matched above)
+ * - unfinished pending review, or an unresolved thread whose last word isn't
+ *   yours (and you haven't 👍'd it) → waiting on you
+ * - anything else you've engaged with → waiting on them
+ */
 function groupKeyFor(pr: PRSnapshot, botAuthors: string[]): GroupKey {
   if (isBotAuthor(pr.author, botAuthors)) return 'bots'
+  const started =
+    pr.viewerReviewState !== null || pr.viewerCommented || pr.viewerHasPendingReview
+  if (pr.reviewRequestedFromViewer && pr.viewerReviewState !== null) return 'you'
   if (pr.viewerReviewState === 'APPROVED') return 'approved'
-  if (pr.nextAction === 'REVIEW') return 'start'
-  if (pr.nextAction === 'RESUME') return 'continue'
-  if (pr.reviewRequestedFromTeam) return 'team'
-  return 'waiting'
+  if (pr.reviewRequestedFromViewer && !started) return 'start'
+  if (pr.reviewRequestedFromTeam && !started) return 'team'
+  if (pr.viewerHasPendingReview || pr.threadsAwaitingViewer > 0) return 'you'
+  return 'them'
 }
 
 export function reviewingGroups(rows: PRSnapshot[], botAuthors: string[] = []): Group[] {
@@ -150,13 +169,27 @@ export function reviewingGroups(rows: PRSnapshot[], botAuthors: string[] = []): 
 }
 
 /** My PRs groups. "Approved" means GitHub's review decision — required approval
- *  count met and every blocking code-owner group satisfied. */
-export function myGroups(rows: PRSnapshot[]): Group[] {
+ *  count met and every blocking code-owner group satisfied. "Awaiting
+ *  reviewers" is the nudge list: nothing on your plate, but fewer reviewers
+ *  engaged than the repo requires. */
+export function myGroups(rows: PRSnapshot[], requiredReviews: number): Group[] {
   return toGroups(MY_GROUPS, rows, (pr) => {
     if (pr.isDraft) return 'drafts'
     if (pr.reviewDecision === 'APPROVED') return 'ready'
+    if (pr.nextAction === 'WAITING' && pr.engagedReviewers < requiredReviews) return 'nudge'
     return 'active'
   })
+}
+
+/** Team tab: one collapsible section per teammate, alphabetical. */
+export function teamAuthorGroups(rows: PRSnapshot[]): Group[] {
+  const authors = [...new Set(rows.map((pr) => pr.author))].sort((a, b) => a.localeCompare(b))
+  return authors.map((author) => ({
+    key: `author:${author}` as GroupKey,
+    label: author,
+    color: avatarColor(author, false),
+    rows: sortByUrgency(rows.filter((pr) => pr.author === author))
+  }))
 }
 
 export function emptyMessage(tab: TabId): string {

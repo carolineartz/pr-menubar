@@ -23,10 +23,13 @@ export function relativeShort(iso: string | null, now: number): string {
 }
 
 /**
- * Reviewing tab: what timestamp am I behind on? Stale reviews measure from
- * the newest real (non-merge) commit; everything else from the PR's update.
+ * Time-badge anchor. Own PRs (Awaiting reviewers): how long it's been
+ * reviewable in its current form — the newest real commit. Reviewing tab:
+ * what timestamp am I behind on? Stale reviews measure from the newest real
+ * (non-merge) commit; everything else from the PR's update.
  */
 export function behindSince(pr: PRSnapshot): string {
+  if (pr.authorIsViewer) return pr.lastMeaningfulCommitAt ?? pr.createdAt
   if (
     pr.nextAction === 'RESUME' &&
     pr.viewerLastReviewAt &&

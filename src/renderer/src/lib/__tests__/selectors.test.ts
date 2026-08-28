@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { makeMockPRs } from '../../../../shared/mockData'
-import { isBotAuthor, myGroups, reviewingGroups, rowsFor, type ListContext } from '../selectors'
+import {
+  isBotAuthor,
+  myGroups,
+  reviewingGroups,
+  rowsFor,
+  teamAuthorGroups,
+  type ListContext
+} from '../selectors'
 
 const NOW = Date.parse('2026-07-04T12:00:00Z')
 
@@ -11,43 +18,67 @@ const BOTS = ['dependabot']
 describe('Reviewing tab groups', () => {
   const prs = makeMockPRs(NOW)
   const groups = reviewingGroups(rowsFor('rev', prs, ctx), BOTS)
-  const group = (key: string): (typeof groups)[number] | undefined =>
-    groups.find((g) => g.key === key)
+  const keys = (key: string): string[] =>
+    groups.find((g) => g.key === key)?.rows.map((p) => p.key) ?? []
 
-  it('approved PRs stay on the tab, in their own group', () => {
-    expect(group('approved')?.rows.map((p) => p.key)).toContain('acme/auth#210')
+  it('fresh direct requests → start review', () => {
+    expect(keys('start').sort()).toEqual(['acme/api#486', 'acme/auth#217'])
   })
 
-  it('approval wins even when new commits landed after it', () => {
-    // #96 has commits newer than the viewer's approval (would otherwise be RESUME)
+  it('a reply in an unresolved thread puts the PR in waiting-on-you', () => {
+    expect(keys('you')).toContain('acme/web#341')
+  })
+
+  it('a re-requested review puts the PR in waiting-on-you', () => {
+    expect(keys('you')).toContain('acme/auth#221')
+  })
+
+  it('reviewed with no response yet → waiting on them', () => {
+    expect(keys('them')).toContain('acme/web#322')
+    expect(keys('you')).not.toContain('acme/web#322')
+  })
+
+  it('a 👍-answered thread does not pull the PR back to waiting-on-you', () => {
+    // same PR as the waiting-on-you case, but the mapper counted 0 threads
+    // awaiting the viewer (reaction counts as a response)
+    const acked = prs.map((p) =>
+      p.key === 'acme/web#341' ? { ...p, threadsAwaitingViewer: 0 } : p
+    )
+    const g = reviewingGroups(rowsFor('rev', acked, ctx), BOTS)
+    expect(g.find((x) => x.key === 'them')?.rows.map((p) => p.key)).toContain('acme/web#341')
+  })
+
+  it('approved stays approved, even with commits after the approval', () => {
     const pr = prs.find((p) => p.key === 'acme/billing#96')!
     expect(pr.nextAction).toBe('RESUME')
-    expect(group('approved')?.rows.map((p) => p.key)).toContain('acme/billing#96')
-    expect(group('continue')?.rows.map((p) => p.key) ?? []).not.toContain('acme/billing#96')
+    expect(keys('approved').sort()).toEqual(['acme/auth#210', 'acme/billing#96'])
   })
 
-  it('team-owed requests split from individually-requested reviews', () => {
-    expect(group('team')?.rows.map((p) => p.key)).toContain('acme/web#350')
-    expect(group('start')?.rows.map((p) => p.key)).toEqual(
-      expect.arrayContaining(['acme/auth#217', 'acme/api#486'])
-    )
-    expect(group('start')?.rows.map((p) => p.key)).not.toContain('acme/web#350')
-  })
-
-  it('bot authors collect in the bots group, ahead of anything else', () => {
-    expect(group('bots')?.rows.map((p) => p.key)).toEqual(['acme/api#495'])
-    expect(group('team')?.rows.map((p) => p.key)).not.toContain('acme/api#495')
+  it('code owner requests exclude direct tags and bot authors', () => {
+    expect(keys('team')).toContain('acme/web#350')
+    expect(keys('team')).not.toContain('acme/auth#217')
+    expect(keys('bots')).toEqual(['acme/api#495'])
   })
 
   it('empty groups are dropped', () => {
-    const none = reviewingGroups([], BOTS)
-    expect(none).toHaveLength(0)
+    expect(reviewingGroups([], BOTS)).toHaveLength(0)
+  })
+})
+
+describe('Team tab author sections', () => {
+  const prs = makeMockPRs(NOW)
+  const groups = teamAuthorGroups(rowsFor('team', prs, ctx))
+
+  it('one section per handle, alphabetical', () => {
+    expect(groups.map((g) => g.label)).toEqual([...groups.map((g) => g.label)].sort())
+    expect(groups.every((g) => g.rows.every((p) => p.author === g.label))).toBe(true)
+    expect(groups.map((g) => g.key)).toEqual(groups.map((g) => `author:${g.label}`))
   })
 })
 
 describe('My PRs groups', () => {
   const prs = makeMockPRs(NOW)
-  const groups = myGroups(rowsFor('my', prs, ctx))
+  const groups = myGroups(rowsFor('my', prs, ctx), 2)
   const keys = (key: string): string[] =>
     groups.find((g) => g.key === key)?.rows.map((p) => p.key) ?? []
 
@@ -56,12 +87,21 @@ describe('My PRs groups', () => {
     expect(keys('ready').sort()).toEqual(['acme/api#479', 'acme/api#482'])
   })
 
+  it('one approval but not enough engaged reviewers → awaiting reviewers', () => {
+    expect(keys('nudge')).toEqual(['acme/web#360'])
+  })
+
+  it('the nudge group empties when the engagement bar is met', () => {
+    const g = myGroups(rowsFor('my', prs, ctx), 1)
+    expect(g.find((x) => x.key === 'nudge')).toBeUndefined()
+  })
+
   it('drafts get their own group', () => {
     expect(keys('drafts')).toEqual(['acme/billing#91'])
     expect(keys('active')).not.toContain('acme/billing#91')
   })
 
-  it('everything else is in progress', () => {
+  it('PRs with something on your plate are in progress', () => {
     expect(keys('active').sort()).toEqual(['acme/api#455', 'acme/api#468'])
   })
 })

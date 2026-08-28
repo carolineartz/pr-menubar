@@ -43,7 +43,18 @@ export interface GqlPR {
   allReviews: { totalCount: number }
   /** absent on PRLite nodes */
   pendingMine?: { totalCount: number }
-  reviewThreads?: { nodes: { isResolved: boolean }[] }
+  reviewThreads?: {
+    nodes: {
+      isResolved: boolean
+      comments?: {
+        nodes: {
+          author: { login: string } | null
+          createdAt: string
+          reactionGroups?: { content: string; viewerHasReacted: boolean }[]
+        }[]
+      }
+    }[]
+  }
   latestReviews: { nodes: GqlReview[] }
   reviewRequests: { nodes: { requestedReviewer: { login: string } | null }[] }
   /** absent on PRLite nodes */
@@ -201,6 +212,27 @@ function mapOne(
     .map((n) => n.requestedReviewer?.login)
     .filter((l): l is string => !!l)
 
+  // Ball-in-your-court detector: an unresolved thread whose last word isn't
+  // yours, is newer than your last submitted review activity (thread replies
+  // count — they arrive as COMMENTED reviews), and that you haven't answered
+  // with a reaction (a 👍 on "done!" is a response).
+  const threadsAwaitingViewer = (pr.reviewThreads?.nodes ?? []).filter((t) => {
+    if (t.isResolved) return false
+    const last = t.comments?.nodes[0]
+    if (!last?.author || last.author.login === viewer) return false
+    if (last.reactionGroups?.some((g) => g.viewerHasReacted)) return false
+    const myLast = myLatestReview?.submittedAt
+    return !myLast || last.createdAt > myLast
+  }).length
+
+  // distinct humans (not you) who have submitted any review — drives the
+  // My PRs "Awaiting reviewers" nudge list
+  const engagedReviewers = new Set(
+    pr.latestReviews.nodes
+      .filter((r) => r.author && r.author.login !== viewer && r.state !== 'PENDING')
+      .map((r) => r.author!.login)
+  ).size
+
   const base = {
     key: `${repo}#${pr.number}`,
     nodeId: pr.id,
@@ -224,6 +256,8 @@ function mapOne(
     commentCount: pr.comments.totalCount,
     reviewCount: pr.allReviews.totalCount,
     unresolvedThreads: (pr.reviewThreads?.nodes ?? []).filter((t) => !t.isResolved).length,
+    threadsAwaitingViewer,
+    engagedReviewers,
     approvals: pr.latestReviews.nodes.filter((r) => r.state === 'APPROVED').length,
     requestedReviewers: requested,
     reviewRequestedFromViewer: requested.includes(viewer),

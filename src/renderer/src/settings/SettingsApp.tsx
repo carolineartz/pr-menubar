@@ -43,6 +43,29 @@ export default function SettingsApp(): JSX.Element {
       </Section>
 
       <Section
+        title="Reviews"
+        hint="How many approvals your repos require. Your PRs with fewer engaged reviewers land in My PRs → Awaiting reviewers, and it shapes the Nudge message."
+      >
+        <div className="add-row">
+          <input
+            type="number"
+            min={1}
+            max={9}
+            style={{ width: 70 }}
+            defaultValue={settings.requiredReviews}
+            onBlur={(e) => {
+              const n = Math.min(9, Math.max(1, Number(e.target.value) || 2))
+              e.target.value = String(n)
+              patch({ requiredReviews: n })
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+            }}
+          />
+        </div>
+      </Section>
+
+      <Section
         title="Bots"
         hint="PRs authored by these accounts collect in a collapsed Bots section on the Reviewing tab (a trailing [bot] is ignored when matching)."
       >

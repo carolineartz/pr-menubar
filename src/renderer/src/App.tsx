@@ -177,6 +177,8 @@ export default function App(): JSX.Element {
     [state, now, allAuthor, repoFocus]
   )
 
+  const requiredReviews = state?.settings.requiredReviews ?? 2
+
   const actions: RowActions = useMemo(
     () => ({
       toggleExpand: (key) => {
@@ -185,6 +187,14 @@ export default function App(): JSX.Element {
       },
       toggleRepoFocus: (repo) => setRepoFocus((cur) => (cur === repo ? null : repo)),
       openPr: (key) => void api.openPr(key),
+      copyNudge: (pr: PRSnapshot) => {
+        const msg =
+          requiredReviews - pr.approvals === 1
+            ? `still waiting for one more review on ${pr.url}`
+            : `still waiting for reviews on ${pr.url}`
+        void navigator.clipboard.writeText(msg)
+        showToast('Nudge copied — paste into Slack')
+      },
       openJira: (key) => void api.openJira(key),
       openLog: (key, check) => void api.openLog(key, check),
       rerunFailed: (key) => {
@@ -218,7 +228,7 @@ export default function App(): JSX.Element {
         showToast('Unsnoozed')
       }
     }),
-    [ctx.starred, showToast]
+    [ctx.starred, showToast, requiredReviews]
   )
 
   if (!state) return <div className="popover" />
@@ -279,6 +289,7 @@ export default function App(): JSX.Element {
         draftsShownGroups={draftsShownGroups}
         onToggleGroupDrafts={toggleGroupDrafts}
         peopleNames={peopleNames}
+        requiredReviews={state.settings.requiredReviews}
         actions={actions}
       />
       {tab === 'team' && (

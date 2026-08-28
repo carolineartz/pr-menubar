@@ -32,6 +32,21 @@ export const PR_FRAGMENT = /* GraphQL */ `
     reviewThreads(first: 30) {
       nodes {
         isResolved
+        # last comment per thread: who spoke last + whether the viewer reacted.
+        # Budget note: probed 2026-08-28 — the heavy search pair ran 4.3s with
+        # these fields (limit ~10s), cost 22 points.
+        comments(last: 1) {
+          nodes {
+            author {
+              login
+            }
+            createdAt
+            reactionGroups {
+              content
+              viewerHasReacted
+            }
+          }
+        }
       }
     }
     latestReviews(first: 20) {

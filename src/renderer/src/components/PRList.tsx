@@ -8,6 +8,7 @@ import {
   rowsFor,
   sortByCreated,
   sortByUrgency,
+  teamAuthorGroups,
   type Group,
   type GroupKey,
   type ListContext,
@@ -30,6 +31,7 @@ export function PRList({
   draftsShownGroups,
   onToggleGroupDrafts,
   peopleNames,
+  requiredReviews,
   actions
 }: {
   tab: TabId
@@ -46,9 +48,10 @@ export function PRList({
   draftsShownGroups: ReadonlySet<GroupKey>
   onToggleGroupDrafts: (key: GroupKey) => void
   peopleNames: ReadonlyMap<string, string>
+  requiredReviews: number
   actions: RowActions
 }): JSX.Element {
-  const render = (pr: PRSnapshot): JSX.Element => (
+  const render = (pr: PRSnapshot, forceTimeBadge = false): JSX.Element => (
     <PRRow
       key={pr.key}
       pr={pr}
@@ -59,7 +62,7 @@ export function PRList({
       starred={ctx.starred.has(pr.key)}
       snoozed={isSnoozedNow(pr, ctx)}
       hideChip={tab === 'all'}
-      timeBadge={tab === 'rev'}
+      timeBadge={tab === 'rev' || forceTimeBadge}
       showOwnAvatar={tab === 'all'}
       repoFocused={ctx.repoFocus === pr.repo}
       jiraEnabled={jiraEnabled}
@@ -70,9 +73,10 @@ export function PRList({
   const renderGroups = (groups: Group[]): JSX.Element[] =>
     groups.flatMap((g) => {
       const collapsed = collapsedGroups.has(g.key)
-      // Reviewing groups: drafts hide behind a per-group toggle on the divider
-      // itself. My PRs is exempt — drafts have their own section there.
-      const draftCount = tab === 'rev' ? g.rows.filter((pr) => pr.isDraft).length : 0
+      // Reviewing + Team groups: drafts hide behind a per-group toggle on the
+      // divider itself. My PRs is exempt — drafts have their own section there.
+      const draftCount =
+        tab === 'rev' || tab === 'team' ? g.rows.filter((pr) => pr.isDraft).length : 0
       const draftsHidden = draftCount > 0 && !draftsShownGroups.has(g.key)
       const rows = draftsHidden ? g.rows.filter((pr) => !pr.isDraft) : g.rows
       return [
@@ -102,7 +106,8 @@ export function PRList({
             </span>
           )}
         </button>,
-        ...(collapsed ? [] : rows.map(render))
+        // nudge rows show how long you've been waiting instead of a WAITING chip
+        ...(collapsed ? [] : rows.map((pr) => render(pr, g.key === 'nudge')))
       ]
     })
 
@@ -110,11 +115,13 @@ export function PRList({
   if (tab === 'rev') {
     content = renderGroups(reviewingGroups(rowsFor('rev', prs, ctx, showSnoozed), botAuthors))
   } else if (tab === 'my') {
-    content = renderGroups(myGroups(rowsFor('my', prs, ctx, showSnoozed)))
+    content = renderGroups(myGroups(rowsFor('my', prs, ctx, showSnoozed), requiredReviews))
+  } else if (tab === 'team') {
+    content = renderGroups(teamAuthorGroups(rowsFor('team', prs, ctx, showSnoozed)))
   } else if (tab === 'all') {
-    content = sortByCreated(rowsFor('all', prs, ctx, showSnoozed)).map(render)
+    content = sortByCreated(rowsFor('all', prs, ctx, showSnoozed)).map((pr) => render(pr))
   } else {
-    content = sortByUrgency(rowsFor(tab, prs, ctx, showSnoozed)).map(render)
+    content = sortByUrgency(rowsFor(tab, prs, ctx, showSnoozed)).map((pr) => render(pr))
   }
 
   return (

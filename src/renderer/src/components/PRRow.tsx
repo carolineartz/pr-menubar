@@ -22,6 +22,8 @@ export interface RowActions {
   toggleExpand: (key: string) => void
   toggleRepoFocus: (repo: string) => void
   openPr: (key: string) => void
+  /** copy a "still waiting for reviews on <url>" line for Slack */
+  copyNudge: (pr: PRSnapshot) => void
   openJira: (key: string) => void
   openLog: (key: string, check: string) => void
   rerunFailed: (key: string) => void
@@ -210,6 +212,16 @@ function ExpandedPanel({
           {hasFail && (
             <button className="btn rerun" onClick={stop(() => actions.rerunFailed(pr.key))}>
               Re-run failed
+            </button>
+          )}
+          {pr.authorIsViewer && !pr.isDraft && pr.reviewDecision !== 'APPROVED' && (
+            <button
+              className="btn"
+              title="Copy a Slack-ready reminder with the PR link"
+              onClick={stop(() => actions.copyNudge(pr))}
+            >
+              <CopyIcon />
+              Nudge
             </button>
           )}
           <button className="btn" onClick={stop(() => actions.openPr(pr.key))}>

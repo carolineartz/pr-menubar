@@ -60,6 +60,11 @@ export interface PRSnapshot {
   commentCount: number
   reviewCount: number
   unresolvedThreads: number
+  /** unresolved threads where the last word isn't the viewer's, is newer than
+   *  their last review activity, and carries no reaction from them */
+  threadsAwaitingViewer: number
+  /** distinct non-viewer accounts that have submitted any review */
+  engagedReviewers: number
   approvals: number
   /** logins with an outstanding review request */
   requestedReviewers: string[]
@@ -133,6 +138,8 @@ export interface Settings {
   jiraBaseUrl: string
   /** authors grouped into the Reviewing tab's Bots section ("[bot]" suffix ignored) */
   botAuthors: string[]
+  /** approvals your repos require — drives My PRs "Awaiting reviewers" + the nudge copy */
+  requiredReviews: number
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -151,7 +158,8 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   globalShortcut: '',
   jiraBaseUrl: '',
-  botAuthors: ['dependabot']
+  botAuthors: ['dependabot'],
+  requiredReviews: 2
 }
 
 export interface PrNotifState {
