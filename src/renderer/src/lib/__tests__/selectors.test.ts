@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { makeMockPRs } from '../../../../shared/mockData'
+import { MOCK_VIEWER, makeMockPRs } from '../../../../shared/mockData'
 import {
   isBotAuthor,
   myGroups,
@@ -31,6 +31,31 @@ describe('Reviewing tab groups', () => {
 
   it('a re-requested review puts the PR in waiting-on-you', () => {
     expect(keys('you')).toContain('acme/auth#221')
+  })
+
+  it('a re-request after inline comments → waiting on you, even with threads resolved', () => {
+    // GitHub drops the viewer from latestReviews once they're re-requested, so
+    // the mapper sees no review state — only the commenter:@me bucket says
+    // they've engaged. The author resolving every thread must not flip this
+    // back to waiting-on-them.
+    const rerequested = prs.map((p) =>
+      p.key === 'acme/web#341'
+        ? {
+            ...p,
+            reviewRequestedFromViewer: true,
+            requestedReviewers: [MOCK_VIEWER],
+            viewerReviewState: null,
+            viewerLastReviewAt: null,
+            unresolvedThreads: 0,
+            threadsAwaitingViewer: 0
+          }
+        : p
+    )
+    const g = reviewingGroups(rowsFor('rev', rerequested, ctx), BOTS)
+    expect(g.find((x) => x.key === 'you')?.rows.map((p) => p.key)).toContain('acme/web#341')
+    expect(g.find((x) => x.key === 'them')?.rows.map((p) => p.key) ?? []).not.toContain(
+      'acme/web#341'
+    )
   })
 
   it('reviewed with no response yet → waiting on them', () => {

@@ -143,7 +143,10 @@ export function isBotAuthor(login: string, botAuthors: string[]): boolean {
  * Reviewing classification — a PR waits on you only if their move is newer
  * than yours. First match wins:
  * - bots
- * - re-requested review (you reviewed, they clicked re-request) → waiting on you
+ * - re-requested review (you already engaged, they clicked re-request) →
+ *   waiting on you. Keyed off engagement, not your last review state: GitHub
+ *   drops a reviewer from latestReviews the moment they're re-requested, so
+ *   viewerReviewState is null exactly when this rule matters
  * - you approved (sticky, even through later commits) → approved
  * - fresh direct request, not started → start review
  * - code-owner group request, not started → code owner requests (never PRs
@@ -156,7 +159,7 @@ function groupKeyFor(pr: PRSnapshot, botAuthors: string[]): GroupKey {
   if (isBotAuthor(pr.author, botAuthors)) return 'bots'
   const started =
     pr.viewerReviewState !== null || pr.viewerCommented || pr.viewerHasPendingReview
-  if (pr.reviewRequestedFromViewer && pr.viewerReviewState !== null) return 'you'
+  if (pr.reviewRequestedFromViewer && started) return 'you'
   if (pr.viewerReviewState === 'APPROVED') return 'approved'
   if (pr.reviewRequestedFromViewer && !started) return 'start'
   if (pr.reviewRequestedFromTeam && !started) return 'team'
