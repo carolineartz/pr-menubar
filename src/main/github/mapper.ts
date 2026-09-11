@@ -74,7 +74,7 @@ export interface GqlPR {
 export interface PollData {
   viewer: { login: string }
   rateLimit: { cost: number; remaining: number; resetAt: string }
-  allOpen?: { nodes: (GqlPR | null)[] }
+  allOpen?: { issueCount?: number; nodes: (GqlPR | null)[] }
   mine?: { nodes: (GqlPR | null)[] }
   reviewReq?: { nodes: (GqlPR | null)[] }
   reviewedBy?: { nodes: (GqlPR | null)[] }

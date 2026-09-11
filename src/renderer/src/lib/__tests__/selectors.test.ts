@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { MOCK_VIEWER, makeMockPRs } from '../../../../shared/mockData'
+import { behindSince } from '../../../../shared/present'
 import {
   isBotAuthor,
   myGroups,
   reviewingGroups,
   rowsFor,
+  sortByWait,
   teamAuthorGroups,
   type ListContext
 } from '../selectors'
@@ -141,34 +143,68 @@ describe('isBotAuthor', () => {
   })
 })
 
-describe('All tab author filter', () => {
+describe('All tab narrowed search', () => {
   const prs = makeMockPRs(NOW)
+  const mkatz = new Set(prs.filter((p) => p.author === 'mkatz').map((p) => p.key))
 
-  it('narrows to a single author', () => {
-    const filtered = rowsFor('all', prs, { ...ctx, allAuthor: 'mkatz' })
+  it('shows exactly the keys the server matched', () => {
+    const filtered = rowsFor('all', prs, { ...ctx, allKeys: mkatz })
     expect(filtered.length).toBeGreaterThan(0)
     expect(filtered.every((p) => p.author === 'mkatz')).toBe(true)
   })
 
   it('does not leak into other tabs', () => {
-    const team = rowsFor('team', prs, { ...ctx, allAuthor: 'mkatz' })
+    const team = rowsFor('team', prs, { ...ctx, allKeys: mkatz })
     expect(new Set(team.map((p) => p.author)).size).toBeGreaterThan(1)
   })
 
-  it('no filter shows everything', () => {
+  it('no filter shows the plain feed', () => {
     expect(rowsFor('all', prs, ctx)).toHaveLength(prs.length)
   })
 
-  it('bucket-less rows from the on-demand author fetch appear only while filtered', () => {
+  it('bucket-less rows from the on-demand fetch appear only while the search is active', () => {
     const extra = { ...prs[0], key: 'acme/api#9001', author: 'mkatz', buckets: [] as never[] }
     const all = [...prs, extra]
     // invisible without the filter (not part of the newest-50 feed)
     expect(rowsFor('all', all, ctx).find((p) => p.key === extra.key)).toBeUndefined()
-    // visible when their author is focused
-    const filtered = rowsFor('all', all, { ...ctx, allAuthor: 'mkatz' })
+    // visible when the server listed it
+    const filtered = rowsFor('all', all, { ...ctx, allKeys: new Set([...mkatz, extra.key]) })
     expect(filtered.find((p) => p.key === extra.key)).toBeDefined()
     // and never leaks into other tabs
     expect(rowsFor('my', all, ctx).find((p) => p.key === extra.key)).toBeUndefined()
+  })
+})
+
+describe('footer search', () => {
+  const prs = makeMockPRs(NOW)
+
+  it('fuzzy-filters every tab but All', () => {
+    const q = { ...ctx, search: 'webhook' }
+    expect(
+      rowsFor('my', prs, q)
+        .map((p) => p.number)
+        .sort()
+    ).toEqual([482, 91])
+    expect(rowsFor('rev', prs, q)).toHaveLength(0)
+    expect(rowsFor('all', prs, q)).toHaveLength(prs.length)
+  })
+})
+
+describe('sortByWait', () => {
+  const prs = makeMockPRs(NOW)
+  const rev = rowsFor('rev', prs, ctx)
+
+  it('oldest first puts the longest wait on top, newest first reverses it', () => {
+    const oldest = sortByWait(rev, 'oldest').map((p) => behindSince(p))
+    expect(oldest).toEqual([...oldest].sort())
+    const newest = sortByWait(rev, 'newest').map((p) => behindSince(p))
+    expect(newest).toEqual([...oldest].reverse())
+  })
+
+  it('does not mutate its input', () => {
+    const before = rev.map((p) => p.key)
+    sortByWait(rev, 'oldest')
+    expect(rev.map((p) => p.key)).toEqual(before)
   })
 })
 
@@ -186,8 +222,9 @@ describe('repo focus', () => {
     expect(rowsFor('all', prs, focused).length).toBeGreaterThan(0)
   })
 
-  it('composes with the author filter', () => {
-    const both = { ...ctx, repoFocus: 'acme/api', allAuthor: 'mkatz' }
+  it('composes with a narrowed All search', () => {
+    const mkatz = new Set(prs.filter((p) => p.author === 'mkatz').map((p) => p.key))
+    const both = { ...ctx, repoFocus: 'acme/api', allKeys: mkatz }
     const rows = rowsFor('all', prs, both)
     expect(rows.every((p) => p.repo === 'acme/api' && p.author === 'mkatz')).toBe(true)
   })

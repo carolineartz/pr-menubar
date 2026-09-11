@@ -1,10 +1,17 @@
 import type { BrowserWindow } from 'electron'
 import { badgeCount } from '../shared/badge'
 import { isSnoozeActive } from '../shared/fingerprint'
-import type { AppState } from '../shared/ipc'
+import type { AllQueryParams, AppState } from '../shared/ipc'
 import { CHANNELS } from '../shared/ipc'
 import type { Person, PRSnapshot } from '../shared/types'
 import type { Store } from './store'
+
+interface ActiveAllQuery {
+  params: AllQueryParams
+  /** bucket-less search results; poll data wins on dedupe */
+  prs: PRSnapshot[]
+  total: number
+}
 
 /**
  * Owns the runtime data (PR snapshots, sync status) and composes the full
@@ -18,35 +25,34 @@ export class Coordinator {
   lastSyncAt: number | null = null
   syncError: string | null = null
   orgPeople: Person[] = []
-  /** on-demand author-filter results (bucket-less); poll data wins on dedupe */
-  private authorExtra: PRSnapshot[] = []
+  allOpenTotal = 0
+  private allQuery: ActiveAllQuery | null = null
 
   constructor(
     private store: Store,
     private targets: { getWindow(): BrowserWindow | null; setBadge(count: number): void }
   ) {}
 
-  setAuthorExtra(prs: PRSnapshot[]): void {
-    this.authorExtra = prs
+  setAllQuery(query: ActiveAllQuery | null): void {
+    this.allQuery = query
     this.publish()
   }
 
   /** Look up a PR by key across everything the renderer can see. The renderer
-   *  also shows authorExtra rows (and stars keep them on Saved), so IPC
+   *  also shows All-search rows (and stars keep them on Saved), so IPC
    *  lookups must search both — prs alone made those rows dead to clicks. */
   find(key: string): PRSnapshot | undefined {
-    return (
-      this.prs.find((p) => p.key === key) ?? this.authorExtra.find((p) => p.key === key)
-    )
+    return this.prs.find((p) => p.key === key) ?? this.allQuery?.prs.find((p) => p.key === key)
   }
 
   snapshot(): AppState {
     const settings = this.store.get('settings')
     const seen = new Set(this.prs.map((p) => p.key))
+    const extra = this.allQuery?.prs.filter((p) => !seen.has(p.key)) ?? []
     return {
       authOk: this.authOk,
       viewer: this.viewer,
-      prs: [...this.prs, ...this.authorExtra.filter((p) => !seen.has(p.key))],
+      prs: [...this.prs, ...extra],
       lastSyncAt: this.lastSyncAt,
       syncError: this.syncError,
       settings,
@@ -54,7 +60,15 @@ export class Coordinator {
       snoozed: this.store.get('snoozed'),
       teamToggles: this.store.get('teamToggles'),
       badgeCount: this.currentBadge(),
-      people: this.people()
+      people: this.people(),
+      allOpenTotal: this.allOpenTotal,
+      allQuery: this.allQuery
+        ? {
+            params: this.allQuery.params,
+            keys: this.allQuery.prs.map((p) => p.key),
+            total: this.allQuery.total
+          }
+        : null
     }
   }
 
@@ -81,9 +95,10 @@ export class Coordinator {
     }
   }
 
-  setData(prs: PRSnapshot[], viewer: string): void {
+  setData(prs: PRSnapshot[], viewer: string, allOpenTotal: number): void {
     this.prs = prs
     this.viewer = viewer
+    this.allOpenTotal = allOpenTotal
     this.authOk = true
     this.lastSyncAt = Date.now()
     this.syncError = null
@@ -92,7 +107,7 @@ export class Coordinator {
     this.publish()
   }
 
-  /** Stars saved without a node id (pre-fix authorExtra rows) can't be
+  /** Stars saved without a node id (pre-fix All-search rows) can't be
    *  re-fetched via nodes(ids:) — capture the id whenever the PR shows up. */
   private backfillStarredNodeIds(): void {
     const ids = this.store.get('starredNodeIds')

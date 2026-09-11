@@ -49,10 +49,12 @@ Settings holds a list of noisy check-name patterns (`codecov/*`, `*quarantine*`�
 ## Tabs
 
 - **My PRs** — PRs I authored in watched repos, sorted by next-action urgency.
-- **Reviewing** — grouped **START REVIEW / CONTINUE REVIEW / WAITING FOR AUTHOR**. Rows show a **wait-time badge** (amber at 2+ days) instead of a redundant chip — the group already names the action. PRs you've **approved disappear** once there's nothing left to do; they come back as RESUME only if real commits follow your approval.
+- **Reviewing** — grouped **START REVIEW / WAITING ON YOU / WAITING ON THEM / CODE OWNER REQUESTS / APPROVED BY YOU / BOTS**. Rows show a **wait-time badge** (amber at 2+ days) instead of a redundant chip — the group already names the action. Each section lists the **longest-waiting PR first**; a toggle on the section divider (next to *hide drafts*) flips it to newest first, remembered per section. PRs you've **approved disappear** once there's nothing left to do; they come back as RESUME only if real commits follow your approval.
 - **Team** — PRs authored by a hand-picked list of usernames (Settings), regardless of your involvement. The pill row at the bottom toggles individual people on/off.
 - **Saved** — anything you've starred, from any tab.
-- **All** — every open PR in the watched repos, newest first, with a **filter-by-author** bar: autocomplete covers your org's member list (fetched automatically; searchable by display name, not just handle) plus anyone in the feed.
+- **All** — every open PR in the watched repos, newest first. The tab count is **GitHub's real total**, not the size of the loaded page (the feed carries the 50 newest; a caption under the list says so when there are more). The filter bar narrows **at the source**, so counts stay exact and older PRs become reachable: **author** (autocomplete over your org's member list — fetched automatically, searchable by display name — plus anyone in the feed), **title search**, and a **hide drafts** toggle. Repo focus narrows the same way.
+
+Every other tab has a **fuzzy search** behind the magnifier in the footer (or ⌘F): it filters the rows already loaded by title, repo, author, branch, or number, and tolerates dropped letters (`wbhk` finds *webhook*).
 
 ## Repo focus
 
@@ -62,7 +64,7 @@ Repo names in every row carry a subtle stable tint for scanning. **Click a repo 
 
 Click a row to expand its CI breakdown: failures first, then running/queued, with **passed checks collapsed** behind "Show N passed" and duplicate runs deduped (latest per check name, like GitHub's merge box). From the strip: **Re-run failed** (GitHub-Actions suites; external CI falls back to the checks page) · **Open** · **copy branch name** · **star** · **snooze**.
 
-- **⌘-click a row** opens the PR in the browser directly.
+- **⌘-click a row** opens the PR in the browser directly (the popover closes as the browser comes forward). **⌥⌘-click** opens it in the background and keeps the popover open — handy for queuing up several PRs. ⌥-click on the expanded panel's **Open** does the same.
 - **Snooze** — 1 hour / until tomorrow (8 AM) / **until activity** (new commit, review, comment, or CI change). Snoozed rows hide everywhere; the footer shows `N snoozed · show` to reveal them at reduced opacity with an Unsnooze button.
 
 ## Notifications (each toggleable)
@@ -84,9 +86,15 @@ Count of PRs whose next action is *mine* (My PRs + Reviewing only — never Team
 |---|---|
 | global shortcut (recordable in Settings) | show/hide the popover from anywhere |
 | `⌘1`–`⌘5` | jump to My PRs / Reviewing / Team / Saved / All |
+| `←` `→` (tab bar focused) | previous / next tab |
+| `↑` `↓` | move through PRs and section headers (works from anywhere in the popover) · `Home` / `End` |
+| `Enter` / `Space` | expand the focused PR (or collapse a section) · `→` `←` expand / collapse |
+| `⌘Enter` | open the focused PR in the browser · `⌥⌘Enter` opens it without closing the popover |
+| `Tab` | step from the focused PR into its buttons, then on to the filter bar and footer |
+| `⌘F` | search — the footer search on most tabs, the title search on All |
 | `⌘R` | refresh now |
-| `⌘-click` a row | open the PR in the browser |
-| `Esc` | close the popover |
+| `⌘-click` a row | open the PR in the browser · `⌥⌘-click` keeps the popover open |
+| `Esc` | clear the search → close it → close the popover |
 
 ## Settings
 

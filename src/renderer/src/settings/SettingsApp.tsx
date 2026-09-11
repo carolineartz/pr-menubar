@@ -170,7 +170,10 @@ export default function SettingsApp(): JSX.Element {
             onChange={(globalShortcut) => patch({ globalShortcut })}
           />
         </div>
-        <p className="hint">While the popover is open, ⌘1–⌘5 jump to each tab and ⌘R refreshes.</p>
+        <p className="hint">
+          While the popover is open: ⌘1–⌘5 jump to each tab, ↑↓ move through PRs (Enter expands,
+          ⌘Enter opens, ⌥⌘Enter opens without closing), ⌘F searches, ⌘R refreshes.
+        </p>
       </Section>
     </div>
   )

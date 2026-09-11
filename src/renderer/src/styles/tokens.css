@@ -40,6 +40,7 @@
   --ckt: #3a3a3c;
   --ckd: #a1a1a6;
   --menupanel: rgba(255, 255, 255, 0.98);
+  --focus: #0a84ff;
 }
 
 @media (prefers-color-scheme: dark) {

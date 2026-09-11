@@ -1,3 +1,4 @@
+import type { AllQueryParams } from '../../shared/ipc'
 import type { Settings } from '../../shared/types'
 
 export const PR_FRAGMENT = /* GraphQL */ `
@@ -238,13 +239,27 @@ export function buildInvolvementQueries(settings: Settings, savedNodeIds: string
   return [build(groupA, true), build(groupB, false)]
 }
 
-/** On-demand: one author's full open-PR list in the watched repos (the All
- *  feed caps at the 50 newest overall, which can miss older PRs). */
-export function buildAuthorQuery(settings: Settings, login: string): PollQuery {
-  const repoQualifier = settings.repos.map((r) => `repo:${r}`).join(' ')
+/** Search text with the qualifiers GitHub's search understands. Free text
+ *  is matched against titles only; qualifiers the user types (label:, head:)
+ *  pass through untouched. */
+export function allSearchString(settings: Settings, params: AllQueryParams): string {
+  const repos = params.repo ? [params.repo] : settings.repos
+  const parts = ['is:pr', 'is:open']
+  if (params.author) parts.push(`author:${params.author}`)
+  if (params.hideDrafts) parts.push('draft:false')
+  const text = params.text.trim()
+  if (text) parts.push(text, 'in:title')
+  parts.push('sort:created-desc', ...repos.map((r) => `repo:${r}`))
+  return parts.join(' ')
+}
+
+/** On-demand: the All feed narrowed server-side (author / title text / no
+ *  drafts / one repo). The poll's feed caps at the 50 newest overall, which
+ *  can miss older PRs; a narrowed search finds them and reports an exact total. */
+export function buildAllSearchQuery(settings: Settings, params: AllQueryParams): PollQuery {
   return {
     document: /* GraphQL */ `
-      query AuthorPRs($authorQ: String!) {
+      query AllSearch($allOpenQ: String!) {
         viewer {
           login
         }
@@ -253,7 +268,8 @@ export function buildAuthorQuery(settings: Settings, login: string): PollQuery {
           remaining
           resetAt
         }
-        allOpen: search(query: $authorQ, type: ISSUE, first: 50) {
+        allOpen: search(query: $allOpenQ, type: ISSUE, first: 50) {
+          issueCount
           nodes {
             ...PRLite
           }
@@ -261,7 +277,7 @@ export function buildAuthorQuery(settings: Settings, login: string): PollQuery {
       }
       ${PR_LITE_FRAGMENT}
     `,
-    variables: { authorQ: `is:pr is:open author:${login} sort:created-desc ${repoQualifier}` }
+    variables: { allOpenQ: allSearchString(settings, params) }
   }
 }
 
@@ -277,6 +293,7 @@ export function buildAllOpenQuery(settings: Settings): PollQuery {
           resetAt
         }
         allOpen: search(query: $allOpenQ, type: ISSUE, first: 50) {
+          issueCount
           nodes {
             ...PRLite
           }

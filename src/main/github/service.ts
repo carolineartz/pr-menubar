@@ -1,7 +1,8 @@
+import type { AllQueryParams } from '../../shared/ipc'
 import type { Person, PRSnapshot, Settings } from '../../shared/types'
 import { AuthFailedError, GithubClient, type RateLimitInfo } from './client'
 import { mapPoll, type PollData } from './mapper'
-import { buildAllOpenQuery, buildAuthorQuery, buildInvolvementQueries } from './queries'
+import { buildAllOpenQuery, buildAllSearchQuery, buildInvolvementQueries } from './queries'
 
 export { AuthFailedError }
 
@@ -9,6 +10,13 @@ export interface PollOutcome {
   prs: PRSnapshot[]
   viewer: string
   rateLimit: RateLimitInfo
+  /** GitHub's total for the All feed search — the feed itself holds the 50 newest */
+  allOpenTotal: number
+}
+
+export interface AllSearchOutcome {
+  prs: PRSnapshot[]
+  total: number
 }
 
 export class GithubService {
@@ -34,22 +42,26 @@ export class GithubService {
       (r): r is PollData['rateLimit'] => !!r
     )
     const rateLimit = limits.reduce((min, r) => (r.remaining < min.remaining ? r : min))
+    const prs = mapPoll(data, settings, Date.now())
     return {
-      prs: mapPoll(data, settings, Date.now()),
+      prs,
       viewer: invParts[0].viewer.login,
-      rateLimit
+      rateLimit,
+      allOpenTotal:
+        allData?.allOpen?.issueCount ?? prs.filter((p) => p.buckets.includes('all')).length
     }
   }
 
   /**
-   * One author's complete open-PR list (lite fragment). Returned bucket-less:
-   * these rows only surface while that author filter is active.
+   * The All feed narrowed server-side (lite fragment). Rows come back
+   * bucket-less: the renderer shows them by key while this query is active.
    */
-  async fetchAuthorPRs(settings: Settings, login: string): Promise<PRSnapshot[]> {
-    if (settings.repos.length === 0) return []
-    const q = buildAuthorQuery(settings, login)
+  async fetchAllQuery(settings: Settings, params: AllQueryParams): Promise<AllSearchOutcome> {
+    if (settings.repos.length === 0 && !params.repo) return { prs: [], total: 0 }
+    const q = buildAllSearchQuery(settings, params)
     const data = await this.client.graphql<PollData>(q.document, q.variables)
-    return mapPoll(data, settings, Date.now()).map((pr) => ({ ...pr, buckets: [] }))
+    const prs = mapPoll(data, settings, Date.now()).map((pr) => ({ ...pr, buckets: [] }))
+    return { prs, total: data.allOpen?.issueCount ?? prs.length }
   }
 
   /**
@@ -109,10 +121,7 @@ export class GithubService {
     ]
     let anyOk = false
     for (const id of suiteIds) {
-      const res = await this.client.rest(
-        'POST',
-        `/repos/${pr.repo}/check-suites/${id}/rerequest`
-      )
+      const res = await this.client.rest('POST', `/repos/${pr.repo}/check-suites/${id}/rerequest`)
       if (res.ok) anyOk = true
     }
     return anyOk

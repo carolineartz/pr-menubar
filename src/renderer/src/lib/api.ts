@@ -1,4 +1,5 @@
-import type { AppState, RendererApi } from '../../../shared/ipc'
+import type { AllQueryParams, AppState, RendererApi } from '../../../shared/ipc'
+import { isEmptyAllQuery } from '../../../shared/ipc'
 import { badgeCount } from '../../../shared/badge'
 import { activityFingerprint, snoozeUntil } from '../../../shared/fingerprint'
 import { makeMockPRs, MOCK_PEOPLE, MOCK_SETTINGS, MOCK_VIEWER } from '../../../shared/mockData'
@@ -27,7 +28,9 @@ function createMockApi(): RendererApi {
     snoozed: {},
     teamToggles: {},
     badgeCount: badgeCount(prs, {}, Date.now()),
-    people: MOCK_PEOPLE
+    people: MOCK_PEOPLE,
+    allOpenTotal: prs.length,
+    allQuery: null
   }
   let listeners: ((s: AppState) => void)[] = []
   const push = (): void => {
@@ -41,7 +44,7 @@ function createMockApi(): RendererApi {
       state.lastSyncAt = Date.now()
       push()
     },
-    openPr: async (key) => console.log('[mock] open', key),
+    openPr: async (key, keepOpen) => console.log('[mock] open', key, keepOpen ? '(keep)' : ''),
     openLog: async (key, check) => console.log('[mock] open log', key, check),
     rerunFailed: async (key) => console.log('[mock] re-run failed', key),
     openGithub: async () => console.log('[mock] open github'),
@@ -77,8 +80,27 @@ function createMockApi(): RendererApi {
     openSettingsWindow: async () => console.log('[mock] open settings'),
     recheckAuth: async () => true,
     openJira: async (key) => console.log('[mock] open jira for', key),
-    setAuthorFilter: async (login) => console.log('[mock] author filter', login),
+    // emulate the server-side search over the mock set, with a little latency
+    setAllQuery: async (params: AllQueryParams | null) => {
+      if (!params || isEmptyAllQuery(params)) {
+        state.allQuery = null
+        push()
+        return
+      }
+      await new Promise((r) => setTimeout(r, 250))
+      const text = params.text.trim().toLowerCase()
+      const hits = state.prs.filter(
+        (p) =>
+          (!params.author || p.author === params.author) &&
+          (!params.repo || p.repo === params.repo) &&
+          (!params.hideDrafts || !p.isDraft) &&
+          (!text || p.title.toLowerCase().includes(text))
+      )
+      state.allQuery = { params, keys: hits.map((p) => p.key), total: hits.length }
+      push()
+    },
     resizePopover: async () => {},
+    hidePopover: async () => console.log('[mock] hide popover'),
     onDataUpdated: (cb) => {
       listeners.push(cb)
       return () => {

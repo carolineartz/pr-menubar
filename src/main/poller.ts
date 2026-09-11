@@ -3,6 +3,8 @@ import type { PRSnapshot } from '../shared/types'
 export interface PollResult {
   prs: PRSnapshot[]
   viewer: string
+  /** GitHub's total for the All feed — the list itself holds the 50 newest */
+  allOpenTotal: number
 }
 
 export class AuthError extends Error {}

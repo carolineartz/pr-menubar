@@ -75,13 +75,6 @@ export function createPopover(maxHeight: { get(): number; set(h: number): void }
     win.hide()
   })
 
-  win.webContents.on('before-input-event', (_e, input) => {
-    if (input.type === 'keyDown' && input.key === 'Escape') {
-      hiddenAt = Date.now()
-      win.hide()
-    }
-  })
-
   win.webContents.setWindowOpenHandler(({ url }) => {
     void shell.openExternal(url)
     return { action: 'deny' }

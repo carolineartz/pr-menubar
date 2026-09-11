@@ -1,4 +1,4 @@
-import { useState, type JSX, type MouseEvent } from 'react'
+import { useState, type JSX, type KeyboardEvent, type MouseEvent } from 'react'
 import type { ClassifiedCheck, PRSnapshot, SnoozeMode } from '../../../shared/types'
 import { jiraTicketFrom } from '../../../shared/jira'
 import { behindSince, metaContext, pillFor, relativeShort, repoTint } from '../../../shared/present'
@@ -21,7 +21,8 @@ import {
 export interface RowActions {
   toggleExpand: (key: string) => void
   toggleRepoFocus: (repo: string) => void
-  openPr: (key: string) => void
+  /** keepOpen (⌥): the browser tab opens behind the popover, which stays put */
+  openPr: (key: string, keepOpen?: boolean) => void
   /** copy a "still waiting for reviews on <url>" line for Slack */
   copyNudge: (pr: PRSnapshot) => void
   openJira: (key: string) => void
@@ -32,6 +33,13 @@ export interface RowActions {
   toggleSnoozeMenu: (key: string) => void
   snooze: (pr: PRSnapshot, mode: SnoozeMode) => void
   unsnooze: (key: string) => void
+}
+
+/** Roving-focus wiring from the list: one item is the Tab stop, ↑/↓ move between items. */
+export interface RowNav {
+  id: string
+  tabIndex: 0 | -1
+  onFocus: () => void
 }
 
 export function PRRow({
@@ -47,6 +55,7 @@ export function PRRow({
   repoFocused,
   jiraEnabled,
   showOwnAvatar,
+  nav,
   actions
 }: {
   pr: PRSnapshot
@@ -66,6 +75,7 @@ export function PRRow({
   repoFocused: boolean
   /** Settings → Jira base URL; '' hides ticket buttons */
   jiraEnabled: boolean
+  nav: RowNav
   actions: RowActions
 }): JSX.Element {
   const pill = pillFor(pr)
@@ -82,11 +92,33 @@ export function PRRow({
     fn()
   }
 
+  // Enter/Space mirror a click (⌘ opens, ⌥⌘ opens without dismissing);
+  // →/← expand and collapse like a tree view
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>): void => {
+    if (e.target !== e.currentTarget) return // the repo-name button handles its own keys
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      if (e.metaKey) actions.openPr(pr.key, e.altKey)
+      else actions.toggleExpand(pr.key)
+    } else if ((e.key === 'ArrowRight' && !expanded) || (e.key === 'ArrowLeft' && expanded)) {
+      e.preventDefault()
+      actions.toggleExpand(pr.key)
+    }
+  }
+
   return (
     <>
       <div
         className={rowClass}
-        onClick={(e) => (e.metaKey ? actions.openPr(pr.key) : actions.toggleExpand(pr.key))}
+        role="button"
+        aria-expanded={expanded}
+        tabIndex={nav.tabIndex}
+        data-nav={nav.id}
+        onFocus={nav.onFocus}
+        onKeyDown={onKeyDown}
+        onClick={(e) =>
+          e.metaKey ? actions.openPr(pr.key, e.altKey) : actions.toggleExpand(pr.key)
+        }
       >
         <span className={`dot ${pr.dot}`} />
         <div className="row-main">
@@ -100,6 +132,7 @@ export function PRRow({
               className={repoFocused ? 'repo-name focused' : 'repo-name'}
               style={{ color: repoTint(pr.repo) }}
               title={repoFocused ? 'Click to show all repos' : `Only show ${pr.repo}`}
+              tabIndex={-1}
               onClick={stop(() => actions.toggleRepoFocus(pr.repo))}
             >
               {pr.repo}
@@ -203,9 +236,7 @@ function ExpandedPanel({
       <div className="action-strip">
         <div className="action-row">
           <span className="check-summary">
-            {pr.checksLoaded
-              ? `${okCount}/${nonIgnored.length} passed`
-              : 'check details on GitHub'}
+            {pr.checksLoaded ? `${okCount}/${nonIgnored.length} passed` : 'check details on GitHub'}
           </span>
           <div className="spacer" />
           {hasFail && (
@@ -223,7 +254,14 @@ function ExpandedPanel({
               Nudge
             </button>
           )}
-          <button className="btn" onClick={stop(() => actions.openPr(pr.key))}>
+          <button
+            className="btn"
+            title="Open on GitHub (⌥-click keeps the popover open)"
+            onClick={(e) => {
+              e.stopPropagation()
+              actions.openPr(pr.key, e.altKey)
+            }}
+          >
             <ExtLinkIcon />
             Open
           </button>
@@ -240,12 +278,17 @@ function ExpandedPanel({
           <div className="spacer" />
           <button
             className={starred ? 'btn icon-btn starred' : 'btn icon-btn'}
+            title={starred ? 'Remove from Saved' : 'Save'}
             onClick={stop(() => actions.toggleStar(pr))}
           >
             <StarIcon filled={starred} />
           </button>
           <span className="snooze-wrap">
-            <button className="btn icon-btn" onClick={stop(() => actions.toggleSnoozeMenu(pr.key))}>
+            <button
+              className="btn icon-btn"
+              title="Snooze"
+              onClick={stop(() => actions.toggleSnoozeMenu(pr.key))}
+            >
               <ClockIcon />
             </button>
             {snoozeMenuOpen && (
@@ -253,10 +296,16 @@ function ExpandedPanel({
                 <button className="snooze-item" onClick={stop(() => actions.snooze(pr, '1h'))}>
                   Snooze 1 hour
                 </button>
-                <button className="snooze-item" onClick={stop(() => actions.snooze(pr, 'tomorrow'))}>
+                <button
+                  className="snooze-item"
+                  onClick={stop(() => actions.snooze(pr, 'tomorrow'))}
+                >
                   Until tomorrow
                 </button>
-                <button className="snooze-item" onClick={stop(() => actions.snooze(pr, 'activity'))}>
+                <button
+                  className="snooze-item"
+                  onClick={stop(() => actions.snooze(pr, 'activity'))}
+                >
                   Until activity
                 </button>
               </div>

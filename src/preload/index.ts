@@ -1,12 +1,13 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { AppState, RendererApi } from '../shared/ipc'
+import type { AllQueryParams, AppState, RendererApi } from '../shared/ipc'
 import { CHANNELS } from '../shared/ipc'
 import type { Settings, SnoozeMode } from '../shared/types'
 
 const api: RendererApi = {
   getState: () => ipcRenderer.invoke(CHANNELS.getState),
   refresh: () => ipcRenderer.invoke(CHANNELS.refresh),
-  openPr: (prKey: string) => ipcRenderer.invoke(CHANNELS.openPr, prKey),
+  openPr: (prKey: string, keepOpen?: boolean) =>
+    ipcRenderer.invoke(CHANNELS.openPr, prKey, keepOpen),
   openLog: (prKey: string, checkName: string) =>
     ipcRenderer.invoke(CHANNELS.openLog, prKey, checkName),
   rerunFailed: (prKey: string) => ipcRenderer.invoke(CHANNELS.rerunFailed, prKey),
@@ -20,9 +21,9 @@ const api: RendererApi = {
   openSettingsWindow: () => ipcRenderer.invoke(CHANNELS.openSettingsWindow),
   recheckAuth: () => ipcRenderer.invoke(CHANNELS.recheckAuth),
   openJira: (prKey: string) => ipcRenderer.invoke(CHANNELS.openJira, prKey),
-  setAuthorFilter: (login: string | null) =>
-    ipcRenderer.invoke(CHANNELS.setAuthorFilter, login),
+  setAllQuery: (params: AllQueryParams | null) => ipcRenderer.invoke(CHANNELS.setAllQuery, params),
   resizePopover: (height: number) => ipcRenderer.invoke(CHANNELS.resizePopover, height),
+  hidePopover: () => ipcRenderer.invoke(CHANNELS.hidePopover),
   onDataUpdated: (cb: (state: AppState) => void) => {
     const listener = (_e: Electron.IpcRendererEvent, state: AppState): void => cb(state)
     ipcRenderer.on(CHANNELS.dataUpdated, listener)

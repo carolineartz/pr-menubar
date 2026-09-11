@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from 'react'
-import type { AppState } from '../../shared/ipc'
+import { isEmptyAllQuery, sameAllQuery, type AllQueryParams, type AppState } from '../../shared/ipc'
 import type { PRSnapshot, SnoozeMode } from '../../shared/types'
 import { api } from './lib/api'
 import {
@@ -10,7 +10,7 @@ import {
   type ListContext,
   type TabId
 } from './lib/selectors'
-import { AuthorFilterBar } from './components/AuthorFilterBar'
+import { AllFilterBar } from './components/AllFilterBar'
 import { Footer } from './components/Footer'
 import { PRList } from './components/PRList'
 import { SetupScreen } from './components/SetupScreen'
@@ -23,16 +23,29 @@ const COLLAPSED_LS_KEY = 'rev-collapsed-groups'
 const DRAFTS_LS_KEY = 'rev-drafts-shown'
 /** pre-v0.6.1 single-group form of the same preference */
 const LEGACY_DRAFTS_KEY = 'codeowner-drafts'
+/** Reviewing groups flipped to newest-first (default: longest-waiting on top) */
+const SORT_LS_KEY = 'rev-newest-first'
+/** All tab: drafts filtered out at the source */
+const ALL_DRAFTS_LS_KEY = 'all-hide-drafts'
 
-function loadDraftsShown(): ReadonlySet<GroupKey> {
+function loadGroupSet(key: string): Set<GroupKey> {
   try {
-    const raw = localStorage.getItem(DRAFTS_LS_KEY)
+    const raw = localStorage.getItem(key)
     if (raw) return new Set(JSON.parse(raw) as GroupKey[])
-    if (localStorage.getItem(LEGACY_DRAFTS_KEY) === 'shown') return new Set(['team'])
   } catch {
     // fall through to default
   }
   return new Set()
+}
+
+function loadDraftsShown(): ReadonlySet<GroupKey> {
+  const set = loadGroupSet(DRAFTS_LS_KEY)
+  try {
+    if (set.size === 0 && localStorage.getItem(LEGACY_DRAFTS_KEY) === 'shown') set.add('team')
+  } catch {
+    // ignore
+  }
+  return set
 }
 
 function loadCollapsed(): ReadonlySet<GroupKey> {
@@ -45,13 +58,45 @@ function loadCollapsed(): ReadonlySet<GroupKey> {
   return new Set(DEFAULT_COLLAPSED_GROUPS)
 }
 
-function saveCollapsed(keys: ReadonlySet<GroupKey>): void {
+function saveLs(key: string, value: string): void {
   try {
-    localStorage.setItem(COLLAPSED_LS_KEY, JSON.stringify([...keys]))
+    localStorage.setItem(key, value)
   } catch {
-    // non-fatal: collapse state just won't survive a relaunch
+    // non-fatal: the preference just won't survive a relaunch
   }
 }
+
+function loadAllHideDrafts(): boolean {
+  try {
+    return localStorage.getItem(ALL_DRAFTS_LS_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+/** Toggle membership in a persisted set of group keys. */
+function useGroupSet(
+  key: string,
+  load: () => ReadonlySet<GroupKey>
+): [ReadonlySet<GroupKey>, (g: GroupKey) => void] {
+  const [set, setSet] = useState<ReadonlySet<GroupKey>>(load)
+  const toggle = useCallback(
+    (g: GroupKey): void => {
+      setSet((cur) => {
+        const next = new Set(cur)
+        if (next.has(g)) next.delete(g)
+        else next.add(g)
+        saveLs(key, JSON.stringify([...next]))
+        return next
+      })
+    },
+    [key]
+  )
+  return [set, toggle]
+}
+
+const focusInput = (selector: string): void =>
+  document.querySelector<HTMLInputElement>(selector)?.focus()
 
 export default function App(): JSX.Element {
   const [state, setState] = useState<AppState | null>(null)
@@ -59,19 +104,42 @@ export default function App(): JSX.Element {
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
   const [snoozeMenuKey, setSnoozeMenuKey] = useState<string | null>(null)
   const [showSnoozed, setShowSnoozed] = useState(false)
-  const [allAuthor, setAllAuthor] = useState<string | null>(null)
   const [repoFocus, setRepoFocus] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
-  const [collapsedGroups, setCollapsedGroups] = useState<ReadonlySet<GroupKey>>(loadCollapsed)
-  const [draftsShownGroups, setDraftsShownGroups] =
-    useState<ReadonlySet<GroupKey>>(loadDraftsShown)
+  const [collapsedGroups, toggleGroup] = useGroupSet(COLLAPSED_LS_KEY, loadCollapsed)
+  const [draftsShownGroups, toggleGroupDrafts] = useGroupSet(DRAFTS_LS_KEY, loadDraftsShown)
+  const [newestFirstGroups, toggleGroupSort] = useGroupSet(SORT_LS_KEY, () =>
+    loadGroupSet(SORT_LS_KEY)
+  )
+  // footer search: fuzzy filter over the rows in state (every tab but All)
+  const [search, setSearch] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  // All tab: server-side narrowing
+  const [allAuthor, setAllAuthor] = useState<string | null>(null)
+  const [allText, setAllText] = useState('')
+  const [allHideDrafts, setAllHideDrafts] = useState(loadAllHideDrafts)
   const [now, setNow] = useState(() => Date.now())
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  const allParams: AllQueryParams = useMemo(
+    () => ({ author: allAuthor, text: allText, hideDrafts: allHideDrafts, repo: repoFocus }),
+    [allAuthor, allText, allHideDrafts, repoFocus]
+  )
+  // read by the popover-shown listener, which outlives any one render
+  const latest = useRef({ tab, allParams })
+  useEffect(() => {
+    latest.current = { tab, allParams }
+  }, [tab, allParams])
 
   useEffect(() => {
     api.getState().then(setState)
     const offData = api.onDataUpdated(setState)
-    const offShown = api.onPopoverShown(() => setSnoozeMenuKey(null))
+    const offShown = api.onPopoverShown(() => {
+      setSnoozeMenuKey(null)
+      // the poll refreshes the feed but not a narrowed All search — redo it on open
+      const { tab: t, allParams: p } = latest.current
+      if (t === 'all' && !isEmptyAllQuery(p)) void api.setAllQuery(p)
+    })
     const iv = setInterval(() => setNow(Date.now()), 1000)
     return () => {
       offData()
@@ -80,27 +148,17 @@ export default function App(): JSX.Element {
     }
   }, [])
 
-  const toggleGroupDrafts = useCallback((key: GroupKey): void => {
-    setDraftsShownGroups((cur) => {
-      const next = new Set(cur)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      try {
-        localStorage.setItem(DRAFTS_LS_KEY, JSON.stringify([...next]))
-      } catch {
-        // non-fatal: preference just won't survive a relaunch
-      }
-      return next
-    })
-  }, [])
+  // Any All-tab filter runs as a GitHub search while that tab is showing;
+  // clearing every filter drops back to the poll's feed.
+  useEffect(() => {
+    if (tab !== 'all') return
+    void api.setAllQuery(isEmptyAllQuery(allParams) ? null : allParams)
+  }, [tab, allParams])
 
-  const toggleGroup = useCallback((key: GroupKey): void => {
-    setCollapsedGroups((cur) => {
-      const next = new Set(cur)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      saveCollapsed(next)
-      return next
+  const toggleAllDrafts = useCallback((): void => {
+    setAllHideDrafts((v) => {
+      saveLs(ALL_DRAFTS_LS_KEY, v ? '0' : '1')
+      return !v
     })
   }, [])
 
@@ -115,12 +173,38 @@ export default function App(): JSX.Element {
     showToast('Refreshed')
   }, [showToast])
 
+  const closeSearch = useCallback((): void => {
+    setSearch('')
+    setSearchOpen(false)
+  }, [])
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
+        // inputs that want Esc for themselves stop it before it gets here
+        if (snoozeMenuKey) {
+          setSnoozeMenuKey(null)
+        } else if (searchOpen && tab !== 'all') {
+          if (search) setSearch('')
+          else setSearchOpen(false)
+        } else {
+          void api.hidePopover()
+        }
+        return
+      }
       if (!e.metaKey || e.ctrlKey || e.altKey) return
       if (e.key === 'r') {
         e.preventDefault()
         refresh()
+        return
+      }
+      if (e.key === 'f') {
+        e.preventDefault()
+        if (tab === 'all') focusInput('.all-search-input')
+        else {
+          setSearchOpen(true)
+          requestAnimationFrame(() => focusInput('.footer-search-input'))
+        }
         return
       }
       // ⌘1–⌘5 jump straight to a tab
@@ -133,7 +217,7 @@ export default function App(): JSX.Element {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [refresh])
+  }, [refresh, tab, snoozeMenuKey, searchOpen, search])
 
   // Size the window to the content: fixed chrome + the list's natural height.
   // .list-inner is unstretched, so this shrinks the window as well as grows it.
@@ -159,11 +243,14 @@ export default function App(): JSX.Element {
 
   const peopleNames = useMemo(
     () =>
-      new Map(
-        (state?.people ?? []).filter((p) => p.name).map((p) => [p.login, p.name as string])
-      ),
+      new Map((state?.people ?? []).filter((p) => p.name).map((p) => [p.login, p.name as string])),
     [state?.people]
   )
+
+  // the narrowed All search that's actually showing (stale params included —
+  // the previous result stays up while the next one is in flight)
+  const activeAllQuery = state?.allQuery && !isEmptyAllQuery(allParams) ? state.allQuery : null
+  const allQuerySettled = activeAllQuery ? sameAllQuery(activeAllQuery.params, allParams) : false
 
   const ctx: ListContext = useMemo(
     () => ({
@@ -171,10 +258,11 @@ export default function App(): JSX.Element {
       snoozed: state?.snoozed ?? {},
       teamToggles: state?.teamToggles ?? {},
       now,
-      allAuthor,
-      repoFocus
+      allKeys: activeAllQuery ? new Set(activeAllQuery.keys) : null,
+      repoFocus,
+      search
     }),
-    [state, now, allAuthor, repoFocus]
+    [state, now, activeAllQuery, repoFocus, search]
   )
 
   const requiredReviews = state?.settings.requiredReviews ?? 2
@@ -186,7 +274,7 @@ export default function App(): JSX.Element {
         setSnoozeMenuKey(null)
       },
       toggleRepoFocus: (repo) => setRepoFocus((cur) => (cur === repo ? null : repo)),
-      openPr: (key) => void api.openPr(key),
+      openPr: (key, keepOpen) => void api.openPr(key, keepOpen),
       copyNudge: (pr: PRSnapshot) => {
         const msg =
           requiredReviews - pr.approvals === 1
@@ -259,10 +347,24 @@ export default function App(): JSX.Element {
     TABS.map((t) => [t.id, rowsFor(t.id, state.prs, ctx).length])
   ) as Record<TabId, number>
 
+  // All: the feed holds the 50 newest, so GitHub's own total is the honest
+  // count — minus whatever loaded rows a snooze hides. Falls back to the
+  // loaded count while a narrowed search is still in flight.
+  const allLoaded = rowsFor('all', state.prs, ctx, true).length
+  const allTotal = isEmptyAllQuery(allParams)
+    ? state.allOpenTotal
+    : allQuerySettled
+      ? activeAllQuery!.total
+      : null
+  if (allTotal != null) counts.all = Math.max(counts.all, allTotal - (allLoaded - counts.all))
+  const allFootnote =
+    tab === 'all' && allTotal != null && allTotal > allLoaded
+      ? `Showing the ${allLoaded} newest of ${allTotal} — narrow by author or title to reach the rest`
+      : null
+
   // Snoozed rows hidden from the current tab (drives the footer show/hide link)
   const snoozedCount = state.prs.filter(
-    (pr) =>
-      rowsFor(tab, [pr], ctx, true).length > 0 && rowsFor(tab, [pr], ctx, false).length === 0
+    (pr) => rowsFor(tab, [pr], ctx, true).length > 0 && rowsFor(tab, [pr], ctx, false).length === 0
   ).length
 
   return (
@@ -288,8 +390,11 @@ export default function App(): JSX.Element {
         onToggleGroup={toggleGroup}
         draftsShownGroups={draftsShownGroups}
         onToggleGroupDrafts={toggleGroupDrafts}
+        newestFirstGroups={newestFirstGroups}
+        onToggleGroupSort={toggleGroupSort}
         peopleNames={peopleNames}
         requiredReviews={state.settings.requiredReviews}
+        footnote={allFootnote}
         actions={actions}
       />
       {tab === 'team' && (
@@ -300,15 +405,15 @@ export default function App(): JSX.Element {
         />
       )}
       {tab === 'all' && (
-        <AuthorFilterBar
+        <AllFilterBar
           people={state.people}
-          active={allAuthor}
-          onSelect={(login) => {
-            setAllAuthor(login)
-            // fetch this author's complete open-PR list — the All feed itself
-            // only carries the 50 newest across all repos
-            void api.setAuthorFilter(login)
-          }}
+          author={allAuthor}
+          onAuthor={setAllAuthor}
+          text={allText}
+          onText={setAllText}
+          hideDrafts={allHideDrafts}
+          onToggleDrafts={toggleAllDrafts}
+          pending={!isEmptyAllQuery(allParams) && !allQuerySettled}
         />
       )}
       <Footer
@@ -318,6 +423,12 @@ export default function App(): JSX.Element {
         snoozedCount={snoozedCount}
         showSnoozed={showSnoozed}
         repoFocus={repoFocus}
+        searchable={tab !== 'all'}
+        searchOpen={searchOpen}
+        search={search}
+        onSearchOpen={() => setSearchOpen(true)}
+        onSearchChange={setSearch}
+        onSearchClose={closeSearch}
         onClearRepoFocus={() => setRepoFocus(null)}
         onToggleSnoozed={() => setShowSnoozed((v) => !v)}
         onRefresh={refresh}

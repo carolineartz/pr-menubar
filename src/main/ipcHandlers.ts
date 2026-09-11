@@ -1,7 +1,7 @@
 import { ipcMain, shell } from 'electron'
 import { activityFingerprint, snoozeUntil } from '../shared/fingerprint'
 import { jiraTicketFrom, jiraUrl } from '../shared/jira'
-import { CHANNELS } from '../shared/ipc'
+import { CHANNELS, type AllQueryParams } from '../shared/ipc'
 import type { Settings, SnoozeMode } from '../shared/types'
 import type { Coordinator } from './coordinator'
 import type { Store } from './store'
@@ -12,10 +12,11 @@ export function registerIpcHandlers(deps: {
   refresh: () => void
   recheckAuth: () => Promise<boolean>
   rerunFailed: (prKey: string) => Promise<void>
-  fetchAuthorPRs: (login: string) => Promise<void>
+  fetchAllQuery: (params: AllQueryParams | null) => Promise<void>
   openSettingsWindow: () => void
   onSettingsChanged: () => void
   resizePopover: (height: number) => void
+  hidePopover: () => void
 }): void {
   const { coordinator, store } = deps
   const pr = (key: string) => coordinator.find(key)
@@ -24,9 +25,11 @@ export function registerIpcHandlers(deps: {
 
   ipcMain.handle(CHANNELS.refresh, () => deps.refresh())
 
-  ipcMain.handle(CHANNELS.openPr, (_e, key: string) => {
+  // keepOpen (⌥⌘): the browser gets the tab without coming to the front, so
+  // the popover never blurs — open a handful of PRs in a row
+  ipcMain.handle(CHANNELS.openPr, (_e, key: string, keepOpen?: boolean) => {
     const p = pr(key)
-    if (p) void shell.openExternal(p.url)
+    if (p) void shell.openExternal(p.url, { activate: !keepOpen })
   })
 
   ipcMain.handle(CHANNELS.openLog, (_e, key: string, checkName: string) => {
@@ -92,11 +95,11 @@ export function registerIpcHandlers(deps: {
 
   ipcMain.handle(CHANNELS.recheckAuth, () => deps.recheckAuth())
 
-  ipcMain.handle(CHANNELS.setAuthorFilter, (_e, login: string | null) => {
-    if (login) return deps.fetchAuthorPRs(login)
-    coordinator.setAuthorExtra([])
-    return undefined
-  })
+  ipcMain.handle(CHANNELS.setAllQuery, (_e, params: AllQueryParams | null) =>
+    deps.fetchAllQuery(params)
+  )
+
+  ipcMain.handle(CHANNELS.hidePopover, () => deps.hidePopover())
 
   ipcMain.handle(CHANNELS.resizePopover, (_e, height: number) => {
     if (typeof height === 'number' && Number.isFinite(height)) deps.resizePopover(height)

@@ -1,6 +1,7 @@
 import { PRIO } from '../../../shared/nextAction'
-import { avatarColor } from '../../../shared/present'
+import { avatarColor, behindSince } from '../../../shared/present'
 import { isSnoozeActive } from '../../../shared/fingerprint'
+import { matchesQuery } from '../../../shared/search'
 import type { PRSnapshot, SnoozeEntry } from '../../../shared/types'
 
 export type TabId = 'my' | 'rev' | 'team' | 'saved' | 'all'
@@ -18,10 +19,12 @@ export interface ListContext {
   snoozed: Record<string, SnoozeEntry>
   teamToggles: Record<string, boolean>
   now: number
-  /** All tab only: show a single author's PRs */
-  allAuthor?: string | null
+  /** All tab: keys matched by the active server-side search (null = the plain feed) */
+  allKeys?: ReadonlySet<string> | null
   /** every tab: focus a single repo (click a repo name to toggle) */
   repoFocus?: string | null
+  /** footer search — fuzzy filter over the rows in state, every tab but All */
+  search?: string
 }
 
 export function isSnoozedNow(pr: PRSnapshot, ctx: ListContext): boolean {
@@ -35,18 +38,19 @@ export function rowsFor(
   ctx: ListContext,
   includeSnoozed = false
 ): PRSnapshot[] {
+  const search = ctx.search?.trim() ?? ''
   return prs.filter((pr) => {
     if (ctx.repoFocus && pr.repo !== ctx.repoFocus) return false
     let inTab: boolean
     if (tab === 'saved') inTab = ctx.starred.has(pr.key)
-    else inTab = pr.buckets.includes(tab)
+    else if (tab === 'all' && ctx.allKeys) {
+      // narrowed feed: the server said which PRs match — bucket-less rows from
+      // that fetch count too, they exist precisely to escape the newest-50 window
+      inTab = ctx.allKeys.has(pr.key)
+    } else inTab = pr.buckets.includes(tab)
     if (tab === 'team' && ctx.teamToggles[pr.author] === false) inTab = false
-    if (tab === 'all' && ctx.allAuthor) {
-      // author filter: bucket-less rows from the on-demand author fetch count
-      // too — they exist precisely to escape the All feed's newest-50 window
-      inTab = pr.author === ctx.allAuthor
-    }
     if (!inTab) return false
+    if (tab !== 'all' && search && !matchesQuery(pr, search)) return false
     if (isSnoozedNow(pr, ctx) && !includeSnoozed) return false
     return true
   })
@@ -57,14 +61,22 @@ export function sortByUrgency(rows: PRSnapshot[]): PRSnapshot[] {
   return rows
     .slice()
     .sort(
-      (a, b) =>
-        PRIO[a.nextAction] - PRIO[b.nextAction] || b.updatedAt.localeCompare(a.updatedAt)
+      (a, b) => PRIO[a.nextAction] - PRIO[b.nextAction] || b.updatedAt.localeCompare(a.updatedAt)
     )
 }
 
 /** The All tab is a plain feed: newest-opened first. */
 export function sortByCreated(rows: PRSnapshot[]): PRSnapshot[] {
   return rows.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+}
+
+export type SortDir = 'oldest' | 'newest'
+
+/** Reviewing sections order by how long each PR has waited on you — the same
+ *  anchor the time badge shows — so the longest-waiting review is on top. */
+export function sortByWait(rows: PRSnapshot[], dir: SortDir): PRSnapshot[] {
+  const sign = dir === 'oldest' ? 1 : -1
+  return rows.slice().sort((a, b) => sign * behindSince(a).localeCompare(behindSince(b)))
 }
 
 export type GroupKey =
@@ -133,7 +145,10 @@ const toGroups = (
 
 /** "dependabot", "dependabot[bot]", and "app/dependabot" are the same account. */
 const botName = (login: string): string =>
-  login.replace(/^app\//i, '').replace(/\[bot\]$/i, '').toLowerCase()
+  login
+    .replace(/^app\//i, '')
+    .replace(/\[bot\]$/i, '')
+    .toLowerCase()
 
 export function isBotAuthor(login: string, botAuthors: string[]): boolean {
   return botAuthors.some((b) => botName(b) === botName(login))
@@ -157,8 +172,7 @@ export function isBotAuthor(login: string, botAuthors: string[]): boolean {
  */
 function groupKeyFor(pr: PRSnapshot, botAuthors: string[]): GroupKey {
   if (isBotAuthor(pr.author, botAuthors)) return 'bots'
-  const started =
-    pr.viewerReviewState !== null || pr.viewerCommented || pr.viewerHasPendingReview
+  const started = pr.viewerReviewState !== null || pr.viewerCommented || pr.viewerHasPendingReview
   if (pr.reviewRequestedFromViewer && started) return 'you'
   if (pr.viewerReviewState === 'APPROVED') return 'approved'
   if (pr.reviewRequestedFromViewer && !started) return 'start'
@@ -195,8 +209,10 @@ export function teamAuthorGroups(rows: PRSnapshot[]): Group[] {
   }))
 }
 
-export function emptyMessage(tab: TabId): string {
+export function emptyMessage(tab: TabId, search = ''): string {
+  if (search.trim()) return `No matches for “${search.trim()}” here.`
   if (tab === 'saved') return 'Nothing saved yet — star a PR from any tab.'
   if (tab === 'team') return 'No people shown — toggle someone back on below.'
+  if (tab === 'all') return 'No open PRs match these filters.'
   return 'All clear — nothing needs you here.'
 }

@@ -1,8 +1,9 @@
 import { app, globalShortcut, Menu, nativeTheme, shell } from 'electron'
 import { electronApp } from '@electron-toolkit/utils'
 import { join } from 'node:path'
-import { CHANNELS } from '../shared/ipc'
+import { CHANNELS, isEmptyAllQuery, type AllQueryParams } from '../shared/ipc'
 import { makeMockPRs, MOCK_PEOPLE, MOCK_SETTINGS, MOCK_VIEWER } from '../shared/mockData'
+import type { PRSnapshot } from '../shared/types'
 import { Coordinator } from './coordinator'
 import { RateLimitedError } from './github/client'
 import { AuthFailedError, GithubService } from './github/service'
@@ -34,11 +35,7 @@ app.whenReady().then(() => {
 
   // No visible menu bar (LSUIElement), but roles keep ⌘C/⌘V/⌘Q working
   Menu.setApplicationMenu(
-    Menu.buildFromTemplate([
-      { role: 'appMenu' },
-      { role: 'editMenu' },
-      { role: 'windowMenu' }
-    ])
+    Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'windowMenu' }])
   )
 
   const store = new Store(MOCK ? 'state-mock.json' : 'state.json')
@@ -55,17 +52,18 @@ app.whenReady().then(() => {
 
   const fetchPRs = async (): Promise<PollResult> => {
     if (MOCK) {
-      return { prs: makeMockPRs(Date.now(), MOCK_SETTINGS.noisyPatterns), viewer: MOCK_VIEWER }
+      const prs = makeMockPRs(Date.now(), MOCK_SETTINGS.noisyPatterns)
+      return { prs, viewer: MOCK_VIEWER, allOpenTotal: prs.length }
     }
     const settings = store.get('settings')
     const starred = new Set(store.get('starred'))
     const savedNodeIds = Object.entries(store.get('starredNodeIds'))
       .filter(([key]) => starred.has(key))
       .map(([, id]) => id)
-    const { prs, viewer, rateLimit } = await github.poll(settings, savedNodeIds)
+    const { prs, viewer, rateLimit, allOpenTotal } = await github.poll(settings, savedNodeIds)
     // ease off when the hourly GraphQL budget runs low
     poller.backoffFactor = rateLimit.remaining < 500 ? 4 : rateLimit.remaining < 1500 ? 2 : 1
-    return { prs, viewer }
+    return { prs, viewer, allOpenTotal }
   }
 
   const popover = createPopover({
@@ -91,12 +89,12 @@ app.whenReady().then(() => {
 
   const poller = new Poller(
     fetchPRs,
-    ({ prs, viewer }) => {
+    ({ prs, viewer, allOpenTotal }) => {
       console.log(
         `[poll] ${prs.length} PRs for ${viewer} · badge ${coordinator.currentBadge()} · ` +
           prs.map((p) => `${p.key}:${p.nextAction}`).join(' ')
       )
-      coordinator.setData(prs, viewer)
+      coordinator.setData(prs, viewer, allOpenTotal)
       processNotifications(store, prs)
     },
     (err) => {
@@ -148,6 +146,20 @@ app.whenReady().then(() => {
   }
   refreshPeople()
 
+  let allQuerySeq = 0
+  /** Mock mode has no server: emulate the narrowed search over the mock set. */
+  const mockAllQuery = (params: AllQueryParams): { prs: PRSnapshot[]; total: number } => {
+    const text = params.text.trim().toLowerCase()
+    const prs = coordinator.prs.filter(
+      (p) =>
+        (!params.author || p.author === params.author) &&
+        (!params.repo || p.repo === params.repo) &&
+        (!params.hideDrafts || !p.isDraft) &&
+        (!text || p.title.toLowerCase().includes(text))
+    )
+    return { prs, total: prs.length }
+  }
+
   registerIpcHandlers({
     coordinator,
     store,
@@ -167,10 +179,22 @@ app.whenReady().then(() => {
       if (!ok) void shell.openExternal(`${pr.url}/checks`)
       else poller.refresh()
     },
-    fetchAuthorPRs: async (login) => {
-      if (MOCK) return
-      const prs = await github.fetchAuthorPRs(store.get('settings'), login).catch(() => [])
-      coordinator.setAuthorExtra(prs)
+    fetchAllQuery: async (params) => {
+      const seq = ++allQuerySeq
+      if (!params || isEmptyAllQuery(params)) {
+        coordinator.setAllQuery(null)
+        return
+      }
+      if (MOCK) {
+        coordinator.setAllQuery({ params, ...mockAllQuery(params) })
+        return
+      }
+      const { prs, total } = await github
+        .fetchAllQuery(store.get('settings'), params)
+        .catch(() => ({ prs: [] as PRSnapshot[], total: 0 }))
+      // a newer filter superseded this one while it was in flight
+      if (seq !== allQuerySeq) return
+      coordinator.setAllQuery({ params, prs, total })
     },
     openSettingsWindow,
     onSettingsChanged: () => {
@@ -181,7 +205,8 @@ app.whenReady().then(() => {
       refreshPeople()
       poller.refresh()
     },
-    resizePopover: (h) => popover.resize(h)
+    resizePopover: (h) => popover.resize(h),
+    hidePopover: () => popover.hide()
   })
 
   poller.start()
