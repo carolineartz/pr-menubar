@@ -76,6 +76,9 @@ export interface PRSnapshot {
   viewerLastReviewAt: string | null
   viewerReviewState: ViewerReviewState
   viewerCommented: boolean
+  /** viewer approved and hasn't requested changes since — survives later
+   *  COMMENTED reviews and re-requests, which hide it from viewerReviewState */
+  viewerApproved: boolean
   buckets: TabBucket[]
 
   // ---- derived by classifyChecks + computeNextAction (attached in mapper) ----

@@ -56,6 +56,8 @@ export interface GqlPR {
     }[]
   }
   latestReviews: { nodes: GqlReview[] }
+  /** APPROVED + CHANGES_REQUESTED reviews, oldest first; absent on PRLite nodes */
+  verdicts?: { nodes: GqlReview[] }
   reviewRequests: { nodes: { requestedReviewer: { login: string } | null }[] }
   /** absent on PRLite nodes */
   recentCommits?: {
@@ -208,6 +210,8 @@ function mapOne(
   const myLatestReview = pr.latestReviews.nodes.find(
     (r) => r.author?.login === viewer && r.state !== 'PENDING'
   )
+  // your newest verdict: an approval stands until you request changes after it
+  const myLastVerdict = (pr.verdicts?.nodes ?? []).findLast((r) => r.author?.login === viewer)
   const requested = pr.reviewRequests.nodes
     .map((n) => n.requestedReviewer?.login)
     .filter((l): l is string => !!l)
@@ -269,6 +273,7 @@ function mapOne(
       ? myLatestReview.state
       : null) as PRSnapshot['viewerReviewState'],
     viewerCommented: false, // set from the `commented` search bucket below
+    viewerApproved: myLastVerdict?.state === 'APPROVED',
     buckets,
     checksLoaded,
     checks: classified.checks,

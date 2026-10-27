@@ -77,7 +77,7 @@ describe('Reviewing tab groups', () => {
 
   it('approved stays approved, even with commits after the approval', () => {
     const pr = prs.find((p) => p.key === 'acme/billing#96')!
-    expect(pr.nextAction).toBe('RESUME')
+    expect(pr.nextAction).toBe('WAITING')
     expect(keys('approved').sort()).toEqual(['acme/auth#210', 'acme/billing#96'])
   })
 

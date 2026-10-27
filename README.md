@@ -31,7 +31,7 @@ Each PR is classified by the first matching rule:
 | `MERGE` | my PR, approved, checks green, no conflicts |
 | `ADDRESS` | my PR: changes requested, unresolved review threads, or merge conflicts |
 | `REVIEW` | review requested from me, not started |
-| `RESUME` | I have an unsubmitted (pending) review draft, commented without submitting, or real commits landed after my last review |
+| `RESUME` | I haven't approved, and I have an unsubmitted (pending) review draft, commented without submitting, or real commits landed after my last review |
 | `WAITING` | everything else — waiting on reviewers, CI running, drafts |
 
 Details that make it accurate in practice:
@@ -49,7 +49,7 @@ Settings holds a list of noisy check-name patterns (`codecov/*`, `*quarantine*`�
 ## Tabs
 
 - **My PRs** — PRs I authored in watched repos, sorted by next-action urgency.
-- **Reviewing** — grouped **START REVIEW / WAITING ON YOU / WAITING ON THEM / CODE OWNER REQUESTS / APPROVED BY YOU / BOTS**. Rows show a **wait-time badge** (amber at 2+ days) instead of a redundant chip — the group already names the action. Each section lists the **longest-waiting PR first**; a toggle on the section divider (next to *hide drafts*) flips it to newest first, remembered per section. PRs you've **approved disappear** once there's nothing left to do; they come back as RESUME only if real commits follow your approval.
+- **Reviewing** — grouped **START REVIEW / WAITING ON YOU / WAITING ON THEM / CODE OWNER REQUESTS / APPROVED BY YOU / BOTS**. Rows show a **wait-time badge** (amber at 2+ days) instead of a redundant chip — the group already names the action. Each section lists the **longest-waiting PR first**; a toggle on the section divider (next to *hide drafts*) flips it to newest first, remembered per section. PRs you've **approved stay under Approved by you** (collapsed by default) whatever follows — new commits, a re-request, other reviewers' or Copilot's threads, your own later comments. Approving is your last move; only requesting changes after it takes the approval back.
 - **Team** — PRs authored by a hand-picked list of usernames (Settings), regardless of your involvement. The pill row at the bottom toggles individual people on/off.
 - **Saved** — anything you've starred, from any tab.
 - **All** — every open PR in the watched repos, newest first. The tab count is **GitHub's real total**, not the size of the loaded page (the feed carries the 50 newest; a caption under the list says so when there are more). The filter bar narrows **at the source**, so counts stay exact and older PRs become reachable: **author** (autocomplete over your org's member list — fetched automatically, searchable by display name — plus anyone in the feed), **title search**, and a **hide drafts** toggle. Repo focus narrows the same way.

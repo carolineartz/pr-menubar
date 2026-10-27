@@ -50,6 +50,17 @@ export const PR_FRAGMENT = /* GraphQL */ `
         }
       }
     }
+    # latestReviews keeps one review per author, so a COMMENTED review after an
+    # approval hides it; the verdict history keeps it
+    verdicts: reviews(states: [APPROVED, CHANGES_REQUESTED], last: 50) {
+      nodes {
+        state
+        submittedAt
+        author {
+          login
+        }
+      }
+    }
     latestReviews(first: 20) {
       nodes {
         state

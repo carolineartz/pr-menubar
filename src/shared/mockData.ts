@@ -47,6 +47,7 @@ interface MockSpec {
   viewerLastReviewMin?: number
   viewerReviewState?: PRSnapshot['viewerReviewState']
   viewerCommented?: boolean
+  viewerApproved?: boolean
   unresolvedThreads?: number
   threadsAwaitingViewer?: number
   engagedReviewers?: number
@@ -172,7 +173,7 @@ const SPECS: MockSpec[] = [
     checks: [['build', 'ok', '59s'], ['lint', 'ok', '20s']]
   },
   {
-    // approved, then new commits landed — still belongs to the Approved group
+    // approved, then new commits landed — still approved, nothing to do
     repo: 'acme/billing', number: 96, title: 'Improve retry semantics for failed invoices',
     branch: 'pn/invoice-retry-exponential-backoff-with-jitter', author: 'pnovak',
     buckets: ['rev'], updatedMin: 100, approvals: 1, viewerReviewState: 'APPROVED',
@@ -239,6 +240,7 @@ export function makeMockPRs(
       viewerLastReviewAt: s.viewerLastReviewMin != null ? iso(s.viewerLastReviewMin) : null,
       viewerReviewState: s.viewerReviewState ?? null,
       viewerCommented: s.viewerCommented ?? false,
+      viewerApproved: s.viewerApproved ?? s.viewerReviewState === 'APPROVED',
       buckets: [...s.buckets, 'all' as const],
       checksLoaded: true,
       checks: classified.checks,

@@ -16,6 +16,7 @@ function base(over: Partial<NextActionInput> = {}): NextActionInput {
     viewerLastReviewAt: null,
     viewerReviewState: null,
     viewerCommented: false,
+    viewerApproved: false,
     lastMeaningfulCommitAt: '2026-07-01T10:00:00Z',
     ...over
   }
@@ -108,12 +109,28 @@ describe('computeNextAction — first match wins', () => {
       computeNextAction(
         base({
           authorIsViewer: false,
-          viewerReviewState: 'APPROVED',
+          viewerReviewState: 'COMMENTED',
           viewerLastReviewAt: '2026-07-01T09:00:00Z',
           lastMeaningfulCommitAt: '2026-07-01T10:00:00Z'
         })
       )
     ).toBe('RESUME')
+  })
+
+  it('WAITING: approved, then real commits, a re-request and a pending draft', () => {
+    expect(
+      computeNextAction(
+        base({
+          authorIsViewer: false,
+          viewerApproved: true,
+          viewerReviewState: null,
+          reviewRequestedFromViewer: true,
+          viewerHasPendingReview: true,
+          viewerLastReviewAt: '2026-07-01T09:00:00Z',
+          lastMeaningfulCommitAt: '2026-07-01T10:00:00Z'
+        })
+      )
+    ).toBe('WAITING')
   })
 
   it('merges from main after my review do NOT pull it back (no meaningful commits)', () => {

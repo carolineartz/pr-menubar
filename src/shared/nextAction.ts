@@ -34,6 +34,7 @@ export type NextActionInput = Pick<
   | 'viewerLastReviewAt'
   | 'viewerReviewState'
   | 'viewerCommented'
+  | 'viewerApproved'
   | 'lastMeaningfulCommitAt'
 >
 
@@ -71,7 +72,8 @@ export function computeNextAction(pr: NextActionInput): NextAction {
     return 'MERGE'
   }
 
-  if (!mine) {
+  // approving is your last move: nothing after it puts the PR back on your plate
+  if (!mine && !pr.viewerApproved) {
     const started =
       pr.viewerHasPendingReview || pr.viewerCommented || pr.viewerReviewState !== null
     if (pr.reviewRequestedFromViewer && !started) return 'REVIEW'
