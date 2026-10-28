@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { makeMockPRs } from '../mockData'
+import { MOCK_SETTINGS, makeMockPRs } from '../mockData'
 import { badgeCount } from '../badge'
 import { pillFor } from '../present'
 import { snoozeUntil } from '../fingerprint'
@@ -36,14 +36,15 @@ describe('mock data matches the prototype', () => {
     expect(codecov.ignored).toBe(true)
   })
 
-  it('tray badge counts actionable on My PRs + Reviewing', () => {
-    // the prototype's 7 (#96, approved then updated, is not yours to act on)
-    expect(badgeCount(prs, {}, NOW)).toBe(7)
+  it('tray badge counts owed replies, reviews on your plate, and bot requests', () => {
+    // #468 (reviewer awaits your reply) · #217 #486 (start review) · #341 #221
+    // (waiting on you) · #495 (dependabot, code-owner request)
+    expect(badgeCount(prs, {}, MOCK_SETTINGS.botAuthors, NOW)).toBe(6)
   })
 
   it('badge excludes snoozed and never counts Team-only PRs', () => {
-    const snoozed = { 'acme/api#482': { mode: '1h' as const, until: NOW + 3_600_000 } }
-    expect(badgeCount(prs, snoozed, NOW)).toBe(6)
+    const snoozed = { 'acme/api#468': { mode: '1h' as const, until: NOW + 3_600_000 } }
+    expect(badgeCount(prs, snoozed, MOCK_SETTINGS.botAuthors, NOW)).toBe(5)
     // #491 is team-only (plus the All feed) — never counted in the badge
     expect(prs.find((p) => p.number === 491)!.buckets).toEqual(['team', 'all'])
   })

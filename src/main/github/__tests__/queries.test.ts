@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { EMPTY_ALL_QUERY } from '../../../shared/ipc'
 import { MOCK_SETTINGS } from '../../../shared/mockData'
-import { allSearchString, buildAllOpenQuery, buildAllSearchQuery } from '../queries'
+import {
+  allSearchString,
+  buildAllOpenQuery,
+  buildAllSearchQuery,
+  buildDetailQuery,
+  buildInvolvementQuery
+} from '../queries'
 
 describe('All-tab search strings', () => {
   it('the base feed asks GitHub for its total', () => {
@@ -35,5 +41,33 @@ describe('All-tab search strings', () => {
     const q = buildAllSearchQuery(MOCK_SETTINGS, { ...EMPTY_ALL_QUERY, author: 'dvest' })
     expect(q.variables.allOpenQ).toContain('author:dvest')
     expect(q.document).toMatch(/issueCount/)
+  })
+})
+
+describe('involvement queries', () => {
+  it('searches return ids only; detail lives in its own query', () => {
+    const q = buildInvolvementQuery(MOCK_SETTINGS)
+    expect(q.document).not.toMatch(/PRFields/)
+    expect(q.document).toMatch(/viewer/)
+    expect(buildDetailQuery(['a', 'b']).document).toMatch(/nodes\(ids: \$ids\) \{\s*\.\.\.PRFields/)
+  })
+
+  it('the team search runs only with team usernames configured', () => {
+    expect(buildInvolvementQuery({ ...MOCK_SETTINGS, teamUsernames: [] }).aliases).toEqual([
+      'mine',
+      'reviewReq',
+      'reviewedBy',
+      'commented'
+    ])
+    expect(buildInvolvementQuery({ ...MOCK_SETTINGS, teamUsernames: ['dvest'] }).aliases).toContain(
+      'team'
+    )
+  })
+
+  it('no repos → no searches, still asks for the viewer', () => {
+    const q = buildInvolvementQuery({ ...MOCK_SETTINGS, repos: [] })
+    expect(q.aliases).toEqual([])
+    expect(q.document).not.toMatch(/search\(/)
+    expect(q.document).toMatch(/viewer/)
   })
 })

@@ -1,8 +1,15 @@
 import type { AllQueryParams } from '../../shared/ipc'
 import type { Person, PRSnapshot, Settings } from '../../shared/types'
 import { AuthFailedError, GithubClient, type RateLimitInfo } from './client'
-import { mapPoll, type PollData } from './mapper'
-import { buildAllOpenQuery, buildAllSearchQuery, buildInvolvementQueries } from './queries'
+import { mapPoll, type GqlPR, type PollData } from './mapper'
+import {
+  buildAllOpenQuery,
+  buildAllSearchQuery,
+  buildDetailQuery,
+  buildInvolvementQuery,
+  DETAIL_CHUNK_SIZE,
+  type InvolvementAlias
+} from './queries'
 
 export { AuthFailedError }
 
@@ -22,34 +29,70 @@ export interface AllSearchOutcome {
 export class GithubService {
   private client = new GithubClient()
 
-  /** Several small parallel requests instead of one: each involvement search
-   *  costs ~3–4s of GitHub's ~10s per-request execution budget on a large
-   *  repo, so bundling them all 504s. */
+  /** Several small parallel requests instead of one: full PR detail costs
+   *  enough of GitHub's ~10s per-request execution budget that bundling it
+   *  504s or truncates the response. The All feed runs alongside. */
   async poll(settings: Settings, savedNodeIds: string[]): Promise<PollOutcome> {
-    const invQueries = buildInvolvementQueries(settings, savedNodeIds)
     const allOpen = buildAllOpenQuery(settings)
-    const [allData, ...invParts] = await Promise.all([
+    const [allData, involvement] = await Promise.all([
       settings.repos.length > 0
         ? this.client.graphql<Pick<PollData, 'allOpen' | 'rateLimit'>>(
             allOpen.document,
             allOpen.variables
           )
         : Promise.resolve(null),
-      ...invQueries.map((q) => this.client.graphql<PollData>(q.document, q.variables))
+      this.fetchInvolvement(settings, savedNodeIds)
     ])
-    const data: PollData = Object.assign({}, ...invParts, { allOpen: allData?.allOpen })
-    const limits = [...invParts.map((p) => p.rateLimit), allData?.rateLimit].filter(
-      (r): r is PollData['rateLimit'] => !!r
-    )
-    const rateLimit = limits.reduce((min, r) => (r.remaining < min.remaining ? r : min))
+    const data: PollData = { ...involvement.data, allOpen: allData?.allOpen }
+    const rateLimit = [...involvement.rateLimits, allData?.rateLimit]
+      .filter((r): r is RateLimitInfo => !!r)
+      .reduce((min, r) => (r.remaining < min.remaining ? r : min))
     const prs = mapPoll(data, settings, Date.now())
     return {
       prs,
-      viewer: invParts[0].viewer.login,
+      viewer: data.viewer.login,
       rateLimit,
       allOpenTotal:
         allData?.allOpen?.issueCount ?? prs.filter((p) => p.buckets.includes('all')).length
     }
+  }
+
+  /** Ids from the involvement searches, then full detail for the union of
+   *  those and the saved PRs in parallel `DETAIL_CHUNK_SIZE` chunks,
+   *  reassembled per search in GitHub's order. */
+  private async fetchInvolvement(
+    settings: Settings,
+    savedNodeIds: string[]
+  ): Promise<{ data: Omit<PollData, 'allOpen'>; rateLimits: RateLimitInfo[] }> {
+    const q = buildInvolvementQuery(settings)
+    const found = await this.client.graphql<
+      Pick<PollData, 'viewer' | 'rateLimit'> &
+        Partial<Record<InvolvementAlias, { nodes: ({ id?: string } | null)[] }>>
+    >(q.document, q.variables)
+    const idsByAlias = q.aliases.map(
+      (alias) => [alias, (found[alias]?.nodes ?? []).flatMap((n) => (n?.id ? [n.id] : []))] as const
+    )
+    const unique = [...new Set([...idsByAlias.flatMap(([, ids]) => ids), ...savedNodeIds])]
+    const chunks = Array.from({ length: Math.ceil(unique.length / DETAIL_CHUNK_SIZE) }, (_, i) =>
+      unique.slice(i * DETAIL_CHUNK_SIZE, (i + 1) * DETAIL_CHUNK_SIZE)
+    )
+    const details = await Promise.all(
+      chunks.map((ids) => {
+        const d = buildDetailQuery(ids)
+        return this.client.graphql<{ rateLimit: RateLimitInfo; nodes: (GqlPR | null)[] }>(
+          d.document,
+          d.variables
+        )
+      })
+    )
+    const byId = new Map(
+      details.flatMap((d) => d.nodes).flatMap((n) => (n ? [[n.id, n] as const] : []))
+    )
+    const pick = (ids: string[]): (GqlPR | null)[] => ids.map((id) => byId.get(id) ?? null)
+    const data: Omit<PollData, 'allOpen'> = { viewer: found.viewer, rateLimit: found.rateLimit }
+    for (const [alias, ids] of idsByAlias) data[alias] = { nodes: pick(ids) }
+    if (savedNodeIds.length > 0) data.saved = pick(savedNodeIds)
+    return { data, rateLimits: [found.rateLimit, ...details.map((d) => d.rateLimit)] }
   }
 
   /**

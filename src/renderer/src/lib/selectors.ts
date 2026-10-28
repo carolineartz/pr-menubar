@@ -1,8 +1,16 @@
 import { PRIO } from '../../../shared/nextAction'
 import { avatarColor, behindSince } from '../../../shared/present'
 import { isSnoozeActive } from '../../../shared/fingerprint'
+import {
+  myGroupKey,
+  reviewingGroupKey,
+  type MyGroupKey,
+  type ReviewingGroupKey
+} from '../../../shared/groups'
 import { matchesQuery } from '../../../shared/search'
 import type { PRSnapshot, SnoozeEntry } from '../../../shared/types'
+
+export { isBotAuthor } from '../../../shared/groups'
 
 export type TabId = 'my' | 'rev' | 'team' | 'saved' | 'all'
 
@@ -79,21 +87,9 @@ export function sortByWait(rows: PRSnapshot[], dir: SortDir): PRSnapshot[] {
   return rows.slice().sort((a, b) => sign * behindSince(a).localeCompare(behindSince(b)))
 }
 
-export type GroupKey =
-  // Reviewing tab
-  | 'start'
-  | 'you'
-  | 'them'
-  | 'team'
-  | 'approved'
-  | 'bots'
-  // My PRs tab
-  | 'yourmove'
-  | 'nudge'
-  | 'inreview'
-  | 'drafts'
-  // Team tab: one section per teammate
-  | `author:${string}`
+/** Reviewing + My PRs sections are classified in shared/groups (the tray badge
+ *  builds on the same rules); Team gets one section per teammate. */
+export type GroupKey = ReviewingGroupKey | MyGroupKey | `author:${string}`
 
 export interface Group {
   key: GroupKey
@@ -143,60 +139,12 @@ const toGroups = (
     }))
     .filter((g) => g.rows.length > 0)
 
-/** "dependabot", "dependabot[bot]", and "app/dependabot" are the same account. */
-const botName = (login: string): string =>
-  login
-    .replace(/^app\//i, '')
-    .replace(/\[bot\]$/i, '')
-    .toLowerCase()
-
-export function isBotAuthor(login: string, botAuthors: string[]): boolean {
-  return botAuthors.some((b) => botName(b) === botName(login))
-}
-
-/**
- * Reviewing classification — a PR waits on you only if their move is newer
- * than yours. First match wins:
- * - bots
- * - you approved and haven't requested changes since → approved, whatever
- *   follows (commits, re-requests, others' threads, your later comments)
- * - re-requested review (you already engaged, they clicked re-request) →
- *   waiting on you. Keyed off engagement, not your last review state: GitHub
- *   drops a reviewer from latestReviews the moment they're re-requested, so
- *   viewerReviewState is null exactly when this rule matters
- * - fresh direct request, not started → start review
- * - code-owner group request, not started → code owner requests (never PRs
- *   where you're tagged individually — those matched above)
- * - unfinished pending review, or an unresolved thread whose last word isn't
- *   yours (and you haven't 👍'd it) → waiting on you
- * - anything else you've engaged with → waiting on them
- */
-function groupKeyFor(pr: PRSnapshot, botAuthors: string[]): GroupKey {
-  if (isBotAuthor(pr.author, botAuthors)) return 'bots'
-  if (pr.viewerApproved) return 'approved'
-  const started = pr.viewerReviewState !== null || pr.viewerCommented || pr.viewerHasPendingReview
-  if (pr.reviewRequestedFromViewer && started) return 'you'
-  if (pr.reviewRequestedFromViewer && !started) return 'start'
-  if (pr.reviewRequestedFromTeam && !started) return 'team'
-  if (pr.viewerHasPendingReview || pr.threadsAwaitingViewer > 0) return 'you'
-  return 'them'
-}
-
 export function reviewingGroups(rows: PRSnapshot[], botAuthors: string[] = []): Group[] {
-  return toGroups(GROUPS, rows, (pr) => groupKeyFor(pr, botAuthors))
+  return toGroups(GROUPS, rows, (pr) => reviewingGroupKey(pr, botAuthors))
 }
 
-/** My PRs groups, by whose move it is. "Your move" holds every own-PR verb
- *  (merge / respond / fix, plus red-dot CI failures); "Awaiting reviewers" is
- *  the nudge list — nothing on your plate, but fewer reviewers engaged than
- *  the repo requires; "In review" is relax-and-wait. */
 export function myGroups(rows: PRSnapshot[], requiredReviews: number): Group[] {
-  return toGroups(MY_GROUPS, rows, (pr) => {
-    if (pr.isDraft) return 'drafts'
-    if (pr.nextAction !== 'WAITING') return 'yourmove'
-    if (pr.engagedReviewers < requiredReviews) return 'nudge'
-    return 'inreview'
-  })
+  return toGroups(MY_GROUPS, rows, (pr) => myGroupKey(pr, requiredReviews))
 }
 
 /** Team tab: one collapsible section per teammate, alphabetical. */

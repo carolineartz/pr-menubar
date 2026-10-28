@@ -188,66 +188,81 @@ export interface PollQuery {
   variables: Record<string, unknown>
 }
 
-/**
- * Involvement searches with full per-check detail, split into TWO requests:
- * each search costs ~3–4s of GitHub's ~10s per-request execution budget on a
- * large repo, so four in one document flips 504s. Two per request is safe.
- * Searches are included only when they can match (repos configured / team
- * list non-empty / stars exist).
- */
-export function buildInvolvementQueries(settings: Settings, savedNodeIds: string[]): PollQuery[] {
-  const repoQualifier = settings.repos.map((r) => `repo:${r}`).join(' ')
+export type InvolvementAlias = 'mine' | 'reviewReq' | 'reviewedBy' | 'commented' | 'team'
 
-  const build = (parts: [alias: string, q: string][], withSaved: boolean): PollQuery => {
-    const searches: string[] = []
-    const variables: Record<string, unknown> = {}
-    const varDefs: string[] = []
-    for (const [alias, q] of parts) {
-      varDefs.push(`$${alias}Q: String!`)
-      variables[`${alias}Q`] = q
-      searches.push(
-        `${alias}: search(query: $${alias}Q, type: ISSUE, first: 30) { nodes { ...PRFields } }`
-      )
+/** PRs per detail request. Probed 2026-09-30: 10 PRs with PRFields run
+ *  2.5–4s of GitHub's ~10s per-request budget; a single 30-result search with
+ *  PRFields ran ~9s and pairs of them 504'd or came back truncated. */
+export const DETAIL_CHUNK_SIZE = 10
+
+/**
+ * Involvement searches, ids only — detail comes from `buildDetailQuery` in
+ * parallel chunks, which also fetches a PR once however many searches match
+ * it. Searches are included only when they can match (repos configured /
+ * team list non-empty); with none, the query still answers `viewer`.
+ */
+export function buildInvolvementQuery(
+  settings: Settings
+): PollQuery & { aliases: InvolvementAlias[] } {
+  const repoQualifier = settings.repos.map((r) => `repo:${r}`).join(' ')
+  const parts: [InvolvementAlias, string][] = []
+  if (settings.repos.length > 0) {
+    parts.push(
+      ['mine', `is:pr is:open author:@me ${repoQualifier}`],
+      ['reviewReq', `is:pr is:open review-requested:@me ${repoQualifier}`],
+      ['reviewedBy', `is:pr is:open reviewed-by:@me -author:@me ${repoQualifier}`],
+      ['commented', `is:pr is:open commenter:@me -author:@me ${repoQualifier}`]
+    )
+    if (settings.teamUsernames.length > 0) {
+      const authors = settings.teamUsernames.map((u) => `author:${u}`).join(' ')
+      parts.push(['team', `is:pr is:open ${authors} ${repoQualifier}`])
     }
-    if (withSaved && savedNodeIds.length > 0) {
-      varDefs.push('$savedIds: [ID!]!')
-      variables['savedIds'] = savedNodeIds
-      searches.push('saved: nodes(ids: $savedIds) { ...PRFields }')
+  }
+
+  const variables: Record<string, unknown> = {}
+  const varDefs: string[] = []
+  const searches: string[] = []
+  for (const [alias, q] of parts) {
+    varDefs.push(`$${alias}Q: String!`)
+    variables[`${alias}Q`] = q
+    searches.push(
+      `${alias}: search(query: $${alias}Q, type: ISSUE, first: 30) { nodes { ... on PullRequest { id } } }`
+    )
+  }
+  const document = /* GraphQL */ `
+    query Involvement${varDefs.length ? `(${varDefs.join(', ')})` : ''} {
+      viewer {
+        login
+      }
+      rateLimit {
+        cost
+        remaining
+        resetAt
+      }
+      ${searches.join('\n      ')}
     }
-    const document = /* GraphQL */ `
-      query Poll${varDefs.length ? `(${varDefs.join(', ')})` : ''} {
-        viewer {
-          login
-        }
+  `
+  return { document, variables, aliases: parts.map(([alias]) => alias) }
+}
+
+/** Full per-check detail for up to `DETAIL_CHUNK_SIZE` PRs by node id. */
+export function buildDetailQuery(ids: string[]): PollQuery {
+  return {
+    document: /* GraphQL */ `
+      query Detail($ids: [ID!]!) {
         rateLimit {
           cost
           remaining
           resetAt
         }
-        ${searches.join('\n        ')}
+        nodes(ids: $ids) {
+          ...PRFields
+        }
       }
       ${PR_FRAGMENT}
-    `
-    return { document, variables }
+    `,
+    variables: { ids }
   }
-
-  if (settings.repos.length === 0) {
-    return [build([], savedNodeIds.length > 0)]
-  }
-
-  const groupA: [string, string][] = [
-    ['mine', `is:pr is:open author:@me ${repoQualifier}`],
-    ['reviewReq', `is:pr is:open review-requested:@me ${repoQualifier}`]
-  ]
-  const groupB: [string, string][] = [
-    ['reviewedBy', `is:pr is:open reviewed-by:@me -author:@me ${repoQualifier}`],
-    ['commented', `is:pr is:open commenter:@me -author:@me ${repoQualifier}`]
-  ]
-  if (settings.teamUsernames.length > 0) {
-    const authors = settings.teamUsernames.map((u) => `author:${u}`).join(' ')
-    groupA.push(['team', `is:pr is:open ${authors} ${repoQualifier}`])
-  }
-  return [build(groupA, true), build(groupB, false)]
 }
 
 /** Search text with the qualifiers GitHub's search understands. Free text

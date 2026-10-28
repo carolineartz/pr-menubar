@@ -27,14 +27,14 @@ function createMockApi(): RendererApi {
     starred: ['acme/api#482'],
     snoozed: {},
     teamToggles: {},
-    badgeCount: badgeCount(prs, {}, Date.now()),
+    badgeCount: badgeCount(prs, {}, MOCK_SETTINGS.botAuthors, Date.now()),
     people: MOCK_PEOPLE,
     allOpenTotal: prs.length,
     allQuery: null
   }
   let listeners: ((s: AppState) => void)[] = []
   const push = (): void => {
-    state.badgeCount = badgeCount(state.prs, state.snoozed, Date.now())
+    state.badgeCount = badgeCount(state.prs, state.snoozed, state.settings.botAuthors, Date.now())
     listeners.forEach((cb) => cb({ ...state }))
   }
 
