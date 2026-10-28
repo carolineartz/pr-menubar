@@ -111,6 +111,6 @@ describe('an approval is your last move', () => {
       }
     })
     expect(map(pr).viewerApproved).toBe(false)
-    expect(groupOf(pr)).toBe('you')
+    expect(groupOf(pr)).toBe('them')
   })
 })

@@ -18,10 +18,9 @@ describe('badgeCount', () => {
       'acme/api#486', // start review
       'acme/api#495', // dependabot, code-owner request
       'acme/auth#217', // start review
-      'acme/auth#221', // re-requested → waiting on you
-      'acme/web#341' // reply awaiting you
+      'acme/auth#221' // re-requested → waiting on you
     ])
-    expect(badgeCount(prs, {}, BOTS, NOW)).toBe(6)
+    expect(badgeCount(prs, {}, BOTS, NOW)).toBe(5)
   })
 
   describe('own PRs count only while a reviewer waits on your reply', () => {
@@ -106,7 +105,7 @@ describe('badgeCount', () => {
   it('snoozed rows drop out', () => {
     expect(
       badgeCount(prs, { 'acme/api#468': { mode: '1h', until: NOW + 60_000 } }, BOTS, NOW)
-    ).toBe(5)
-    expect(badgeCount(prs, { 'acme/api#468': { mode: '1h', until: NOW - 1 } }, BOTS, NOW)).toBe(6)
+    ).toBe(4)
+    expect(badgeCount(prs, { 'acme/api#468': { mode: '1h', until: NOW - 1 } }, BOTS, NOW)).toBe(5)
   })
 })

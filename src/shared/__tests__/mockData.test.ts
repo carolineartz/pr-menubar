@@ -37,14 +37,14 @@ describe('mock data matches the prototype', () => {
   })
 
   it('tray badge counts owed replies, reviews on your plate, and bot requests', () => {
-    // #468 (reviewer awaits your reply) · #217 #486 (start review) · #341 #221
+    // #468 (reviewer awaits your reply) · #217 #486 (start review) · #221
     // (waiting on you) · #495 (dependabot, code-owner request)
-    expect(badgeCount(prs, {}, MOCK_SETTINGS.botAuthors, NOW)).toBe(6)
+    expect(badgeCount(prs, {}, MOCK_SETTINGS.botAuthors, NOW)).toBe(5)
   })
 
   it('badge excludes snoozed and never counts Team-only PRs', () => {
     const snoozed = { 'acme/api#468': { mode: '1h' as const, until: NOW + 3_600_000 } }
-    expect(badgeCount(prs, snoozed, MOCK_SETTINGS.botAuthors, NOW)).toBe(5)
+    expect(badgeCount(prs, snoozed, MOCK_SETTINGS.botAuthors, NOW)).toBe(4)
     // #491 is team-only (plus the All feed) — never counted in the badge
     expect(prs.find((p) => p.number === 491)!.buckets).toEqual(['team', 'all'])
   })

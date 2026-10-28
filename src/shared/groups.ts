@@ -27,8 +27,8 @@ export function isBotAuthor(login: string, botAuthors: string[]): boolean {
  * - fresh direct request, not started → start review
  * - code-owner group request, not started → code owner requests (never PRs
  *   where you're tagged individually — those matched above)
- * - unfinished pending review, or an unresolved thread whose last word isn't
- *   yours (and you haven't 👍'd it) → waiting on you
+ * - unfinished pending review → waiting on you. Replies in your threads
+ *   don't count: the author re-requests you when it's ready again
  * - anything else you've engaged with → waiting on them
  */
 export function reviewingGroupKey(pr: PRSnapshot, botAuthors: string[]): ReviewingGroupKey {
@@ -38,7 +38,7 @@ export function reviewingGroupKey(pr: PRSnapshot, botAuthors: string[]): Reviewi
   if (pr.reviewRequestedFromViewer && started) return 'you'
   if (pr.reviewRequestedFromViewer && !started) return 'start'
   if (pr.reviewRequestedFromTeam && !started) return 'team'
-  if (pr.viewerHasPendingReview || pr.threadsAwaitingViewer > 0) return 'you'
+  if (pr.viewerHasPendingReview) return 'you'
   return 'them'
 }
 

@@ -27,8 +27,9 @@ describe('Reviewing tab groups', () => {
     expect(keys('start').sort()).toEqual(['acme/api#486', 'acme/auth#217'])
   })
 
-  it('a reply in an unresolved thread puts the PR in waiting-on-you', () => {
-    expect(keys('you')).toContain('acme/web#341')
+  it('a reply in an unresolved thread without a re-request stays waiting on them', () => {
+    expect(keys('them')).toContain('acme/web#341')
+    expect(keys('you')).not.toContain('acme/web#341')
   })
 
   it('a re-requested review puts the PR in waiting-on-you', () => {
@@ -63,16 +64,6 @@ describe('Reviewing tab groups', () => {
   it('reviewed with no response yet → waiting on them', () => {
     expect(keys('them')).toContain('acme/web#322')
     expect(keys('you')).not.toContain('acme/web#322')
-  })
-
-  it('a 👍-answered thread does not pull the PR back to waiting-on-you', () => {
-    // same PR as the waiting-on-you case, but the mapper counted 0 threads
-    // awaiting the viewer (reaction counts as a response)
-    const acked = prs.map((p) =>
-      p.key === 'acme/web#341' ? { ...p, threadsAwaitingViewer: 0 } : p
-    )
-    const g = reviewingGroups(rowsFor('rev', acked, ctx), BOTS)
-    expect(g.find((x) => x.key === 'them')?.rows.map((p) => p.key)).toContain('acme/web#341')
   })
 
   it('approved stays approved, even with commits after the approval', () => {

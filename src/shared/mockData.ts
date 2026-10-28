@@ -128,7 +128,7 @@ const SPECS: MockSpec[] = [
     checks: [['build', 'ok', '1m 00s'], ['e2e-tests', 'running', '1m 10s']]
   },
   {
-    // alind replied to the viewer's comment — waiting on you
+    // alind replied to the viewer's comment, no re-request — waiting on them
     repo: 'acme/web', number: 341, title: 'Rework onboarding checklist state machine',
     branch: 'al/onboarding-sm', author: 'alind', buckets: ['rev', 'team'], updatedMin: 300,
     viewerCommented: true, unresolvedThreads: 1, threadsAwaitingViewer: 1,
