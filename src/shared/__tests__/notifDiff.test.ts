@@ -115,6 +115,19 @@ describe('diffSnapshots', () => {
     expect(r3.events.map((e) => e.kind)).toEqual(['reviewRequested'])
   })
 
+  it.each(['dependabot', 'cutoverbot'])('a direct request on a %s PR fires too', (author) => {
+    const pr = {
+      ...makeMockPRs(NOW).find((p) => p.key === 'acme/api#495')!,
+      author,
+      reviewRequestedFromTeam: false,
+      reviewRequestedFromViewer: true
+    }
+    const state0 = seed([{ ...pr, reviewRequestedFromViewer: false }])
+    expect(diffSnapshots(state0, [pr], opts()).events.map((e) => e.kind)).toEqual([
+      'reviewRequested'
+    ])
+  })
+
   it('comments batch to one notification per PR per 15 minutes', () => {
     const pr = myPr({ commentCount: 7 })
     const state0 = seed([pr])

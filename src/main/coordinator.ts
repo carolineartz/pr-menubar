@@ -84,7 +84,7 @@ export class Coordinator {
   currentBadge(): number {
     const settings = this.store.get('settings')
     if (!settings.badgeEnabled || !this.authOk) return 0
-    return badgeCount(this.prs, this.store.get('snoozed'), settings.botAuthors, Date.now())
+    return badgeCount(this.prs, this.store.get('snoozed'), Date.now())
   }
 
   /** Recompute badge + push fresh state to the popover. Call after any change. */

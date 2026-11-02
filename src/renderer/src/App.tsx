@@ -385,7 +385,6 @@ export default function App(): JSX.Element {
         expandedKey={expandedKey}
         snoozeMenuKey={snoozeMenuKey}
         jiraEnabled={state.settings.jiraBaseUrl.trim() !== ''}
-        botAuthors={state.settings.botAuthors}
         collapsedGroups={collapsedGroups}
         onToggleGroup={toggleGroup}
         draftsShownGroups={draftsShownGroups}
