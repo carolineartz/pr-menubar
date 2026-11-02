@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { badgeCount, needsYou } from '../badge'
-import { MOCK_SETTINGS, makeMockPRs } from '../mockData'
+import { makeMockPRs } from '../mockData'
+import { computeNextAction } from '../nextAction'
 import type { PRSnapshot } from '../types'
 
 const NOW = Date.parse('2026-07-04T12:00:00Z')
-const BOTS = MOCK_SETTINGS.botAuthors
 
 const find = (prs: PRSnapshot[], key: string): PRSnapshot => prs.find((p) => p.key === key)!
 
 describe('badgeCount', () => {
   const prs = makeMockPRs(NOW)
-  const counted = prs.filter((p) => needsYou(p, BOTS)).map((p) => p.key)
+  const counted = prs.filter((p) => needsYou(p)).map((p) => p.key)
 
   it('counts owed review replies, Start review, Waiting on you, and bot requests', () => {
     expect(counted.sort()).toEqual([
@@ -18,9 +18,10 @@ describe('badgeCount', () => {
       'acme/api#486', // start review
       'acme/api#495', // dependabot, code-owner request
       'acme/auth#217', // start review
-      'acme/auth#221' // re-requested → waiting on you
+      'acme/auth#221', // re-requested → waiting on you
+      'acme/web#358' // dependabot you approved, ready to merge
     ])
-    expect(badgeCount(prs, {}, BOTS, NOW)).toBe(5)
+    expect(badgeCount(prs, {}, NOW)).toBe(6)
   })
 
   describe('own PRs count only while a reviewer waits on your reply', () => {
@@ -28,37 +29,37 @@ describe('badgeCount', () => {
 
     it('merge-ready, red CI, and conflicts alone are not counted', () => {
       expect(find(prs, 'acme/api#479').nextAction).toBe('MERGE')
-      expect(needsYou(find(prs, 'acme/api#479'), BOTS)).toBe(false)
+      expect(needsYou(find(prs, 'acme/api#479'))).toBe(false)
       expect(find(prs, 'acme/api#482').nextAction).toBe('FIXCI')
-      expect(needsYou(find(prs, 'acme/api#482'), BOTS)).toBe(false)
+      expect(needsYou(find(prs, 'acme/api#482'))).toBe(false)
       expect(find(prs, 'acme/api#455').nextAction).toBe('FIX')
-      expect(needsYou(find(prs, 'acme/api#455'), BOTS)).toBe(false)
+      expect(needsYou(find(prs, 'acme/api#455'))).toBe(false)
     })
 
     it('an unresolved thread whose last word is theirs counts', () => {
-      expect(needsYou({ ...own, threadsAwaitingViewer: 1 }, BOTS)).toBe(true)
+      expect(needsYou({ ...own, threadsAwaitingViewer: 1 })).toBe(true)
     })
 
     it('a changes-requested verdict counts even with no inline thread', () => {
-      expect(needsYou({ ...own, reviewDecision: 'CHANGES_REQUESTED' }, BOTS)).toBe(true)
+      expect(needsYou({ ...own, reviewDecision: 'CHANGES_REQUESTED' })).toBe(true)
     })
 
     it('a pending reply counts even when red CI outranks it as the chip', () => {
       const red = { ...find(prs, 'acme/api#482'), threadsAwaitingViewer: 1 }
       expect(red.nextAction).toBe('FIXCI')
-      expect(needsYou(red, BOTS)).toBe(true)
+      expect(needsYou(red)).toBe(true)
     })
 
     it('drafts count too when a reply is owed', () => {
-      expect(needsYou({ ...own, isDraft: true, threadsAwaitingViewer: 1 }, BOTS)).toBe(true)
-      expect(needsYou(find(prs, 'acme/billing#91'), BOTS)).toBe(false)
+      expect(needsYou({ ...own, isDraft: true, threadsAwaitingViewer: 1 })).toBe(true)
+      expect(needsYou(find(prs, 'acme/billing#91'))).toBe(false)
     })
   })
 
   it('approved-then-pushed is still theirs to move — not counted', () => {
     const pr = find(prs, 'acme/billing#96')
     expect(pr.nextAction).toBe('WAITING')
-    expect(needsYou(pr, BOTS)).toBe(false)
+    expect(needsYou(pr)).toBe(false)
   })
 
   it('you commented and they have not replied → waiting on them, not counted', () => {
@@ -69,43 +70,59 @@ describe('badgeCount', () => {
       viewerCommented: true
     }
     expect(pr.nextAction).toBe('RESUME')
-    expect(needsYou(pr, BOTS)).toBe(false)
+    expect(needsYou(pr)).toBe(false)
   })
 
   it('code owner requests on human PRs are not counted', () => {
-    expect(needsYou(find(prs, 'acme/web#350'), BOTS)).toBe(false)
+    expect(needsYou(find(prs, 'acme/web#350'))).toBe(false)
   })
 
   describe('bot PRs', () => {
     const bot = find(prs, 'acme/api#495')
 
     it('count while a review is requested, directly or via code owners', () => {
-      expect(needsYou(bot, BOTS)).toBe(true)
+      expect(needsYou(bot)).toBe(true)
       expect(
-        needsYou({ ...bot, reviewRequestedFromTeam: false, reviewRequestedFromViewer: true }, BOTS)
+        needsYou({ ...bot, reviewRequestedFromTeam: false, reviewRequestedFromViewer: true })
       ).toBe(true)
     })
 
-    it('stop counting once you approve', () => {
-      expect(
-        needsYou({ ...bot, reviewRequestedFromTeam: false, viewerReviewState: 'APPROVED' }, BOTS)
-      ).toBe(false)
+    describe('once you approve, count while merging or fixing is your move', () => {
+      const approved = find(prs, 'acme/web#358')
+      const recompute = (pr: PRSnapshot): PRSnapshot => ({
+        ...pr,
+        nextAction: computeNextAction(pr)
+      })
+
+      it('ready to merge', () => {
+        expect(approved.nextAction).toBe('MERGE')
+        expect(needsYou(approved)).toBe(true)
+      })
+
+      it('merge conflicts or red CI', () => {
+        expect(needsYou(recompute({ ...approved, mergeable: 'CONFLICTING' }))).toBe(true)
+        expect(needsYou(recompute({ ...approved, meaningfulFailure: true }))).toBe(true)
+      })
+
+      it('not while the repo waits on other approvals', () => {
+        expect(needsYou(recompute({ ...approved, reviewDecision: 'REVIEW_REQUIRED' }))).toBe(false)
+      })
     })
 
     it('are treated like people when not listed as bots', () => {
-      expect(needsYou(bot, [])).toBe(false)
+      expect(needsYou({ ...bot, authorIsBot: false })).toBe(false)
+      const approved = find(prs, 'acme/web#358')
+      expect(needsYou({ ...approved, authorIsBot: false, nextAction: 'WAITING' })).toBe(false)
     })
   })
 
   it('Team/All-only rows never count', () => {
     const pr = find(prs, 'acme/api#491')
-    expect(needsYou({ ...pr, reviewRequestedFromViewer: true }, BOTS)).toBe(false)
+    expect(needsYou({ ...pr, reviewRequestedFromViewer: true })).toBe(false)
   })
 
   it('snoozed rows drop out', () => {
-    expect(
-      badgeCount(prs, { 'acme/api#468': { mode: '1h', until: NOW + 60_000 } }, BOTS, NOW)
-    ).toBe(4)
-    expect(badgeCount(prs, { 'acme/api#468': { mode: '1h', until: NOW - 1 } }, BOTS, NOW)).toBe(5)
+    expect(badgeCount(prs, { 'acme/api#468': { mode: '1h', until: NOW + 60_000 } }, NOW)).toBe(5)
+    expect(badgeCount(prs, { 'acme/api#468': { mode: '1h', until: NOW - 1 } }, NOW)).toBe(6)
   })
 })

@@ -1,3 +1,4 @@
+import { isBotAuthor } from './groups'
 import { classifyChecks } from './noisyChecks'
 import { computeNextAction, resolveDot } from './nextAction'
 import type {
@@ -188,6 +189,14 @@ const SPECS: MockSpec[] = [
     checks: [['build', 'ok', '1m 01s'], ['lint', 'ok', '17s']]
   },
   {
+    // approved bot PR — nobody else will merge it
+    repo: 'acme/web', number: 358, title: 'Bump vite from 7.2.6 to 7.3.0',
+    branch: 'dependabot/npm_and_yarn/vite-7.3.0', author: 'dependabot', buckets: ['rev'],
+    updatedMin: 400, reviewDecision: 'APPROVED', approvals: 1, viewerReviewState: 'APPROVED',
+    viewerLastReviewMin: 380, commentCount: 0, reviewCount: 1, lastCommitMin: 420,
+    checks: [['build', 'ok', '1m 04s'], ['lint', 'ok', '15s']]
+  },
+  {
     repo: 'acme/api', number: 491, title: 'Add audit log export endpoint',
     branch: 'mk/audit-export', author: 'mkatz', buckets: ['team'], updatedMin: 30,
     approvals: 1, requestedReviewers: ['dvest'], commentCount: 3, reviewCount: 1,
@@ -218,6 +227,7 @@ export function makeMockPRs(
       repo: s.repo,
       author: s.author,
       authorIsViewer: s.author === MOCK_VIEWER,
+      authorIsBot: isBotAuthor(s.author, MOCK_SETTINGS.botAuthors),
       isDraft: s.isDraft ?? false,
       createdAt: iso(s.updatedMin + 1440),
       updatedAt: iso(s.updatedMin),

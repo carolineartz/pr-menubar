@@ -15,11 +15,9 @@ const NOW = Date.parse('2026-07-04T12:00:00Z')
 
 const ctx: ListContext = { starred: new Set(), snoozed: {}, teamToggles: {}, now: NOW }
 
-const BOTS = ['dependabot']
-
 describe('Reviewing tab groups', () => {
   const prs = makeMockPRs(NOW)
-  const groups = reviewingGroups(rowsFor('rev', prs, ctx), BOTS)
+  const groups = reviewingGroups(rowsFor('rev', prs, ctx))
   const keys = (key: string): string[] =>
     groups.find((g) => g.key === key)?.rows.map((p) => p.key) ?? []
 
@@ -54,7 +52,7 @@ describe('Reviewing tab groups', () => {
           }
         : p
     )
-    const g = reviewingGroups(rowsFor('rev', rerequested, ctx), BOTS)
+    const g = reviewingGroups(rowsFor('rev', rerequested, ctx))
     expect(g.find((x) => x.key === 'you')?.rows.map((p) => p.key)).toContain('acme/web#341')
     expect(g.find((x) => x.key === 'them')?.rows.map((p) => p.key) ?? []).not.toContain(
       'acme/web#341'
@@ -75,11 +73,29 @@ describe('Reviewing tab groups', () => {
   it('code owner requests exclude direct tags and bot authors', () => {
     expect(keys('team')).toContain('acme/web#350')
     expect(keys('team')).not.toContain('acme/auth#217')
-    expect(keys('bots')).toEqual(['acme/api#495'])
+    expect(keys('bots').sort()).toEqual(['acme/api#495', 'acme/web#358'])
+  })
+
+  it('bot PRs stay under Bots after you approve them', () => {
+    expect(keys('bots')).toContain('acme/web#358')
+    expect(keys('approved')).not.toContain('acme/web#358')
+  })
+
+  it('authors not listed as bots (cutoverbot) follow the normal flow', () => {
+    const bot = prs.find((p) => p.key === 'acme/api#495')!
+    const cutoverbot = {
+      ...bot,
+      author: 'cutoverbot',
+      authorIsBot: false,
+      reviewRequestedFromTeam: false,
+      reviewRequestedFromViewer: true
+    }
+    const g = reviewingGroups([cutoverbot])
+    expect(g.map((x) => x.key)).toEqual(['start'])
   })
 
   it('empty groups are dropped', () => {
-    expect(reviewingGroups([], BOTS)).toHaveLength(0)
+    expect(reviewingGroups([])).toHaveLength(0)
   })
 })
 

@@ -23,6 +23,7 @@ export const ACTIONABLE: ReadonlySet<NextAction> = new Set([
 export type NextActionInput = Pick<
   PRSnapshot,
   | 'authorIsViewer'
+  | 'authorIsBot'
   | 'isDraft'
   | 'meaningfulFailure'
   | 'ciState'
@@ -51,20 +52,23 @@ export function resolveDot(dot: DotColor, nextAction: NextAction): DotColor {
 /** First match wins. Own PRs answer "what's my move": fix CI, respond to
  *  comments (which outranks merging — an approved PR with an unanswered
  *  comment isn't done), fix requested changes/conflicts, or merge. MERGE
- *  therefore means truly clean: approvals in, green, nothing awaiting you. */
+ *  therefore means truly clean: approvals in, green, nothing awaiting you.
+ *  A bot PR has nobody to merge it, so once you approve one, fixing CI,
+ *  conflicts and merging are your move too. */
 export function computeNextAction(pr: NextActionInput): NextAction {
   const mine = pr.authorIsViewer
+  const owned = mine || (pr.authorIsBot && pr.viewerApproved)
 
-  if (mine && pr.meaningfulFailure) return 'FIXCI'
+  if (owned && pr.meaningfulFailure) return 'FIXCI'
 
   if (mine && pr.threadsAwaitingViewer > 0) return 'RESPOND'
 
-  if (mine && (pr.reviewDecision === 'CHANGES_REQUESTED' || pr.mergeable === 'CONFLICTING')) {
+  if (owned && (pr.reviewDecision === 'CHANGES_REQUESTED' || pr.mergeable === 'CONFLICTING')) {
     return 'FIX'
   }
 
   if (
-    mine &&
+    owned &&
     !pr.isDraft &&
     pr.reviewDecision === 'APPROVED' &&
     (pr.ciState === 'green' || pr.ciState === 'none')

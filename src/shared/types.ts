@@ -47,6 +47,8 @@ export interface PRSnapshot {
   repo: string
   author: string
   authorIsViewer: boolean
+  /** author is in Settings → Bots */
+  authorIsBot: boolean
   isDraft: boolean
   createdAt: string
   updatedAt: string

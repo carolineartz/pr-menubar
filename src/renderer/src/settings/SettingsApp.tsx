@@ -67,7 +67,7 @@ export default function SettingsApp(): JSX.Element {
 
       <Section
         title="Bots"
-        hint="PRs authored by these accounts collect in a collapsed Bots section on the Reviewing tab (a trailing [bot] is ignored when matching)."
+        hint="PRs authored by these accounts collect in a Bots section on the Reviewing tab and stay there after you approve, showing FIX or MERGE when they need you (a trailing [bot] is ignored when matching)."
       >
         <ListEditor
           items={settings.botAuthors}

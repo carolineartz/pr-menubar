@@ -14,10 +14,15 @@ export function isBotAuthor(login: string, botAuthors: string[]): boolean {
   return botAuthors.some((b) => botName(b) === botName(login))
 }
 
+/** Reviewing section: bot PRs collect under Bots whatever their review state,
+ *  so an approved one you still have to merge stays in view. */
+export function reviewingGroupKey(pr: PRSnapshot): ReviewingGroupKey {
+  return pr.authorIsBot ? 'bots' : reviewStateKey(pr)
+}
+
 /**
- * Reviewing classification — a PR waits on you only if their move is newer
+ * Review-state classification — a PR waits on you only if their move is newer
  * than yours. First match wins:
- * - bots
  * - you approved and haven't requested changes since → approved, whatever
  *   follows (commits, re-requests, others' threads, your later comments)
  * - re-requested review (you already engaged, they clicked re-request) →
@@ -31,8 +36,7 @@ export function isBotAuthor(login: string, botAuthors: string[]): boolean {
  *   don't count: the author re-requests you when it's ready again
  * - anything else you've engaged with → waiting on them
  */
-export function reviewingGroupKey(pr: PRSnapshot, botAuthors: string[]): ReviewingGroupKey {
-  if (isBotAuthor(pr.author, botAuthors)) return 'bots'
+export function reviewStateKey(pr: PRSnapshot): Exclude<ReviewingGroupKey, 'bots'> {
   if (pr.viewerApproved) return 'approved'
   const started = pr.viewerReviewState !== null || pr.viewerCommented || pr.viewerHasPendingReview
   if (pr.reviewRequestedFromViewer && started) return 'you'

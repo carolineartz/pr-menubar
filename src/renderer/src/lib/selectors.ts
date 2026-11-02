@@ -111,7 +111,7 @@ const GROUPS: GroupDef[] = [
     collapsedByDefault: false
   },
   { key: 'approved', label: 'APPROVED BY YOU', color: 'var(--greent)', collapsedByDefault: true },
-  { key: 'bots', label: 'BOTS', color: 'var(--neut)', collapsedByDefault: true }
+  { key: 'bots', label: 'BOTS', color: 'var(--neut)', collapsedByDefault: false }
 ]
 
 const MY_GROUPS: GroupDef[] = [
@@ -139,8 +139,8 @@ const toGroups = (
     }))
     .filter((g) => g.rows.length > 0)
 
-export function reviewingGroups(rows: PRSnapshot[], botAuthors: string[] = []): Group[] {
-  return toGroups(GROUPS, rows, (pr) => reviewingGroupKey(pr, botAuthors))
+export function reviewingGroups(rows: PRSnapshot[]): Group[] {
+  return toGroups(GROUPS, rows, reviewingGroupKey)
 }
 
 export function myGroups(rows: PRSnapshot[], requiredReviews: number): Group[] {
