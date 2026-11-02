@@ -1,8 +1,5 @@
 # PR Menubar
 
-> [!WARNING]
-> **YOU MUST run `xattr -cr "/Applications/PR Menubar.app"`** initially *and every time you download a new release*. Otherwise it will warn it is corrupt and say to move to the trash. 
-
 macOS menubar app for monitoring GitHub PRs. The popover answers one question: **what should I do next on my PRs?**
 
 Every PR gets a computed **next action** — `FIX CI` / `MERGE` / `ADDRESS` / `REVIEW` / `RESUME` / `WAITING` — that drives the action chips, sort order, tray badge count, and notifications. A noisy-checks rule keeps flaky reporters (coverage bots, quarantined specs) from ever paging you.
@@ -108,14 +105,21 @@ Polling: one pair of GraphQL requests every 60 seconds (a few points of the 5,00
 
 ## Install
 
-Grab the latest zip from [Releases](https://github.com/carolineartz/pr-menubar/releases):
+With [Homebrew](https://brew.sh):
 
 ```sh
-# unzip, move PR Menubar.app to /Applications, then (unsigned app, one time):
-xattr -cr "/Applications/PR Menubar.app"
+brew tap carolineartz/pr-menubar https://github.com/carolineartz/pr-menubar
+brew install --cask carolineartz/pr-menubar/pr-menubar
+gh auth login
 ```
 
-Requires Apple Silicon and the [GitHub CLI](https://cli.github.com) (`brew install gh`, `gh auth login`).
+That puts the app in `/Applications` and installs the [GitHub CLI](https://cli.github.com) it reads your token from. `brew upgrade --cask pr-menubar` updates it. Requires Apple Silicon. The app is unsigned; the cask clears its download quarantine so it opens normally.
+
+**Switching from a downloaded zip**: Homebrew won't install over an app it didn't put there. Quit the app and remove it first; settings, stars and snoozes live in `~/Library/Application Support/pr-menubar` and carry over.
+
+```sh
+osascript -e 'quit app "PR Menubar"'; rm -rf "/Applications/PR Menubar.app"
+```
 
 ## Develop
 
@@ -129,5 +133,7 @@ pnpm test       # vitest — next-action, noisy checks, notification diff, selec
 pnpm build:mac  # unsigned local .app in dist/
 pnpm dist:mac   # release zip
 ```
+
+**Releasing**: bump `version` in `package.json`, merge, then `git tag v<version> && git push origin v<version>`. The Release workflow builds the zip, publishes a GitHub Release, and updates the cask on `main`.
 
 Layout: `src/shared/` pure domain logic (fully unit-tested, no Electron imports) · `src/main/` tray, popover, polling, GitHub GraphQL layer, notifications, persistence · `src/renderer/` the React popover + Settings window. `PRMB_SHOOT=1 PRMB_MOCK=1` makes the app photograph itself into `docs/screenshots/`.

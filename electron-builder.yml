@@ -16,7 +16,8 @@ asarUnpack:
 mac:
   identity: null
   target:
-    - target: dir
+    - target: zip
+      arch: arm64
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     LSUIElement: true
