@@ -43,6 +43,7 @@ export function PRList({
   expandedKey,
   snoozeMenuKey,
   jiraEnabled,
+  botAuthors,
   collapsedGroups,
   onToggleGroup,
   draftsShownGroups,
@@ -61,6 +62,7 @@ export function PRList({
   expandedKey: string | null
   snoozeMenuKey: string | null
   jiraEnabled: boolean
+  botAuthors: string[]
   collapsedGroups: ReadonlySet<GroupKey>
   onToggleGroup: (key: GroupKey) => void
   /** Reviewing groups where the divider toggle has un-hidden drafts (hidden by default) */
@@ -158,7 +160,7 @@ export function PRList({
   }
 
   if (tab === 'rev') {
-    pushGroups(reviewingGroups(rowsFor('rev', prs, ctx, showSnoozed)))
+    pushGroups(reviewingGroups(rowsFor('rev', prs, ctx, showSnoozed), botAuthors))
   } else if (tab === 'my') {
     pushGroups(myGroups(rowsFor('my', prs, ctx, showSnoozed), requiredReviews))
   } else if (tab === 'team') {

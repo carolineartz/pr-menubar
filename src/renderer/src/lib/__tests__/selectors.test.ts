@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { MOCK_VIEWER, makeMockPRs } from '../../../../shared/mockData'
 import { behindSince } from '../../../../shared/present'
-import type { PRSnapshot } from '../../../../shared/types'
 import {
+  isBotAuthor,
   myGroups,
   reviewingGroups,
   rowsFor,
@@ -15,9 +15,11 @@ const NOW = Date.parse('2026-07-04T12:00:00Z')
 
 const ctx: ListContext = { starred: new Set(), snoozed: {}, teamToggles: {}, now: NOW }
 
+const BOTS = ['dependabot']
+
 describe('Reviewing tab groups', () => {
   const prs = makeMockPRs(NOW)
-  const groups = reviewingGroups(rowsFor('rev', prs, ctx))
+  const groups = reviewingGroups(rowsFor('rev', prs, ctx), BOTS)
   const keys = (key: string): string[] =>
     groups.find((g) => g.key === key)?.rows.map((p) => p.key) ?? []
 
@@ -52,7 +54,7 @@ describe('Reviewing tab groups', () => {
           }
         : p
     )
-    const g = reviewingGroups(rowsFor('rev', rerequested, ctx))
+    const g = reviewingGroups(rowsFor('rev', rerequested, ctx), BOTS)
     expect(g.find((x) => x.key === 'you')?.rows.map((p) => p.key)).toContain('acme/web#341')
     expect(g.find((x) => x.key === 'them')?.rows.map((p) => p.key) ?? []).not.toContain(
       'acme/web#341'
@@ -70,43 +72,14 @@ describe('Reviewing tab groups', () => {
     expect(keys('approved').sort()).toEqual(['acme/auth#210', 'acme/billing#96'])
   })
 
-  it('code owner requests exclude direct tags', () => {
-    expect(keys('team')).toEqual(expect.arrayContaining(['acme/api#495', 'acme/web#350']))
+  it('code owner requests exclude direct tags and bot authors', () => {
+    expect(keys('team')).toContain('acme/web#350')
     expect(keys('team')).not.toContain('acme/auth#217')
+    expect(keys('bots')).toEqual(['acme/api#495'])
   })
 
   it('empty groups are dropped', () => {
-    expect(reviewingGroups([])).toHaveLength(0)
-  })
-
-  describe('bot-authored PRs file into the same sections as people', () => {
-    const bot = prs.find((p) => p.key === 'acme/api#495')!
-    const direct = { ...bot, reviewRequestedFromTeam: false, reviewRequestedFromViewer: true }
-    const sectionOf = (pr: PRSnapshot): string | undefined =>
-      reviewingGroups([pr]).find((g) => g.rows.some((r) => r.key === pr.key))?.key
-
-    it.each(['dependabot', 'dependabot[bot]', 'app/dependabot', 'cutoverbot'])(
-      '%s: direct request → start review',
-      (author) => {
-        expect(sectionOf({ ...direct, author })).toBe('start')
-      }
-    )
-
-    it('re-requested after you engaged → waiting on you', () => {
-      expect(sectionOf({ ...direct, viewerCommented: true })).toBe('you')
-    })
-
-    it('approved → approved by you', () => {
-      expect(sectionOf({ ...direct, viewerApproved: true, viewerReviewState: 'APPROVED' })).toBe(
-        'approved'
-      )
-    })
-
-    it('reviewed with no request outstanding → waiting on them', () => {
-      expect(
-        sectionOf({ ...bot, reviewRequestedFromTeam: false, viewerReviewState: 'COMMENTED' })
-      ).toBe('them')
-    })
+    expect(reviewingGroups([], BOTS)).toHaveLength(0)
   })
 })
 
@@ -149,6 +122,15 @@ describe('My PRs groups', () => {
   it('drafts get their own group', () => {
     expect(keys('drafts')).toEqual(['acme/billing#91'])
     expect(keys('yourmove')).not.toContain('acme/billing#91')
+  })
+})
+
+describe('isBotAuthor', () => {
+  it('normalizes [bot] suffixes and app/ prefixes', () => {
+    expect(isBotAuthor('dependabot[bot]', ['dependabot'])).toBe(true)
+    expect(isBotAuthor('dependabot', ['app/dependabot'])).toBe(true)
+    expect(isBotAuthor('Renovate[bot]', ['renovate'])).toBe(true)
+    expect(isBotAuthor('mkatz', ['dependabot'])).toBe(false)
   })
 })
 

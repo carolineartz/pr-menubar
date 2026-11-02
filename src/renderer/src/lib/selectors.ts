@@ -10,6 +10,8 @@ import {
 import { matchesQuery } from '../../../shared/search'
 import type { PRSnapshot, SnoozeEntry } from '../../../shared/types'
 
+export { isBotAuthor } from '../../../shared/groups'
+
 export type TabId = 'my' | 'rev' | 'team' | 'saved' | 'all'
 
 export const TABS: { id: TabId; label: string }[] = [
@@ -108,7 +110,8 @@ const GROUPS: GroupDef[] = [
     color: 'var(--tealt)',
     collapsedByDefault: false
   },
-  { key: 'approved', label: 'APPROVED BY YOU', color: 'var(--greent)', collapsedByDefault: true }
+  { key: 'approved', label: 'APPROVED BY YOU', color: 'var(--greent)', collapsedByDefault: true },
+  { key: 'bots', label: 'BOTS', color: 'var(--neut)', collapsedByDefault: true }
 ]
 
 const MY_GROUPS: GroupDef[] = [
@@ -136,8 +139,8 @@ const toGroups = (
     }))
     .filter((g) => g.rows.length > 0)
 
-export function reviewingGroups(rows: PRSnapshot[]): Group[] {
-  return toGroups(GROUPS, rows, reviewingGroupKey)
+export function reviewingGroups(rows: PRSnapshot[], botAuthors: string[] = []): Group[] {
+  return toGroups(GROUPS, rows, (pr) => reviewingGroupKey(pr, botAuthors))
 }
 
 export function myGroups(rows: PRSnapshot[], requiredReviews: number): Group[] {
