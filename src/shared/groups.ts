@@ -1,23 +1,11 @@
 import type { PRSnapshot } from './types'
 
-export type ReviewingGroupKey = 'start' | 'you' | 'them' | 'team' | 'approved' | 'bots'
+export type ReviewingGroupKey = 'start' | 'you' | 'them' | 'team' | 'approved'
 export type MyGroupKey = 'yourmove' | 'nudge' | 'inreview' | 'drafts'
-
-/** "dependabot", "dependabot[bot]", and "app/dependabot" are the same account. */
-const botName = (login: string): string =>
-  login
-    .replace(/^app\//i, '')
-    .replace(/\[bot\]$/i, '')
-    .toLowerCase()
-
-export function isBotAuthor(login: string, botAuthors: string[]): boolean {
-  return botAuthors.some((b) => botName(b) === botName(login))
-}
 
 /**
  * Reviewing classification — a PR waits on you only if their move is newer
  * than yours. First match wins:
- * - bots
  * - you approved and haven't requested changes since → approved, whatever
  *   follows (commits, re-requests, others' threads, your later comments)
  * - re-requested review (you already engaged, they clicked re-request) →
@@ -31,8 +19,7 @@ export function isBotAuthor(login: string, botAuthors: string[]): boolean {
  *   don't count: the author re-requests you when it's ready again
  * - anything else you've engaged with → waiting on them
  */
-export function reviewingGroupKey(pr: PRSnapshot, botAuthors: string[]): ReviewingGroupKey {
-  if (isBotAuthor(pr.author, botAuthors)) return 'bots'
+export function reviewingGroupKey(pr: PRSnapshot): ReviewingGroupKey {
   if (pr.viewerApproved) return 'approved'
   const started = pr.viewerReviewState !== null || pr.viewerCommented || pr.viewerHasPendingReview
   if (pr.reviewRequestedFromViewer && started) return 'you'

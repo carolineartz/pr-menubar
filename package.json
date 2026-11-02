@@ -1,6 +1,6 @@
 {
   "name": "pr-menubar",
-  "version": "0.10.3",
+  "version": "0.11.0",
   "description": "macOS menubar app for monitoring GitHub PRs — what should I do next?",
   "main": "./out/main/index.js",
   "author": "carolineartz",
@@ -17,7 +17,7 @@
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:mac": "electron-vite build && electron-builder --mac dir",
-    "dist:mac": "electron-vite build && electron-builder --mac zip"
+    "dist:mac": "electron-vite build && electron-builder --mac zip --publish never"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",

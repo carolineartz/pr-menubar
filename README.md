@@ -1,8 +1,5 @@
 # PR Menubar
 
-> [!WARNING]
-> **YOU MUST run `xattr -cr "/Applications/PR Menubar.app"`** initially *and every time you download a new release*. Otherwise it will warn it is corrupt and say to move to the trash. 
-
 macOS menubar app for monitoring GitHub PRs. The popover answers one question: **what should I do next on my PRs?**
 
 Every PR gets a computed **next action** — `FIX CI` / `MERGE` / `ADDRESS` / `REVIEW` / `RESUME` / `WAITING` — that drives the action chips, sort order, tray badge count, and notifications. A noisy-checks rule keeps flaky reporters (coverage bots, quarantined specs) from ever paging you.
@@ -49,7 +46,7 @@ Settings holds a list of noisy check-name patterns (`codecov/*`, `*quarantine*`�
 ## Tabs
 
 - **My PRs** — PRs I authored in watched repos, sorted by next-action urgency.
-- **Reviewing** — grouped **START REVIEW / WAITING ON YOU / WAITING ON THEM / CODE OWNER REQUESTS / APPROVED BY YOU / BOTS**. Rows show a **wait-time badge** (amber at 2+ days) instead of a redundant chip — the group already names the action. Each section lists the **longest-waiting PR first**; a toggle on the section divider (next to *hide drafts*) flips it to newest first, remembered per section. PRs you've **approved stay under Approved by you** (collapsed by default) whatever follows — new commits, a re-request, other reviewers' or Copilot's threads, your own later comments. Approving is your last move; only requesting changes after it takes the approval back.
+- **Reviewing** — grouped **START REVIEW / WAITING ON YOU / WAITING ON THEM / CODE OWNER REQUESTS / APPROVED BY YOU**. Bot-authored PRs (dependabot, cutoverbot) sort into these sections like anyone else's. Rows show a **wait-time badge** (amber at 2+ days) instead of a redundant chip — the group already names the action. Each section lists the **longest-waiting PR first**; a toggle on the section divider (next to *hide drafts*) flips it to newest first, remembered per section. PRs you've **approved stay under Approved by you** (collapsed by default) whatever follows — new commits, a re-request, other reviewers' or Copilot's threads, your own later comments. Approving is your last move; only requesting changes after it takes the approval back.
 - **Team** — PRs authored by a hand-picked list of usernames (Settings), regardless of your involvement. The pill row at the bottom toggles individual people on/off.
 - **Saved** — anything you've starred, from any tab.
 - **All** — every open PR in the watched repos, newest first. The tab count is **GitHub's real total**, not the size of the loaded page (the feed carries the 50 newest; a caption under the list says so when there are more). The filter bar narrows **at the source**, so counts stay exact and older PRs become reachable: **author** (autocomplete over your org's member list — fetched automatically, searchable by display name — plus anyone in the feed), **title search**, and a **hide drafts** toggle. Repo focus narrows the same way.
@@ -108,14 +105,21 @@ Polling: one pair of GraphQL requests every 60 seconds (a few points of the 5,00
 
 ## Install
 
-Grab the latest zip from [Releases](https://github.com/carolineartz/pr-menubar/releases):
+With [Homebrew](https://brew.sh):
 
 ```sh
-# unzip, move PR Menubar.app to /Applications, then (unsigned app, one time):
-xattr -cr "/Applications/PR Menubar.app"
+brew tap carolineartz/pr-menubar https://github.com/carolineartz/pr-menubar
+brew install --cask carolineartz/pr-menubar/pr-menubar
+gh auth login
 ```
 
-Requires Apple Silicon and the [GitHub CLI](https://cli.github.com) (`brew install gh`, `gh auth login`).
+That puts the app in `/Applications` and installs the [GitHub CLI](https://cli.github.com) it reads your token from. `brew upgrade --cask pr-menubar` updates it. Requires Apple Silicon. The app is unsigned; the cask clears its download quarantine so it opens normally.
+
+**Switching from a downloaded zip**: Homebrew won't install over an app it didn't put there. Quit the app and remove it first; settings, stars and snoozes live in `~/Library/Application Support/pr-menubar` and carry over.
+
+```sh
+osascript -e 'quit app "PR Menubar"'; rm -rf "/Applications/PR Menubar.app"
+```
 
 ## Develop
 
@@ -129,5 +133,7 @@ pnpm test       # vitest — next-action, noisy checks, notification diff, selec
 pnpm build:mac  # unsigned local .app in dist/
 pnpm dist:mac   # release zip
 ```
+
+**Releasing**: bump `version` in `package.json`, merge, then `git tag v<version> && git push origin v<version>`. The Release workflow builds the zip, publishes a GitHub Release, and updates the cask on `main`.
 
 Layout: `src/shared/` pure domain logic (fully unit-tested, no Electron imports) · `src/main/` tray, popover, polling, GitHub GraphQL layer, notifications, persistence · `src/renderer/` the React popover + Settings window. `PRMB_SHOOT=1 PRMB_MOCK=1` makes the app photograph itself into `docs/screenshots/`.

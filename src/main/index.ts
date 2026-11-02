@@ -48,6 +48,11 @@ app.whenReady().then(() => {
   // prefers-color-scheme tokens and the native vibrancy appearance
   nativeTheme.themeSource = store.get('settings').theme
 
+  // the cask's uninstall removes the login item while the setting stays on
+  if (app.isPackaged && !MOCK) {
+    app.setLoginItemSettings({ openAtLogin: store.get('settings').launchAtLogin })
+  }
+
   const github = new GithubService()
 
   const fetchPRs = async (): Promise<PollResult> => {
