@@ -1,6 +1,6 @@
 cask 'pr-menubar' do
-  version '0.11.0'
-  sha256 '4434077026a38a182859ff06366df1399e0642493dfa92aeb960483a009aa197'
+  version '0.12.0'
+  sha256 'c3f4f51ef7574717b3558d2c0fd9ee6ccda3f436e5e5252ea5966e3971340bae'
 
   # The release workflow rewrites version and sha256 on every tag.
   url "https://github.com/carolineartz/pr-menubar/releases/download/v#{version}/pr-menubar-#{version}-arm64.zip"
