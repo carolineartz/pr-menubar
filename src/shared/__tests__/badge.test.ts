@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { badgeCount, needsYou } from '../badge'
 import { makeMockPRs } from '../mockData'
+import { computeNextAction } from '../nextAction'
 import type { PRSnapshot } from '../types'
 
 const NOW = Date.parse('2026-07-04T12:00:00Z')
@@ -11,14 +12,16 @@ describe('badgeCount', () => {
   const prs = makeMockPRs(NOW)
   const counted = prs.filter((p) => needsYou(p)).map((p) => p.key)
 
-  it('counts owed review replies, Start review, and Waiting on you', () => {
+  it('counts owed review replies, Start review, Waiting on you, and bot requests', () => {
     expect(counted.sort()).toEqual([
       'acme/api#468', // own: reviewer replied, changes requested
       'acme/api#486', // start review
+      'acme/api#495', // dependabot, code-owner request
       'acme/auth#217', // start review
-      'acme/auth#221' // re-requested → waiting on you
+      'acme/auth#221', // re-requested → waiting on you
+      'acme/web#358' // dependabot you approved, ready to merge
     ])
-    expect(badgeCount(prs, {}, NOW)).toBe(4)
+    expect(badgeCount(prs, {}, NOW)).toBe(6)
   })
 
   describe('own PRs count only while a reviewer waits on your reply', () => {
@@ -70,29 +73,46 @@ describe('badgeCount', () => {
     expect(needsYou(pr)).toBe(false)
   })
 
-  it('code owner requests are not counted', () => {
+  it('code owner requests on human PRs are not counted', () => {
     expect(needsYou(find(prs, 'acme/web#350'))).toBe(false)
-    expect(needsYou(find(prs, 'acme/api#495'))).toBe(false) // dependabot
   })
 
-  describe('bot PRs count like anyone else', () => {
-    const direct = {
-      ...find(prs, 'acme/api#495'),
-      reviewRequestedFromTeam: false,
-      reviewRequestedFromViewer: true
-    }
+  describe('bot PRs', () => {
+    const bot = find(prs, 'acme/api#495')
 
-    it.each(['dependabot', 'dependabot[bot]', 'cutoverbot'])(
-      '%s: a direct request counts',
-      (author) => {
-        expect(needsYou({ ...direct, author })).toBe(true)
-      }
-    )
+    it('count while a review is requested, directly or via code owners', () => {
+      expect(needsYou(bot)).toBe(true)
+      expect(
+        needsYou({ ...bot, reviewRequestedFromTeam: false, reviewRequestedFromViewer: true })
+      ).toBe(true)
+    })
 
-    it('stop counting once you approve', () => {
-      expect(needsYou({ ...direct, viewerApproved: true, viewerReviewState: 'APPROVED' })).toBe(
-        false
-      )
+    describe('once you approve, count while merging or fixing is your move', () => {
+      const approved = find(prs, 'acme/web#358')
+      const recompute = (pr: PRSnapshot): PRSnapshot => ({
+        ...pr,
+        nextAction: computeNextAction(pr)
+      })
+
+      it('ready to merge', () => {
+        expect(approved.nextAction).toBe('MERGE')
+        expect(needsYou(approved)).toBe(true)
+      })
+
+      it('merge conflicts or red CI', () => {
+        expect(needsYou(recompute({ ...approved, mergeable: 'CONFLICTING' }))).toBe(true)
+        expect(needsYou(recompute({ ...approved, meaningfulFailure: true }))).toBe(true)
+      })
+
+      it('not while the repo waits on other approvals', () => {
+        expect(needsYou(recompute({ ...approved, reviewDecision: 'REVIEW_REQUIRED' }))).toBe(false)
+      })
+    })
+
+    it('are treated like people when not listed as bots', () => {
+      expect(needsYou({ ...bot, authorIsBot: false })).toBe(false)
+      const approved = find(prs, 'acme/web#358')
+      expect(needsYou({ ...approved, authorIsBot: false, nextAction: 'WAITING' })).toBe(false)
     })
   })
 
@@ -102,7 +122,7 @@ describe('badgeCount', () => {
   })
 
   it('snoozed rows drop out', () => {
-    expect(badgeCount(prs, { 'acme/api#468': { mode: '1h', until: NOW + 60_000 } }, NOW)).toBe(3)
-    expect(badgeCount(prs, { 'acme/api#468': { mode: '1h', until: NOW - 1 } }, NOW)).toBe(4)
+    expect(badgeCount(prs, { 'acme/api#468': { mode: '1h', until: NOW + 60_000 } }, NOW)).toBe(5)
+    expect(badgeCount(prs, { 'acme/api#468': { mode: '1h', until: NOW - 1 } }, NOW)).toBe(6)
   })
 })

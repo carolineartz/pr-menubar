@@ -66,6 +66,18 @@ export default function SettingsApp(): JSX.Element {
       </Section>
 
       <Section
+        title="Bots"
+        hint="PRs authored by these accounts collect in a Bots section on the Reviewing tab and stay there after you approve, showing FIX or MERGE when they need you (a trailing [bot] is ignored when matching)."
+      >
+        <ListEditor
+          items={settings.botAuthors}
+          placeholder="username, e.g. dependabot"
+          validate={(v) => /^[\w/[\]-]+$/.test(v)}
+          onChange={(botAuthors) => patch({ botAuthors })}
+        />
+      </Section>
+
+      <Section
         title="Noisy checks"
         hint="Failures from matching checks never trigger FIX CI, a red dot, or a notification. * matches anything — e.g. codecov/*."
       >

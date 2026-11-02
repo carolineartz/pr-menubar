@@ -1,5 +1,6 @@
 import { classifyChecks, type ClassifiedChecks } from '../../shared/noisyChecks'
 import { computeNextAction, resolveDot } from '../../shared/nextAction'
+import { isBotAuthor } from '../../shared/groups'
 import type { CheckInfo, PRSnapshot, Settings, TabBucket } from '../../shared/types'
 
 /* ---- raw GraphQL node shapes (only the fields we read) ---- */
@@ -246,6 +247,7 @@ function mapOne(
     repo,
     author,
     authorIsViewer: author === viewer,
+    authorIsBot: isBotAuthor(author, settings.botAuthors),
     isDraft: pr.isDraft,
     createdAt: pr.createdAt,
     updatedAt: pr.updatedAt,

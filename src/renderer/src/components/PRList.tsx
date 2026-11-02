@@ -268,7 +268,8 @@ export function PRList({
       starred={ctx.starred.has(it.pr.key)}
       snoozed={isSnoozedNow(it.pr, ctx)}
       hideChip={tab === 'all'}
-      timeBadge={tab === 'rev' || it.timeBadge}
+      // a bot PR you approved shows FIX / MERGE like your own PRs
+      timeBadge={(tab === 'rev' && !(it.pr.authorIsBot && it.pr.viewerApproved)) || it.timeBadge}
       showOwnAvatar={tab === 'all'}
       repoFocused={ctx.repoFocus === it.pr.repo}
       jiraEnabled={jiraEnabled}

@@ -47,6 +47,8 @@ export interface PRSnapshot {
   repo: string
   author: string
   authorIsViewer: boolean
+  /** author is in Settings → Bots */
+  authorIsBot: boolean
   isDraft: boolean
   createdAt: string
   updatedAt: string
@@ -139,6 +141,8 @@ export interface Settings {
   globalShortcut: string
   /** e.g. "https://acme.atlassian.net/browse" — '' disables Jira links */
   jiraBaseUrl: string
+  /** authors grouped into the Reviewing tab's Bots section ("[bot]" suffix ignored) */
+  botAuthors: string[]
   /** approvals your repos require — drives My PRs "Awaiting reviewers" + the nudge copy */
   requiredReviews: number
 }
@@ -159,6 +163,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   globalShortcut: '',
   jiraBaseUrl: '',
+  botAuthors: ['dependabot'],
   requiredReviews: 2
 }
 

@@ -5,6 +5,7 @@ import { classifyChecks } from '../noisyChecks'
 function base(over: Partial<NextActionInput> = {}): NextActionInput {
   return {
     authorIsViewer: true,
+    authorIsBot: false,
     isDraft: false,
     meaningfulFailure: false,
     ciState: 'green',
@@ -162,6 +163,56 @@ describe('computeNextAction — first match wins', () => {
 
   it('WAITING: my draft with queued checks', () => {
     expect(computeNextAction(base({ isDraft: true, ciState: 'queued' }))).toBe('WAITING')
+  })
+})
+
+describe('computeNextAction — bot PRs you approved are yours to land', () => {
+  const approvedBot = (over: Partial<NextActionInput> = {}): NextActionInput =>
+    base({
+      authorIsViewer: false,
+      authorIsBot: true,
+      viewerApproved: true,
+      viewerReviewState: 'APPROVED',
+      reviewDecision: 'APPROVED',
+      ...over
+    })
+
+  it('MERGE: approved, green, no conflicts', () => {
+    expect(computeNextAction(approvedBot())).toBe('MERGE')
+  })
+
+  it('FIX: merge conflicts', () => {
+    expect(computeNextAction(approvedBot({ mergeable: 'CONFLICTING' }))).toBe('FIX')
+  })
+
+  it('FIXCI: a meaningful failure', () => {
+    expect(computeNextAction(approvedBot({ meaningfulFailure: true, ciState: 'failed' }))).toBe(
+      'FIXCI'
+    )
+  })
+
+  it('WAITING: approved by you but the repo still needs more approvals', () => {
+    expect(computeNextAction(approvedBot({ reviewDecision: 'REVIEW_REQUIRED' }))).toBe('WAITING')
+  })
+
+  it('no RESPOND: threads on a bot PR are not a reply owed', () => {
+    expect(computeNextAction(approvedBot({ threadsAwaitingViewer: 1 }))).toBe('MERGE')
+  })
+
+  it('not approved yet → the review flow, not merge', () => {
+    expect(
+      computeNextAction(
+        approvedBot({
+          viewerApproved: false,
+          viewerReviewState: null,
+          reviewRequestedFromViewer: true
+        })
+      )
+    ).toBe('REVIEW')
+  })
+
+  it('a person’s PR you approved stays WAITING', () => {
+    expect(computeNextAction(approvedBot({ authorIsBot: false }))).toBe('WAITING')
   })
 })
 

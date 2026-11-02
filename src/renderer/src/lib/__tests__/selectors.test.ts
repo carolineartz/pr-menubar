@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { MOCK_VIEWER, makeMockPRs } from '../../../../shared/mockData'
 import { behindSince } from '../../../../shared/present'
-import type { PRSnapshot } from '../../../../shared/types'
 import {
+  isBotAuthor,
   myGroups,
   reviewingGroups,
   rowsFor,
@@ -70,43 +70,32 @@ describe('Reviewing tab groups', () => {
     expect(keys('approved').sort()).toEqual(['acme/auth#210', 'acme/billing#96'])
   })
 
-  it('code owner requests exclude direct tags', () => {
-    expect(keys('team')).toEqual(expect.arrayContaining(['acme/api#495', 'acme/web#350']))
+  it('code owner requests exclude direct tags and bot authors', () => {
+    expect(keys('team')).toContain('acme/web#350')
     expect(keys('team')).not.toContain('acme/auth#217')
+    expect(keys('bots').sort()).toEqual(['acme/api#495', 'acme/web#358'])
+  })
+
+  it('bot PRs stay under Bots after you approve them', () => {
+    expect(keys('bots')).toContain('acme/web#358')
+    expect(keys('approved')).not.toContain('acme/web#358')
+  })
+
+  it('authors not listed as bots (cutoverbot) follow the normal flow', () => {
+    const bot = prs.find((p) => p.key === 'acme/api#495')!
+    const cutoverbot = {
+      ...bot,
+      author: 'cutoverbot',
+      authorIsBot: false,
+      reviewRequestedFromTeam: false,
+      reviewRequestedFromViewer: true
+    }
+    const g = reviewingGroups([cutoverbot])
+    expect(g.map((x) => x.key)).toEqual(['start'])
   })
 
   it('empty groups are dropped', () => {
     expect(reviewingGroups([])).toHaveLength(0)
-  })
-
-  describe('bot-authored PRs file into the same sections as people', () => {
-    const bot = prs.find((p) => p.key === 'acme/api#495')!
-    const direct = { ...bot, reviewRequestedFromTeam: false, reviewRequestedFromViewer: true }
-    const sectionOf = (pr: PRSnapshot): string | undefined =>
-      reviewingGroups([pr]).find((g) => g.rows.some((r) => r.key === pr.key))?.key
-
-    it.each(['dependabot', 'dependabot[bot]', 'app/dependabot', 'cutoverbot'])(
-      '%s: direct request → start review',
-      (author) => {
-        expect(sectionOf({ ...direct, author })).toBe('start')
-      }
-    )
-
-    it('re-requested after you engaged → waiting on you', () => {
-      expect(sectionOf({ ...direct, viewerCommented: true })).toBe('you')
-    })
-
-    it('approved → approved by you', () => {
-      expect(sectionOf({ ...direct, viewerApproved: true, viewerReviewState: 'APPROVED' })).toBe(
-        'approved'
-      )
-    })
-
-    it('reviewed with no request outstanding → waiting on them', () => {
-      expect(
-        sectionOf({ ...bot, reviewRequestedFromTeam: false, viewerReviewState: 'COMMENTED' })
-      ).toBe('them')
-    })
   })
 })
 
@@ -149,6 +138,15 @@ describe('My PRs groups', () => {
   it('drafts get their own group', () => {
     expect(keys('drafts')).toEqual(['acme/billing#91'])
     expect(keys('yourmove')).not.toContain('acme/billing#91')
+  })
+})
+
+describe('isBotAuthor', () => {
+  it('normalizes [bot] suffixes and app/ prefixes', () => {
+    expect(isBotAuthor('dependabot[bot]', ['dependabot'])).toBe(true)
+    expect(isBotAuthor('dependabot', ['app/dependabot'])).toBe(true)
+    expect(isBotAuthor('Renovate[bot]', ['renovate'])).toBe(true)
+    expect(isBotAuthor('mkatz', ['dependabot'])).toBe(false)
   })
 })
 
